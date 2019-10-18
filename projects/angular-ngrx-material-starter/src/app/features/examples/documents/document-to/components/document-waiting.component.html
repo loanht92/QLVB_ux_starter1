@@ -1,0 +1,56 @@
+<div class="row" style="display:inline">
+    <div fxFlexFill fxLayoutAlign="end" class=" form-input">
+        <input class="docadd-filter" fxFlex="200px" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
+    </div>
+    <div fxFlexFill class=" form-input">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+            <ng-container matColumnDef="numberTo">
+                <th mat-header-cell *matHeaderCellDef> Số đến </th>
+                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.numberTo}}</a></td>
+            </ng-container>
+            <ng-container matColumnDef="created">
+                <th mat-header-cell *matHeaderCellDef> Ngày gửi </th>
+                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.created}}</a></td>
+            </ng-container>
+            <ng-container matColumnDef="userRequest">
+                <th mat-header-cell *matHeaderCellDef> Người gửi </th>
+                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.userRequest}}</a></td>
+            </ng-container>
+            <ng-container matColumnDef="userApprover">
+                <th mat-header-cell *matHeaderCellDef> Người xử lý </th>
+                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.userApprover}}</a></td>
+            </ng-container>
+            <ng-container matColumnDef="deadline">
+                <th mat-header-cell *matHeaderCellDef> Hạn xử lý </th>
+                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.deadline}}</a></td>
+            </ng-container>
+            <ng-container matColumnDef="compendium">
+                <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
+                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.compendium}}</a></td>
+            </ng-container>
+            <!-- <ng-container matColumnDef="content">
+                <th mat-header-cell *matHeaderCellDef> Nội dung xử lý </th>
+                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.content}}</a></td>
+            </ng-container> -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)">
+            </tr>
+        </table>
+        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+
+        <!-- <mat-tree [dataSource]="dataSource2" [treeControl]="treeControl">
+            <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
+                <button mat-icon-button disabled></button>
+                <mat-checkbox class="checklist-leaf-node" [checked]="checklistSelection.isSelected(node)" (change)="todoLeafItemSelectionToggle(node)">{{node.item}}</mat-checkbox>
+            </mat-tree-node>
+            <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+                <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.filename">
+                <mat-icon class="mat-icon-rtl-mirror">
+                    {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                </mat-icon>
+                </button>
+                <mat-checkbox [checked]="descendantsAllSelected(node)" [indeterminate]="descendantsPartiallySelected(node)" (change)="todoItemSelectionToggle(node)">{{node.item}}</mat-checkbox>
+            </mat-tree-node>
+        </mat-tree> -->
+    </div>
+</div>

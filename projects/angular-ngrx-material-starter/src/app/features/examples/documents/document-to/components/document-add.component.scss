@@ -1,0 +1,87 @@
+.example-container {
+    height: 400px;
+    overflow: auto;
+}
+
+.portlet_title_tsg_2 {
+    color: #F6753C;
+    padding-left: 10px;
+    // font-size: 24px;
+}
+
+a:hover {
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+}
+
+.search-hero {
+    display: flex;
+    float: right;
+    margin-bottom: 10px;
+}
+
+.entry {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.todos-filter-info {
+    float: right;
+    font-weight: normal;
+}
+
+.docadd-filter {
+    padding: 1px 0 !important;
+    -webkit-appearance: textfield !important;
+    background-color: white !important;
+    -webkit-rtl-ordering: logical !important;
+    border-width: 2px !important;
+    border-style: inset !important;
+    border-color: initial !important;
+    border-image: initial !important;
+    background: white !important;
+}
+
+.actions {
+    margin: 10px 0;
+    padding: 0 10px;
+    background: white;
+}
+
+.actions button {
+    margin-right: 10px;
+}
+
+.caption {
+    background: #00000008;
+}
+
+.div-checkbox {
+    margin-bottom: 12px;
+}
+
+.mat-elevation-z8 {
+    margin-top: 10px;
+}
+
+.required-field {
+    color: red;
+}
+
+::ng-deep {
+    .mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline {
+        background-image: none !important;
+        background-color: rgba(0, 0, 0, 0.42) !important;
+    }
+    .default-theme .mat-select-disabled .mat-select-value {
+        color: rgba(0, 0, 0, 0.87) !important;
+    }
+    td.mat-cell,
+    td.mat-footer-cell,
+    th.mat-header-cell {
+        padding: 4px !important;
+    }
+}

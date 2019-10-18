@@ -1,0 +1,308 @@
+@import 'styles-variables';
+@import '~bootstrap/scss/bootstrap-reboot';
+@import '~bootstrap/scss/bootstrap-grid';
+@import 'styles-reset';
+@import '~@angular/material/theming';
+@include mat-core();
+@import './themes/default-theme';
+@import './themes/light-theme';
+@import './themes/black-theme';
+@import './themes/nature-theme';
+@import 'styles-reset.scss-theme';
+@import './app/app/app.component.scss-theme';
+@import './app/shared/big-input/big-input/big-input.component.scss-theme';
+@import './app/features/about/about/about.component.scss-theme';
+@import './app/features/examples/notifications/components/notifications.component.scss-theme';
+@import './app/features/examples/todos/components/todos-container.component.scss-theme';
+@import './app/features/examples/stock-market/components/stock-market-container.component.scss-theme';
+@import './app/features/examples/theming/parent/parent.component.scss-theme';
+@import './app/features/examples/theming/child/child.component.scss-theme';
+@import './app/features/examples/examples/examples.component.scss-theme';
+@mixin custom-components-theme($theme) {
+    @include anms-styles-reset-theme($theme);
+    @include anms-app-component-theme($theme);
+    @include anms-about-component-theme($theme);
+    @include anms-big-input-component-theme($theme);
+    @include anms-notifications-component-theme($theme);
+    @include anms-todos-container-component-theme($theme);
+    @include anms-stock-market-container-component-theme($theme);
+    @include anms-parent-component-theme($theme);
+    @include anms-child-component-theme($theme);
+    @include anms-examples-component-theme($theme);
+}
+
+.default-theme {
+    @include angular-material-theme($anms-theme);
+    @include custom-components-theme($anms-theme);
+}
+
+.light-theme {
+    @include angular-material-theme($anms-light-theme);
+    @include custom-components-theme($anms-light-theme);
+}
+
+.black-theme {
+    @include angular-material-theme($anms-black-theme);
+    @include custom-components-theme($anms-black-theme);
+}
+
+.nature-theme {
+    @include angular-material-theme($anms-nature-theme);
+    @include custom-components-theme($anms-nature-theme);
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(../../../node_modules/material-design-icons/iconfont/MaterialIcons-Regular.woff2) format('woff2');
+}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    /* direction: rtl; */
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+}
+
+.form-label {
+    // font-weight: 700;
+    color: #646262;
+    min-width: 180px;
+}
+
+.form-input {
+    padding: 0 10px;
+}
+
+.item-detail {
+    margin-bottom: 8px !important;
+}
+
+.Ongoing {
+    background-color: #ffa500;
+    padding: 5px;
+    color: white;
+}
+
+.Approved {
+    background-color: #26C281;
+    padding: 5px;
+    color: white;
+}
+
+.CXL {
+    color: #26C281;
+}
+
+.TL {
+    color: #E7505A;
+}
+
+.XYK {
+    color: #ffa500;
+}
+
+p {
+    margin-bottom: 0 !important;
+}
+
+.mat-input-element:disabled {
+    color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.required-field {
+    color: red;
+}
+
+a.urlFile {
+    color: #07C;
+}
+
+// style step
+.mt-element-step .step-line .done .mt-step-number {
+    color: #26C281 !important;
+    border-color: #26C281 !important;
+}
+
+.mt-element-step .step-line .mt-step-number {
+    font-size: 26px;
+    // border-radius: 50% !important;
+    // display: inline-block;
+    margin: auto auto 5px;
+    padding: 9px;
+    border: 3px solid #e5e5e5;
+    position: relative;
+    z-index: 5;
+    height: 100px;
+    width: 100px;
+    text-align: center;
+}
+
+.bg-white {
+    background: #fff !important;
+}
+
+.mt-element-step .step-line .done .mt-step-content,
+.mt-element-step .step-line .done .mt-step-title {
+    color: #26C281 !important;
+}
+
+.font-grey-cascade {
+    color: #95A5A6 !important;
+}
+
+.mt-element-step .step-line .mt-step-title {
+    font-size: 16px;
+    font-weight: 400;
+    position: relative;
+}
+
+.mt-element-step .step-line .mt-step-col {
+    padding: 30px 0;
+    text-align: center;
+}
+
+.mt-element-step .step-line .active .mt-step-number {
+    color: #ffa500 !important;
+    border-color: #ffa500 !important;
+}
+
+.font-grey-cascade {
+    color: #95A5A6 !important;
+}
+
+.uppercase {
+    text-transform: uppercase !important;
+}
+
+.mt-element-step .step-line .between .mt-step-title:after,
+.mt-element-step .step-line .between .mt-step-title:before {
+    content: '';
+    height: 3px;
+    width: 50%;
+    position: absolute;
+    background-color: #e5e5e5;
+    top: -50px;
+    z-index: 4;
+    transform: translateY(-100%);
+}
+
+.mt-element-step .step-line .between .mt-step-title:after {
+    left: 50%;
+}
+
+.mt-element-step .step-line .between .mt-step-title:before {
+    right: 50%;
+}
+
+.mt-element-step .step-line .first .mt-step-title:after,
+.mt-element-step .step-line .first .mt-step-title:before {
+    content: '';
+    height: 3px;
+    width: 50%;
+    position: absolute;
+    background-color: #e5e5e5;
+    top: -50px;
+    z-index: 4;
+    transform: translateY(-100%);
+}
+
+.mt-element-step .step-line .first .mt-step-title:after {
+    left: 50%;
+}
+
+.mt-element-step .step-line .first .mt-step-title:before {
+    right: 50%;
+}
+
+.mt-element-step .step-line .last .mt-step-title:before {
+    content: '';
+    height: 3px;
+    width: 50%;
+    position: absolute;
+    background-color: #e5e5e5;
+    top: -50px;
+    z-index: 4;
+    transform: translateY(-100%);
+}
+
+// .mt-element-step .step-line .last .mt-step-title:after {
+//     left: 50%;
+// }
+.mt-element-step .step-line .last .mt-step-title:before {
+    right: 50%;
+}
+
+.mt-element-step .step-line .first .mt-step-title:before {
+    content: none;
+}
+
+.mt-element-step .step-line .active .mt-step-number {
+    color: #ffa500 !important;
+    border-color: #ffa500 !important;
+}
+
+.mt-element-step .step-line .active .mt-step-content,
+.mt-element-step .step-line .active .mt-step-title {
+    color: #ffa500 !important;
+}
+
+.mt-element-step .step-line .active .mt-step-title:after,
+.mt-element-step .step-line .active .mt-step-title:before {
+    background-color: #ffa500;
+}
+
+.mt-element-step .step-line .done .mt-step-number {
+    color: #26C281 !important;
+    border-color: #26C281 !important;
+}
+
+.mt-element-step .step-line .done .mt-step-content,
+.mt-element-step .step-line .done .mt-step-title {
+    color: #26C281 !important;
+}
+
+.mt-element-step .step-line .done .mt-step-title:after,
+.mt-element-step .step-line .done .mt-step-title:before {
+    background-color: #26C281;
+}
+
+.mt-element-step .step-line .error .mt-step-number {
+    color: #E7505A !important;
+    border-color: #E7505A !important;
+}
+
+.mt-element-step .step-line .error .mt-step-content,
+.mt-element-step .step-line .error .mt-step-title {
+    color: #E7505A !important;
+}
+
+.mt-element-step .step-line .error .mt-step-title:after,
+.mt-element-step .step-line .error .mt-step-title:before {
+    background-color: #E7505A;
+}
+
+.CP {
+    cursor: pointer;
+}

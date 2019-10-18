@@ -1,0 +1,47 @@
+table {
+    width: 100%;
+}
+
+.search-hero {
+    display: flex;
+    float: right;
+    margin-bottom: 10px;
+}
+
+.docadd-filter {
+    padding: 1px 0 !important;
+    -webkit-appearance: textfield !important;
+    background-color: white !important;
+    -webkit-rtl-ordering: logical !important;
+    border-width: 2px !important;
+    border-style: inset !important;
+    border-color: initial !important;
+    border-image: initial !important;
+    background: white !important;
+}
+
+.form-input {
+    padding: 0 10px;
+}
+
+.actions {
+    margin: 10px 0;
+    padding: 0 10px;
+    background: white;
+}
+
+.actions button {
+    margin-right: 10px;
+}
+
+.caption {
+    background: #00000008;
+}
+
+.div-checkbox {
+    margin-bottom: 12px;
+}
+
+.mat-elevation-z8 {
+    margin-top: 10px;
+}

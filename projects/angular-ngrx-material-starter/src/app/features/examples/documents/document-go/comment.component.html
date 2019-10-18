@@ -1,0 +1,69 @@
+<div mat-dialog-title class="modal-header">
+    <h4 class="modal-title pull-left">Xin ý kiến</h4>
+    <button type="button" style="padding-top: 0px; margin: -26px -13px -26px -26px;" class="close pull-right" aria-label="Close" (click)="closeModal()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div mat-dialog-title class="modal-body" fxLayout="column">
+    <mat-form-field fxFlex="100">
+        <mat-label>Chọn người xin ý kiến</mat-label>
+        <mat-select [(ngModel)]="selectedApprover">
+            <mat-option *ngFor="let item of listUser" value="{{item.UserId}}|{{item.UserEmail}}|{{item.DisplayName}}">{{item.DisplayName}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <!-- <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+        <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
+            <button mat-icon-button disabled></button>
+            <mat-checkbox class="checklist-leaf-node" [checked]="checklistSelection.isSelected(node)" (change)="todoLeafItemSelectionToggle(node)">{{node.item}}</mat-checkbox>
+        </mat-tree-node>
+
+        <mat-tree-node *matTreeNodeDef="let node; when: hasNoContent" matTreeNodePadding>
+            <button mat-icon-button disabled></button>
+            <mat-form-field>
+                <input matInput #itemValue placeholder="New item...">
+            </mat-form-field>
+            <button mat-button (click)="saveNode(node, itemValue.value)">Save</button>
+        </mat-tree-node>
+
+        <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+            <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.filename">
+        <mat-icon class="mat-icon-rtl-mirror">
+          {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+        </mat-icon>
+       </button>
+            <mat-checkbox [checked]="descendantsAllSelected(node)" [indeterminate]="descendantsPartiallySelected(node)" (change)="todoItemSelectionToggle(node)">{{node.item}}</mat-checkbox>
+          
+        </mat-tree-node>
+    </mat-tree> -->
+    <mat-form-field fxFlex="100">
+        <mat-label>Nội dung xin ý kiến <span class="required-field">*</span></mat-label>
+        <textarea matInput [(ngModel)]="content"></textarea>
+    </mat-form-field>
+    <div fxLayout="row" fxLayout.xs="column" fxFlexFil fxLayoutGap="5px">
+        <div fxFlex="120px" fxFlex.xs="auto">
+            <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()"> <i
+                    class="material-icons">publish</i>&nbsp; <span class="AddfileEdit">Tải tệp</span></button>
+            <input hidden (change)="addAttachmentFile()" #fileInput type="file" id="fileAttachment_XYK">
+        </div>
+        <div fxFlex="auto">
+            <div id="viewAttachment" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="5px">
+                <div *ngFor="let items of outputFile"><a (click)="removeAttachmentFile(items)"><i
+                            class="material-icons">clear</i>&nbsp;</a> {{items.name}}</div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<div mat-dialog-actions>
+    <div fxLayout="row" fxLayoutAlign="end stretch" fxFlexFill fxLayoutGap="5px">
+        <div fxLayout="row" fxLayoutAlign="end stretch" fxLayoutGap="5px">
+            <button mat-stroked-button color="primary" type="button" (click)="saveItem()">
+                <i class="material-icons">save</i>&nbsp; <span class="Submit1">Lưu</span>
+            </button>
+            <button mat-stroked-button color="primary" type="button" (click)="closeModal()">
+                <i class="material-icons" style="font-size: 13px !important;">close</i>&nbsp;
+                <span class="CloseModal">Đóng</span></button>
+        </div>
+    </div>
+</div>

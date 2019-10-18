@@ -1,0 +1,18 @@
+<nav mat-tab-nav-bar class="d-none d-sm-flex">
+    <a mat-tab-link *ngFor="let e of documents" [routerLink]="e.link" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+   {{e.label | translate}}
+    </a>
+</nav>
+
+<!-- <nav class="nav-responsive d-sm-none d-flex justify-content-center"> [disabled]="e.display && !(isAuthenticated$ | async)"
+    <mat-select [placeholder]="Trình văn bản" [value]="documentgo">
+        <mat-option *ngFor="let e of documents" [value]="e" [routerLink]="e.link" [disabled]="e.auth && !(isAuthenticated$ | async)">
+            {{e.label | translate}}
+        </mat-option>
+    </mat-select>
+</nav> -->
+
+<div>
+    <!-- [@routeAnimations]="o.isActivated && o.activatedRoute.routeConfig.path" -->
+    <router-outlet #o="outlet"></router-outlet>
+</div>
