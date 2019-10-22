@@ -1,5 +1,5 @@
 <nav mat-tab-nav-bar class="d-none d-sm-flex">
-    <a mat-tab-link *ngFor="let e of examples" [routerLink]="e.link" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+    <a mat-tab-link *ngFor="let e of examples" [routerLink]="e.link" routerLinkActive #rla="routerLinkActive" [disabled]="e.display && !(isAuthenticated$ | async)">
    {{e.label | translate}}
     </a>
 </nav>

@@ -28,8 +28,8 @@ import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
-import { StringNullableChain } from 'lodash';
-import { element } from 'protractor';
+import { AppComponent } from '../../../../../app/app.component';
+import { Observable, of as observableOf } from 'rxjs';
 
 export interface PeriodicElement {
   name: string;
@@ -78,10 +78,10 @@ export class UserChoice {
 export class DocumentDetailComponent implements OnInit {
   bsModalRef: BsModalRef;
   itemDoc: IncomingDoc;
-  isDisplay: boolean = false;
-  isExecution: boolean = false;
-  isFinish: boolean = false;
-  isReturn: boolean = false;
+  isExecution: Observable<boolean>;
+  isFinish: Observable<boolean>;
+  isReturn: Observable<boolean>;
+  isRetrieve: Observable<boolean>;
   ArrayItemId = []; IncomingDocID;
   IndexStep = 0;
   DepartmentCode = [];
@@ -99,7 +99,7 @@ export class DocumentDetailComponent implements OnInit {
   RoleApprover = [];
   RoleCombine = [];
   RoleKnow = [];
-  ItemAttachments: AttachmentsObject[] = [];
+  ItemAttachments = [];
   urlAttachment = environment.proxyUrl.split('/sites/', 1);
   listName = 'ListDocumentTo';
   outputFile = [];
@@ -113,6 +113,7 @@ export class DocumentDetailComponent implements OnInit {
   buffer;
   index = 0;
   totalStep = 0;
+  IsGD; IsTP;
   overlayRef;
   selectedKnower = []; selectedCombiner = []; selectedApprover;
   UserAppoverName = '';
@@ -147,13 +148,13 @@ export class DocumentDetailComponent implements OnInit {
     private ref: ChangeDetectorRef,
     private modalService: BsModalService,
     public overlay: Overlay, 
-    public viewContainerRef: ViewContainerRef
+    public viewContainerRef: ViewContainerRef,
+    private app: AppComponent
   ) {}
 
   ngOnInit() {
     this.GetTotalStep();
     this.GetAllUser();
-    this.getCurrentUser();
     this.getListEmailConfig();
   }
 
@@ -175,19 +176,23 @@ export class DocumentDetailComponent implements OnInit {
     this.overlayRef.dispose();
   }
 
+  myFilter = (d: Date): boolean => {
+    const day = d;
+    // Prevent Saturday and Sunday from being selected.
+    return day >= moment().subtract(1, 'day').toDate();
+  }
+
   GetTotalStep() {
     this.route.paramMap.subscribe(parames => {
       this.IncomingDocID = parseInt(parames.get('id'));
       this.IndexStep = parseInt(parames.get('step'));
       if(this.IndexStep > 0) {
-        this.isExecution = true;
+        this.isExecution = observableOf(true);
       }
-      this.GetHistory();
-      this.getComment();
       this.services.getListTotalStep('DT').subscribe(items => {
         let itemList = items['value'] as Array<any>;
         if(itemList.length > 0){
-          this.totalStep = itemList[0].TotalStep;
+          this.totalStep = itemList[0].TotalStep;          
         }
       },
       error => {
@@ -195,7 +200,10 @@ export class DocumentDetailComponent implements OnInit {
         this.CloseRotiniPanel();
       },
       () => {
+        this.getCurrentUser();
         this.GetItemDetail();
+        this.GetHistory();
+        this.getComment();
       }
       )
     })
@@ -213,7 +221,8 @@ export class DocumentDetailComponent implements OnInit {
           itemList[0].AttachmentFiles.forEach(element => {
             this.ItemAttachments.push({
               name: element.FileName,
-              urlFile: this.urlAttachment + element.ServerRelativeUrl
+              urlFile: this.urlAttachment + element.ServerRelativeUrl + '?web=1',
+              linkdown: this.urlAttachment + element.ServerRelativeUrl,
             });
           });
         }
@@ -242,7 +251,7 @@ export class DocumentDetailComponent implements OnInit {
             this.docTo.CheckNull(itemList[0].Deadline) === ''
               ? ''
               : moment(itemList[0].Deadline).format('DD/MM/YYYY'),
-          numberOfCopies: itemList[0].NumOfCopies,
+          numberOfCopies: this.docTo.SetEmpty(itemList[0].NumOfCopies),
           methodReceipt: itemList[0].MethodReceipt,
           userHandle:
             itemList[0].UserOfHandle !== undefined
@@ -307,20 +316,29 @@ export class DocumentDetailComponent implements OnInit {
         item.forEach(element => {
           if(element.IndexStep === this.IndexStep) {
             if(element.TypeCode === "TL") {
-              this.isReturn = false;
+              this.isReturn = observableOf(false);
             } else {
-              this.isReturn = true;
+              this.isReturn = observableOf(true);
             }
+          }
+          // Check để hiển thị button thu hồi
+          if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
+            if(element.UserRequest.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
+              this.isRetrieve = observableOf(true);
+            }
+          }
+
+          if(element.IsFinished === 1) {
+            this.isRetrieve = observableOf(false);
           }
           this.ListItem.push({
             STT: this.ListItem.length + 1,
             ID: element.ID,
             documentID: element.NoteBookID,
             compendium: element.Compendium,
-            userRequest:
-              element.UserRequest !== undefined
-                ? element.UserRequest.Title
-                : '',
+            userRequest: element.IndexStep === 1 ?
+              this.docTo.CheckNull(element.Source) :
+              (element.UserRequest !== undefined ? element.UserRequest.Title : ''),
             userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : 0,
             userApprover:
               element.UserApprover !== undefined
@@ -331,7 +349,7 @@ export class DocumentDetailComponent implements OnInit {
                 ? ''
                 : moment(element.Deadline).format('DD/MM/YYYY'),
             status: element.StatusID === 0? 'Chờ xử lý' : 'Đã xử lý',
-            source: '',
+            source: this.docTo.CheckNull(element.Source),
             destination: '',
             taskType: element.TaskTypeCode === 'XLC'? "Xử lý chính" : element.TaskTypeCode === 'PH'? 'Phối hợp' : 'Nhận để biết',
             typeCode: this.GetTypeCode(element.TypeCode),
@@ -425,7 +443,7 @@ export class DocumentDetailComponent implements OnInit {
             IsHandle: false,
             IsCombine: false,
             IsKnow: false,
-            Icon: 'apartment',
+            Icon: 'business',
             Class: 'dev'
           })
           this.ListUserChoice.forEach(user => {
@@ -482,17 +500,29 @@ export class DocumentDetailComponent implements OnInit {
             item.forEach(element => {
               this.DepartmentCode.push(element.DepartmentCode);
               this.RoleCode.push(element.RoleCode);
-              if(element.RoleCode === "TP" || element.RoleCode === "GĐ") {
-
+              if(element.RoleCode === "TP") {
+                this.IsTP = true;
+              } else if (element.RoleCode === "GĐ") {
+                this.IsGD = true;
               }
-            });       
-            // if(this.IndexStep > 0) {     
-            //   this.GetUserApprover();
-            // }
+            });      
           },
           error => { 
             console.log("Load department code error: " + error);
             this.CloseRotiniPanel();
+          },
+          () => {
+            if(this.IndexStep >= this.totalStep) {
+              this.isExecution = observableOf(false);
+              this.isFinish = observableOf(true);
+            } else if(this.IndexStep > 0){        
+              this.isExecution = observableOf(true);  
+              if(this.IsTP || this.IsGD) {
+                this.isFinish = observableOf(true);
+              } else {
+                this.isFinish = observableOf(false);
+              }
+            }
           }
         )
       }
@@ -726,7 +756,7 @@ export class DocumentDetailComponent implements OnInit {
               () => {}
             );
           }
-          this.UpdateStatus(0);
+          this.UpdateStatus(0, 0);
         }
       );
     } catch (err) {
@@ -818,7 +848,7 @@ export class DocumentDetailComponent implements OnInit {
                 () => {}
               );
             }
-            this.UpdateStatus(1);
+            this.UpdateStatus(1, 0);
           }
         );
       }
@@ -929,11 +959,12 @@ export class DocumentDetailComponent implements OnInit {
     );
   }
 
-  UpdateStatus(sts) {
+  UpdateStatus(sts, isFinish) {
     if(this.ArrayItemId !== undefined && this.ArrayItemId.length > 0) {
       const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
         StatusID: 1, StatusName: "Đã xử lý",
+        IsFinished: isFinish
       };
       this.services.updateListById('ListProcessRequestTo', dataTicket, this.ArrayItemId[this.index].ID).subscribe(
         item => {},
@@ -951,7 +982,7 @@ export class DocumentDetailComponent implements OnInit {
           );
           this.index ++;
           if(this.index < this.ArrayItemId.length) {
-            this.UpdateStatus(sts);
+            this.UpdateStatus(sts, isFinish);
           }
           else {
             this.index = 0;
@@ -1044,11 +1075,11 @@ export class DocumentDetailComponent implements OnInit {
               );
             },
             () => {
-              this.UpdateStatus(0);
+              this.UpdateStatus(0, 1);
             }
           );
         } else {
-          this.UpdateStatus(0);
+          this.UpdateStatus(0, 1);
         }
       }
     );
@@ -1574,7 +1605,10 @@ export class DocumentDetailComponent implements OnInit {
       + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + this.IncomingDocID + `' and TypeCode ne 'XYK' and TaskTypeCode eq 'XLC'&$orderby=Created asc`
       this.services.getItem("ListProcessRequestTo", strSelect).subscribe(itemValue => {
         let itemList = itemValue["value"] as Array<any>;
-        itemList.forEach(element => {
+        itemList.forEach(element => { 
+          if(element.IndexStep === 1 && element.TypeCode === "CXL") {
+            return;
+          }
           let picture;
           if(environment.usingMockData) {
             picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';

@@ -64,7 +64,7 @@ export class DocumentGoComponent implements OnInit {
     Note: '',
     NumOfPaper: null,
     Deadline: null,
-    DateIssued: null,
+    // DateIssued: null,
     isRespinse: false,
     isSendMail: false,
   });
@@ -87,6 +87,7 @@ export class DocumentGoComponent implements OnInit {
   ListDepartment: ItemSeleted[] = [];
   ListSource: ItemSeletedCode[] = [];
   ListApproverStep: ItemUser[] = [];
+  ListAllUser: ItemUser[] = [];
   ListUserSigner: ItemUser[] = [];
   ListUserCreate: ItemUser[] = [];
   idStatus = '';
@@ -124,7 +125,6 @@ export class DocumentGoComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-
       // danh mục
       this.getListBookType();
       this.getListDepartment();
@@ -139,6 +139,19 @@ export class DocumentGoComponent implements OnInit {
       this.getListEmailConfig();
       this.getCurrentUser();
   }
+  
+  myFilter = (d: Date): boolean => {
+    const day = d;
+    // Prevent Saturday and Sunday from being selected.
+    return day >= moment().subtract(1, 'day').toDate();
+  }
+
+  myFilter2 = (d: Date): boolean => {
+    const day = d;
+    // Prevent Saturday and Sunday from being selected.
+    return day < moment().toDate();
+  }
+
   //Lấy người dùng hiện tại
   getCurrentUser(){
     this.services.getCurrentUser().subscribe(
@@ -233,13 +246,13 @@ export class DocumentGoComponent implements OnInit {
           })
         })
       },
-        error => console.log(error),
-        () => {
-          console.log("get success");
-          this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
-          this.ref.detectChanges();
-          this.dataSource.paginator = this.paginator;
-        });
+      error => console.log(error),
+      () => {
+        console.log("get success");
+        this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
+        this.ref.detectChanges();
+        this.dataSource.paginator = this.paginator;
+      });
     } catch (error) {
       console.log(error);
     }
@@ -335,15 +348,47 @@ export class DocumentGoComponent implements OnInit {
     let strFilterUser = `&$filter=RoleCode eq 'TP'`;
     this.docServices.getUser(strFilterUser).subscribe(items => {
       let itemUserMember = items["value"] as Array<any>;
+      this.ListApproverStep = [];
       itemUserMember.forEach(element => {
-        this.ListApproverStep.push({
-          UserId: element.User.Id,
-          UserName: element.User.Title,
-          UserEmail: element.User.Name.split("|")[2]
-        })
+        if(this.ListApproverStep.findIndex(u => u.UserId === element.User.Id) < 0) {
+          this.ListApproverStep.push({
+            UserId: element.User.Id,
+            UserName: element.User.Title,
+            UserEmail: element.User.Name.split("|")[2],
+            Role: element.RoleName,
+            Department: element.DepartmentName
+          })
+        }
       })
+    },
+    error => {},
+    () => {
+      this.docServices.getAllUser().subscribe((itemValue: any[]) => {
+        let item = itemValue['value'] as Array<any>;
+        this.ListAllUser = [];
+        item.forEach(element => {
+          if(this.ListAllUser.findIndex(u => u.UserId === element.User.Id) < 0) {
+            this.ListAllUser.push({
+              UserId: element.User.Id,
+              UserName: element.User.Title,
+              UserEmail: element.User.Name.split("|")[2],
+              Role: element.RoleName,
+              Department: element.DepartmentName
+            });     
+          }    
+        })  
+      },
+      error => {
+        console.log("Load all user error " + error);
+        this.CloseDocumentGoPanel();
+      },
+      () =>{}
+      )
     })
   }
+
+
+
   //danh sách người ký
   getUserSigner() {
     let strFilterUser = `&$filter=RoleCode eq 'GĐ'`;
@@ -353,7 +398,9 @@ export class DocumentGoComponent implements OnInit {
         this.ListUserSigner.push({
           UserId: element.User.Id,
           UserName: element.User.Title,
-          UserEmail: element.User.Name.split("|")[2]
+          UserEmail: element.User.Name.split("|")[2],
+          Role: element.RoleName,
+          Department: element.DepartmentName
         })
       })
     })
@@ -366,7 +413,9 @@ export class DocumentGoComponent implements OnInit {
         this.ListUserCreate.push({
           UserId: element.User.Id,
           UserName: element.User.Title,
-          UserEmail: element.User.Name.split("|")[2]
+          UserEmail: element.User.Name.split("|")[2],
+          Role: element.RoleName,
+          Department: element.DepartmentName
         })
       })
     })
@@ -433,7 +482,7 @@ export class DocumentGoComponent implements OnInit {
           NumOfPaper: this.form.get('NumOfPaper').value,
           DateCreated: this.date.value,
           Deadline: this.form.get('Deadline').value,
-          DateIssued: this.form.get('DateIssued').value,
+          // DateIssued: this.form.get('DateIssued').value,
           isRespinse: this.form.get('isRespinse').value == true ? 1 : 0,
           isSendMail: this.form.get('isSendMail').value == true ? 1 : 0,
           StatusID:  isChuyenXL,
@@ -697,7 +746,7 @@ export class DocumentGoComponent implements OnInit {
           Note: this.itemDoc.Note,
           NumOfPaper: this.itemDoc.NumOfPaper,
           Deadline: this.itemDoc.Deadline,
-          DateIssued: this.itemDoc.DateIssued,
+          // DateIssued: this.itemDoc.DateIssued,
         });
       this.ref.detectChanges();
       this.CloseDocumentGoPanel();
@@ -793,7 +842,7 @@ export class DocumentGoComponent implements OnInit {
             }
             else{
               //alert("Save request successfully");
-             // this.callbackfunc();
+              this.callbackfunc();
             }
           }
         )

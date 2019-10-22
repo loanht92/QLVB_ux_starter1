@@ -25,6 +25,7 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CommentComponent } from './comment.component';
+import { AppComponent } from '../../../../app/app.component';
 export interface Comment { UserId: Number; Content: string, AttachFile: FileAttachment[] };
 export interface FileAttachment { name?: string; urlFile?: string }
 
@@ -105,6 +106,7 @@ export class DocumentGoDetailComponent implements OnInit {
   ListUserKnow = [];
   selectedKnower = []; selectedCombiner = []; selectedApprover;
   EmailConfig;
+  IsTP; IsGD;
   numberOfSymbol; numberGo; currentNumberGo = 0;
   UserAppoverName = '';
   contentComment; selectedUserComment;
@@ -124,12 +126,11 @@ export class DocumentGoDetailComponent implements OnInit {
     , private modalService: BsModalService
     , private dialog: MatDialog
     , private routes: Router,
+    private app: AppComponent
   ) {
-
   }
 
   ngOnInit() {
-    this.getCurrentUser();
     this.GetTotalStep();
     this.GetAllUser();
     this.getListEmailConfig();
@@ -145,11 +146,46 @@ export class DocumentGoDetailComponent implements OnInit {
       },
       error => {
         console.log("error: " + error);
-        this.closeCommentPanel();
+        this.closeCommentPanel()
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName);
-        this.getUserPofile(this.currentUserEmail);
+        this.resService.getDepartmnetOfUser(this.currentUserId).subscribe(
+          itemValue => {
+            let item = itemValue['value'] as Array<any>;
+            item.forEach(element => {            
+              if(element.RoleCode === "TP") {
+                this.IsTP = true;
+              } else if (element.RoleCode === "GĐ") {
+                this.IsGD = true;
+              }
+            });      
+          },
+          error => { 
+            console.log("Load department code error: " + error);
+            this.closeCommentPanel();
+          },
+          () => {
+            if(this.IndexStep > 0) {
+              this.isExecution = true;
+              this.isReturn = true;
+              if(this.IndexStep >= this.totalStep) {
+                this.isExecution = false;
+                this.isFinish = true;
+              } else {
+                if(this.IndexStep === this.totalStep - 1) {
+                  this.isDisplay = true;
+                }
+                if(this.IsGD === true || this.IsTP === true) {
+                  this.isFinish = true;
+                } else {
+                  this.isFinish = false;
+                }
+                this.isExecution = true;        
+              }
+            }      
+          }); 
+          this.getUserPofile(this.currentUserEmail);
       }
     );
   }
@@ -204,7 +240,7 @@ export class DocumentGoDetailComponent implements OnInit {
             IsHandle: false,
             IsCombine: false,
             IsKnow: false,
-            Icon: 'apartment',
+            Icon: 'business',
             Class: 'dev'
           })
           this.ListUserChoice.forEach(user => {
@@ -263,6 +299,7 @@ export class DocumentGoDetailComponent implements OnInit {
   }
 
   GetTotalStep() {
+    this.openCommentPanel();
     this.route.paramMap.subscribe(parames => {
       this.ItemId = parames.get('id');
       this.IndexStep = parseInt(parames.get('step'));
@@ -278,6 +315,7 @@ export class DocumentGoDetailComponent implements OnInit {
         this.closeCommentPanel();
       },
       () => {
+        this.getCurrentUser();
         this.GetItemDetail();
       }
       )
@@ -310,84 +348,74 @@ export class DocumentGoDetailComponent implements OnInit {
   }
 
   GetItemDetail() {
-    this.ItemAttachments=[];
-    if(this.IndexStep > 0) {
-      this.isExecution = true;
-      this.isReturn = true;
-      if(this.IndexStep >= this.totalStep) {
-        this.isExecution = false;
-        this.isFinish = true;
-      } else {
-        if(this.IndexStep === this.totalStep - 1) {
-          this.isDisplay = true;
-
-          this.docServices.getDocumentToMax().subscribe(
-            (itemValue: any[]) => {
-              let item = itemValue['value'] as Array<any>;
-              if (item.length === 0) {
-                this.currentNumberGo = 0;
-              } else {
-                item.forEach(element => {
-                  this.currentNumberGo = element.NumberGo;
-                });
-              }
-            },
-            error => {
-              console.log('Load numberTo max error');
-              this.closeCommentPanel();
-            },
-            () => {
-              this.numberGo = this.docServices.formatNumberGo(this.currentNumberGo + 1);
-              this.numberOfSymbol = this.numberGo + '/Văn bản đi';
-              this.closeCommentPanel();
-            }
-          );
+    try {
+      this.ItemAttachments = [];    
+      this.docServices.getDocumentToMax().subscribe(
+        (itemValue: any[]) => {
+          let item = itemValue['value'] as Array<any>;
+          if (item.length === 0) {
+            this.currentNumberGo = 0;
+          } else {
+            item.forEach(element => {
+              this.currentNumberGo = element.NumberGo;
+            });
+          }
+        },
+        error => {
+          console.log('Load numberTo max error');
+          this.closeCommentPanel();
+        },
+        () => {
+          this.numberGo = this.docServices.formatNumberGo(this.currentNumberGo + 1);
+          this.numberOfSymbol = this.numberGo + '/Văn bản đi';
+          this.closeCommentPanel();
         }
-        this.isExecution = true;
-        this.isFinish = false;
-      }
-    }
-    this.docServices.getListDocByID(this.ItemId).subscribe(items => {
-      console.log('items: ' + items);
-      let itemList = items["value"] as Array<any>;
-      if (itemList[0].AttachmentFiles.length > 0) {
-        itemList[0].AttachmentFiles.forEach(element => {
-          this.ItemAttachments.push({
-            name: element.FileName,
-            urlFile: this.urlAttachment + element.ServerRelativeUrl
-          })
-        });
-      }
-      this.UserAppoverName = itemList[0].ListUserApprover;
-      this.itemDoc = {
-        ID: itemList[0].ID,
-        NumberGo: itemList[0].NumberGo === 0 ? '' : this.docServices.formatNumberGo(itemList[0].NumberGo),
-        //  NumberToSub: itemList[0].NumberToSub === 0 ? '' : itemList[0].NumberToSub , 
-        DocTypeName: this.docServices.checkNull(itemList[0].DocTypeName),
-        NumberSymbol: this.docServices.checkNull(itemList[0].NumberSymbol),
-        Compendium: this.docServices.checkNull(itemList[0].Compendium),
-        UserCreateName: itemList[0].Author == undefined ? '' : itemList[0].Author.Title,
-        DateCreated: this.docServices.formatDateTime(itemList[0].DateCreated),
-        UserOfHandleName: itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Title,
+      );
 
-        Deadline: this.docServices.formatDateTime(itemList[0].Deadline),
-        StatusName: this.docServices.checkNull(itemList[0].StatusName),
-        BookTypeName: itemList[0].BookTypeName,
-        UnitCreateName: itemList[0].UnitCreateName,
-        RecipientsInName: itemList[0].RecipientsInName,
-        RecipientsOutName: itemList[0].RecipientsOutName,
-        SecretLevelName: itemList[0].SecretLevelName,
-        UrgentLevelName: itemList[0].UrgentLevelName,
-        MethodSendName: itemList[0].MethodSendName,
-        DateIssued: this.docServices.formatDateTime(itemList[0].DateIssued),
-        SignerName: itemList[0].Signer == undefined ? '' : itemList[0].Signer.Title,
-        NumOfPaper: itemList[0].NumOfPaper,
-        Note: itemList[0].Note,
-        link: ''
-      };
-      this.ref.detectChanges();
-      this.getComment();
-    })
+      this.docServices.getListDocByID(this.ItemId).subscribe(items => {
+        console.log('items: ' + items);
+        let itemList = items["value"] as Array<any>;
+        if (itemList[0].AttachmentFiles.length > 0) {
+          itemList[0].AttachmentFiles.forEach(element => {
+            this.ItemAttachments.push({
+              name: element.FileName,
+              urlFile: this.urlAttachment + element.ServerRelativeUrl
+            })
+          });
+        }
+        this.UserAppoverName = itemList[0].ListUserApprover;
+        this.itemDoc = {
+          ID: itemList[0].ID,
+          NumberGo: this.docServices.CheckNullSetZero(itemList[0].NumberGo) === 0 ? '' : this.docServices.formatNumberGo(itemList[0].NumberGo),
+          //  NumberToSub: itemList[0].NumberToSub === 0 ? '' : itemList[0].NumberToSub , 
+          DocTypeName: this.docServices.checkNull(itemList[0].DocTypeName),
+          NumberSymbol: this.docServices.checkNull(itemList[0].NumberSymbol),
+          Compendium: this.docServices.checkNull(itemList[0].Compendium),
+          UserCreateName: itemList[0].Author == undefined ? '' : itemList[0].Author.Title,
+          DateCreated: this.docServices.formatDateTime(itemList[0].DateCreated),
+          UserOfHandleName: itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Title,
+
+          Deadline: this.docServices.formatDateTime(itemList[0].Deadline),
+          StatusName: this.docServices.checkNull(itemList[0].StatusName),
+          BookTypeName: itemList[0].BookTypeName,
+          UnitCreateName: itemList[0].UnitCreateName,
+          RecipientsInName: itemList[0].RecipientsInName,
+          RecipientsOutName: itemList[0].RecipientsOutName,
+          SecretLevelName: itemList[0].SecretLevelName,
+          UrgentLevelName: itemList[0].UrgentLevelName,
+          MethodSendName: itemList[0].MethodSendName,
+          DateIssued: this.docServices.formatDateTime(itemList[0].DateIssued),
+          SignerName: itemList[0].Signer == undefined ? '' : itemList[0].Signer.Title,
+          NumOfPaper: itemList[0].NumOfPaper,
+          Note: itemList[0].Note,
+          link: ''
+        };
+        this.ref.detectChanges();
+        this.getComment();
+      })
+    } catch(err) {
+      console.log("Load item detail error: " + err.message);
+    }
   }
 
   GetHistory() {
@@ -553,7 +581,7 @@ export class DocumentGoDetailComponent implements OnInit {
               () => {}
             );
           }
-          this.UpdateStatus(0);
+          this.UpdateStatus(0, 0);
         }
       );
     } catch (err) {
@@ -683,7 +711,7 @@ export class DocumentGoDetailComponent implements OnInit {
                 () => {}
               );
             }
-            this.UpdateStatus(1);
+            this.UpdateStatus(1, 0);
           }
         );
       }
@@ -790,11 +818,12 @@ export class DocumentGoDetailComponent implements OnInit {
     );
   }
 
-  UpdateStatus(sts) {
+  UpdateStatus(sts, isFinish) {
     if(this.ArrayItemId !== undefined && this.ArrayItemId.length > 0) {
       const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
         StatusID: 1, StatusName: "Đã xử lý",
+        IsFinished: isFinish
       };
       this.resService.updateListById('ListProcessRequestGo', dataTicket, this.ArrayItemId[this.index].ID).subscribe(
         item => {},
@@ -812,7 +841,7 @@ export class DocumentGoDetailComponent implements OnInit {
           );
           this.index ++;
           if(this.index < this.ArrayItemId.length) {
-            this.UpdateStatus(sts);
+            this.UpdateStatus(sts, isFinish);
           }
           else {
             this.index = 0;
@@ -899,11 +928,11 @@ export class DocumentGoDetailComponent implements OnInit {
               );
             },
             () => {
-              this.UpdateStatus(0);
+              this.UpdateStatus(0, 1);
             }
           );
         } else {
-          this.UpdateStatus(0);
+          this.UpdateStatus(0, 1);
         }
       }
     );

@@ -1,16 +1,17 @@
-<div class="" rtl #formNew *ngIf="addNew">
-    <div class="actions">
-        <button mat-stroked-button color="primary" type="button" class="MR5" ng-model="showList" (click)="addNew = !addNew; showList = !showList"><i class="material-icons">undo</i>&nbsp; <span class="Submit1"></span></button>
-        <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(-1)"><i class="material-icons">save</i>&nbsp; <span class="Submit1">Lưu</span></button>
-        <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(0)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Lưu và gửi</span></button>
-        <button mat-stroked-button color="warn" type="reset" class="MR5" (click)="reset()"><i class="material-icons">cached</i>&nbsp; <span class="Reset1">Nhập lại</span></button>
-    </div>
-    <div class="caption" fxFlexFill>
-        <span class="d-flex justify-content-between align-items-baseline uppercase portlet_title_tsg_2">
+<form [formGroup]="form">
+    <div class="" rtl #formNew *ngIf="addNew">
+        <div class="actions">
+            <button mat-stroked-button color="primary" type="button" class="MR5" ng-model="showList" (click)="addNew = !addNew; showList = !showList"><i class="material-icons">undo</i>&nbsp; <span class="Submit1"></span></button>
+            <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(-1)"><i class="material-icons">save</i>&nbsp; <span class="Submit1">Lưu</span></button>
+            <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(0)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Lưu và gửi</span></button>
+            <button mat-stroked-button color="warn" type="reset" class="MR5" (click)="reset()"><i class="material-icons">cached</i>&nbsp; <span class="Reset1">Nhập lại</span></button>
+        </div>
+        <div class="caption" fxFlexFill>
+            <span class="d-flex justify-content-between align-items-baseline uppercase portlet_title_tsg_2">
                       <h3>Thông tin văn bản</h3>
                     </span>
-    </div>
-    <form [formGroup]="form">
+        </div>
+
         <div class="row justify-content-center">
             <div class="col-md-12">
                 <mat-card>
@@ -49,7 +50,7 @@
                     <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-label>Trích yếu <span class="required-field">*</span></mat-label>
-                            <textarea matInput placeholder="Trích yếu" formControlName="Compendium" minlength="2" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="3" cdkAutosizeMaxRows="10"></textarea>
+                            <textarea matInput formControlName="Compendium" minlength="2" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="3" cdkAutosizeMaxRows="10"></textarea>
                             <mat-hint align="end">{{form.get('Compendium').value?.length}} / 1000
                             </mat-hint>
                             <mat-error *ngIf="form.get('Compendium').hasError('required')">Bạn chưa nhập thông tin Trích yếu
@@ -79,14 +80,14 @@
                     <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-label>Người xử lý chính <span class="required-field">*</span></mat-label>
-                            <mat-select placeholder="Người xử lý chính" formControlName="UserOfHandle">
-                                <mat-option *ngFor="let item of ListApproverStep" value="{{item.UserId}}|{{item.UserEmail}}|{{item.UserName}}">{{item.UserName}}</mat-option>
+                            <mat-select formControlName="UserOfHandle">
+                                <mat-option *ngFor="let item of ListApproverStep" value="{{item.UserId}}|{{item.UserEmail}}|{{item.UserName}}">{{item.UserName}} - {{item.Role}} - {{item.Department}}</mat-option>
                             </mat-select>
                             <mat-error *ngIf="form.get('UserOfHandle').hasError('required')">Bạn chưa nhập thông tin Người xử lý chính
                             </mat-error>
                         </mat-form-field>
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <input matInput [matDatepicker]="picker1" placeholder="Hạn xử lý" [value]="" formControlName="Deadline">
+                            <input matInput [matDatepicker]="picker1" (click)="picker1.open()" [matDatepickerFilter]="myFilter" placeholder="Hạn xử lý" [value]="" formControlName="Deadline" (keydown)="false">
                             <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
                             <mat-datepicker #picker1></mat-datepicker>
                         </mat-form-field>
@@ -94,12 +95,16 @@
                     <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Người phối hợp" formControlName="UserOfCombinate">
-                                <mat-option *ngFor="let item of ListApproverStep" value="{{item.UserId}}|{{item.UserEmail}}|{{item.UserName}}">{{item.UserName}}</mat-option>
+                                <mat-option *ngFor="let item of ListAllUser" value="{{item.UserId}}|{{item.UserEmail}}|{{item.UserName}}">{{item.UserName}} - {{item.Role}} - {{item.Department}}</mat-option>
                             </mat-select>
+                            <!-- <input type="text" placeholder="Người xử lý" aria-label="ListUserApprover" matInput [formControl]="userApprover" [matAutocomplete]="auto">
+                            <mat-autocomplete #auto="matAutocomplete" [displayWith]="onDisplayValue">
+                                <mat-option *ngFor="let option of filteredOptions | async" [value]="option">{{option.UserName}}</mat-option>
+                            </mat-autocomplete> -->
                         </mat-form-field>
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Người nhận để biết" formControlName="UserOfKnow">
-                                <mat-option *ngFor="let item of ListApproverStep" value="{{item.UserId}}|{{item.UserEmail}}|{{item.UserName}}">{{item.UserName}}</mat-option>
+                                <mat-option *ngFor="let item of ListAllUser" value="{{item.UserId}}|{{item.UserEmail}}|{{item.UserName}}">{{item.UserName}} - {{item.Role}} - {{item.Department}}</mat-option>
                             </mat-select>
                         </mat-form-field>
 
@@ -110,30 +115,29 @@
                                 <mat-option *ngFor="let item of ListUserSigner" value="{{item.UserId}}|{{item.UserEmail}}">{{item.UserName}}</mat-option>
                             </mat-select>
                         </mat-form-field>
-
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <input matInput [matDatepicker]="picker2" placeholder="Ngày phát hành" [value]="" formControlName="DateIssued">
-                            <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
-                            <mat-datepicker #picker2></mat-datepicker>
-                        </mat-form-field>
-                    </div>
-                    <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Độ mật" formControlName="SecretLevel">
                                 <mat-option *ngFor="let item of ListSecret" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
+                        <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                            <input matInput [matDatepicker]="picker2" placeholder="Ngày phát hành" [value]="" formControlName="DateIssued">
+                            <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                            <mat-datepicker #picker2></mat-datepicker>
+                        </mat-form-field> -->
+                    </div>
+                    <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Độ khẩn" formControlName="UrgentLevel">
                                 <mat-option *ngFor="let item of ListUrgent" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
+                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                            <input matInput numbersOnly placeholder="Số bản" formControlName="NumOfPaper">
+                        </mat-form-field>
                     </div>
                     <div class="row">
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <input matInput placeholder="Số bản" formControlName="NumOfPaper">
-                        </mat-form-field>
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Phương thức gửi" formControlName="MethodSend">
                                 <mat-option *ngFor="let item of ListMethodSend" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
@@ -167,34 +171,14 @@
                 </mat-card>
             </div>
         </div>
-    </form>
-    <!-- <div fxLayout="column">
-        <div class="caption" fxFlexFill>
-            <span class="d-flex justify-content-between align-items-baseline  PL10">
-                      <h3>Tệp văn bản đính kèm</h3>
-                    </span>
+        <div class="actions">
+            <button mat-stroked-button color="primary" type="button" class="MR5" ng-model="showList" (click)="addNew = !addNew; showList = !showList"><i class="material-icons">undo</i>&nbsp; <span class="Submit1"></span></button>
+            <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(-1)"><i class="material-icons">save</i>&nbsp; <span class="Submit1">Lưu</span></button>
+            <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(0)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Lưu và gửi</span></button>
+            <button mat-stroked-button color="warn" type="reset" class="MR5" (click)="reset()"><i class="material-icons">cached</i>&nbsp; <span class="Reset1">Nhập lại</span></button>
         </div>
-        <div class="div-checkbox" fxLayout="row" fxLayout.xs="column" fxFlexFill>
-            <div fxLayout="row" fxLayout.xs="column" fxFlexFil>
-                <div fxFlex="140px" fxFlex.xs="auto">
-                    <button type="button" mat-raised-button color="primary" (click)="fileInput.click()"> <i class="material-icons">publish</i>&nbsp; <span class="AddfileEdit">Tải tệp</span></button>
-                    <input hidden (change)="addAttachmentFile()" #fileInput type="file" id="fileAttachment">
-                </div>
-                <div fxFlex="auto">
-                    <div id="viewAttachment" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="5px">
-                        <div *ngFor="let items of ItemAttachments"><a (click)="removeAttachmentFile(items)"><i class="material-icons">clear</i>&nbsp;</a> {{items.name}}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
-    <div class="actions">
-        <button mat-stroked-button color="primary" type="button" class="MR5" ng-model="showList" (click)="addNew = !addNew; showList = !showList"><i class="material-icons">undo</i>&nbsp; <span class="Submit1"></span></button>
-        <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(-1)"><i class="material-icons">save</i>&nbsp; <span class="Submit1">Lưu</span></button>
-        <button mat-stroked-button color="primary" type="submit" class="MR5" (click)="save(0)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Lưu và gửi</span></button>
-        <button mat-stroked-button color="warn" type="reset" class="MR5" (click)="reset()"><i class="material-icons">cached</i>&nbsp; <span class="Reset1">Nhập lại</span></button>
     </div>
-</div>
+</form>
 <div class="row" style="display:inline" *ngIf="showList">
     <div fxFlexFill fxLayoutAlign="end" class="PB10">
         <button mat-stroked-button color="primary" class="btnAdd" style="margin-right: 10px" (click)="addNew = !addNew; showList = !showList" ng-model="addNew">

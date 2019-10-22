@@ -173,12 +173,16 @@ export class DocumentWaitingComponent implements OnInit {
     else  if(this.styleId === 2) {
       strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
     }
-    //Chờ xin ý kiến
+    //Đã xử lý
     else  if(this.styleId === 3) {
+      strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and IsFinished eq '1'`;
+    }
+    //Chờ xin ý kiến
+    else  if(this.styleId === 4) {
       strSelect = ` and TypeCode eq 'XYK' and StatusID eq '0'`;
     }
       //Đã cho ý kiến
-    else  if(this.styleId === 4) {
+    else  if(this.styleId === 5) {
       strSelect = ` and TypeCode eq 'XYK' and StatusID eq '1'`;
     }
 
@@ -209,6 +213,12 @@ export class DocumentWaitingComponent implements OnInit {
             link: this.getLinkItemByRole(this.styleId, element.TaskTypeCode, element.NoteBookID, element.IndexStep),
             stsClass: ''
           })
+        } 
+        else if(element.IsFinished === 1) {
+          let index = this.inDocs$.findIndex(e => e.documentID === element.NoteBookID);
+          if(index >= 0) {
+            this.inDocs$.splice(index, 1);
+          }
         }
       })
       this.dataSource = new MatTableDataSource<IncomingTicket>(this.inDocs$);
@@ -250,13 +260,19 @@ export class DocumentWaitingComponent implements OnInit {
 
   getLinkItemByRole(type, taskType, id, step) {
     let link = '';
+    // Cho xu ly
     if(this.docTo.CheckNullSetZero(type) === 1) {
       if(taskType === 'XLC' || taskType === 'TL') {
         link = '/Documnets/IncomingDoc/docTo-detail/' + id + '/' + step;
       } else {
         link = '/Documnets/IncomingDoc/docTo-detail/' + id;
       }
-    } else {
+    } 
+    // Cho xin y kien, da cho y kien
+    else if(this.docTo.CheckNullSetZero(type) === 4 || this.docTo.CheckNullSetZero(type) === 5) {
+      link = '/Documnets/IncomingDoc/docTo-detail/' + id + '/-1';
+    }
+    else {
       link = '/Documnets/IncomingDoc/docTo-detail/' + id;
     }
     return link;

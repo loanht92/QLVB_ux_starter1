@@ -64,6 +64,14 @@ export class IncomingDocService {
     }
   }
 
+  SetEmpty(value) {
+    if (this.CheckNullSetZero(value) === 0) {
+      return '';
+    } else {
+      return value;
+    }
+  }
+
   formatNumberTo(value) {
     return ('0000000' + value).slice(-4);
   }
@@ -116,13 +124,13 @@ export class IncomingDocService {
   }
 
   urlRequestTo =
-    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*, UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$orderby=ID desc&$expand=UserApprover,UserRequest";
+    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$orderby=ID desc&$expand=UserApprover,UserRequest";
   getListRequestTo(strFilter): Observable<any> {
     return this.http.get(`${this.restUrl}${this.urlRequestTo}` + strFilter);
   }
 
   urlRequest =
-    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*, UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$orderby=ID asc&$expand=UserApprover,UserRequest";
+    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$orderby=ID asc&$expand=UserApprover,UserRequest";
   getListRequestByDocID(docId): Observable<any> {
     return this.http.get(
       `${this.restUrl}${this.urlRequest}` +

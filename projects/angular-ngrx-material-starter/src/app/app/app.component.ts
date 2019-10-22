@@ -1,8 +1,9 @@
 import browser from 'browser-detect';
 import { Component, OnInit } from '@angular/core';
 import { Store, select } from '@ngrx/store';
-import { Observable } from 'rxjs';
 import { environment as env } from '../../environments/environment';
+import { Observable, of as observableOf } from 'rxjs';
+import {SharedService} from './../shared/shared-service/shared.service';
 
 import {
   authLogin,
@@ -43,14 +44,18 @@ export class AppComponent implements OnInit {
     { link: 'settings', label: 'anms.menu.settings' }
   ];
 
+  public isVanThu$: Observable<boolean>;
+  public isNhanVien$: Observable<boolean>;
   isAuthenticated$: Observable<boolean>;
   stickyHeader$: Observable<boolean>;
   language$: Observable<string>;
   theme$: Observable<string>;
+  currentUser;
 
   constructor(
     private store: Store<AppState>,
-    private storageService: LocalStorageService
+    private storageService: LocalStorageService,
+    private shareService: SharedService
   ) {}
 
   private static isIEorEdgeOrSafari() {
@@ -59,6 +64,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.storageService.testLocalStorage();
+    this.checkPermission();
     if (AppComponent.isIEorEdgeOrSafari()) {
       this.store.dispatch(
         actionSettingsChangeAnimationsPageDisabled({
@@ -83,5 +89,37 @@ export class AppComponent implements OnInit {
 
   onLanguageSelect({ value: language }) {
     this.store.dispatch(actionSettingsChangeLanguage({ language }));
+  }
+
+  checkPermission() {
+    this.shareService.getCurrentUser().subscribe(
+      itemValue => {
+          this.currentUser = {
+              userId: itemValue["Id"],
+              userName: itemValue["Title"],
+              userEmail: itemValue["Email"],
+              userLogin: itemValue["LoginName"],
+              isSiteAdmin: itemValue["IsSiteAdmin"],
+          }
+      },
+      error => console.log("error: " + error),
+      () => {
+          console.log("Load user infor: " + this.currentUser);
+          this.shareService.getRoleCurrentUser(this.currentUser.userId).subscribe(
+              itemValue => {
+                  let itemUserMember = itemValue['value'] as Array<any>;
+                  itemUserMember.forEach(element => {
+                      if(element.RoleCode === "VT") {
+                          this.isVanThu$ = observableOf(true);
+                      } else if(element.RoleCode === "NV") {
+                        this.isNhanVien$ = observableOf(true);
+                      } 
+                  })
+              },
+              error => console.log("Get role user error: " + error),
+              () => {
+                  console.log("Get role user success");                        
+              })
+      });
   }
 }

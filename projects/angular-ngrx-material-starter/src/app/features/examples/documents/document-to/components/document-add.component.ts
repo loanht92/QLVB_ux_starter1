@@ -35,7 +35,6 @@ import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
-import { element } from 'protractor';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -105,6 +104,7 @@ export class DocumentAddComponent implements OnInit {
   Title = '';
   IsClerical = true;
   EmailStepConfig;
+  _numberTo;
   constructor(
     private fb: FormBuilder,
     private docTo: IncomingDocService,
@@ -133,7 +133,7 @@ export class DocumentAddComponent implements OnInit {
       numberToSub: '',
       numberOfSymbol: '',
       source: ['', [Validators.required]],
-      docType: '',
+      docType: ['', [Validators.required]],
       promulgatedDate: null,
       dateTo: new Date(),
       compendium: ['', [Validators.required]],
@@ -149,6 +149,18 @@ export class DocumentAddComponent implements OnInit {
       signer: ''
       //surname: ['', [Validators.required, Validators.minLength(5)]]
     });
+  }
+
+  myFilter = (d: Date): boolean => {
+    const day = d;
+    // Prevent Saturday and Sunday from being selected.
+    return day >= moment().subtract(1, 'day').toDate();
+  }
+
+  myFilter2 = (d: Date): boolean => {
+    const day = d;
+    // Prevent Saturday and Sunday from being selected.
+    return day < moment().toDate();
   }
 
   getAllListDocument() {
@@ -233,20 +245,12 @@ export class DocumentAddComponent implements OnInit {
     );
   }
 
-  FormatNumberTo() {
-    const dataForm = this.IncomingDocform.getRawValue();
-    let numer = dataForm.numberTo;
-    this.IncomingDocform.controls['numberTo'].setValue(
-      this.docTo.formatNumberTo(numer)
-    );
-  }
-
   ChangeNumberTo() {
     const dataForm = this.IncomingDocform.getRawValue();
     let numer = dataForm.numberTo;
     this.IncomingDocform.controls['numberOfSymbol'].setValue(
       numer + '/Văn bản đến'
-    );
+    );    
   }
 
   OpenRotiniPanel() {
@@ -495,7 +499,7 @@ export class DocumentAddComponent implements OnInit {
         UserOfHandleId: this.userApproverId,
         Note: dataForm.note,
         IsResponse: dataForm.isResponse ? 1 : 0,
-        IsRetrieve: dataForm.isRetrieve ? 1 : 0,
+        // IsRetrieve: dataForm.isRetrieve ? 1 : 0,
         StatusID: sts,
         StatusName: sts === 0 ? 'Chờ xử lý' : 'Lưu tạm',
         Signer: dataForm.signer,
@@ -793,6 +797,8 @@ export class DocumentAddComponent implements OnInit {
     this.IncomingDocform.controls['dateTo'].setValue(
       new Date()
     );
+    this.outputFile = [];
+    this.ItemAttachments = [];
   }
 
   addAttachmentFile(sts) {

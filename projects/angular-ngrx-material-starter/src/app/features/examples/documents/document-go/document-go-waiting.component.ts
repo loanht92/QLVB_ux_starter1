@@ -134,20 +134,26 @@ export class DocumentGoWaitingComponent implements OnInit {
       TypeCode='CXL' ;
       strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '0'`;
     }
-    //Đã xử lý
+    //Đang xử lý
     else  if(this.id=='2') {
       idStatus=1;
       TypeCode='CXL' ;
       strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
     }
-    //Chờ xin ý kiến
+    //Đã xử lý
     else  if(this.id=='3') {
+      idStatus=1;
+      TypeCode='CXL' ;
+      strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and IsFinished eq '1'`;
+    }
+    //Chờ xin ý kiến
+    else  if(this.id=='4') {
       idStatus=0;
       TypeCode='XYK' ;
       strSelect = ` and TypeCode eq 'XYK' and StatusID eq '0'`;
     }
       //Đã cho ý kiến
-    else  if(this.id=='4' ){
+    else  if(this.id=='5' ){
       idStatus=1;
       TypeCode='XYK';
       strSelect = ` and TypeCode eq 'XYK' and StatusID eq '1'`;
@@ -186,6 +192,12 @@ export class DocumentGoWaitingComponent implements OnInit {
               link: this.getLinkItemByRole(this.id, element.TaskTypeCode, element.DocumentGoID, element.IndexStep)
             })
           }
+          else if(element.IsFinished === 1) {
+            let index = this.ListDocumentGo.findIndex(e => e.ID === element.DocumentGoID);
+            if(index >= 0) {
+              this.ListDocumentGo.splice(index, 1);
+            }
+          }
         })
       },
         error => console.log(error),
@@ -200,26 +212,6 @@ export class DocumentGoWaitingComponent implements OnInit {
     }
   }
   
-  //  /** Whether the number of selected elements matches the total number of rows. */
-  //  isAllSelected() {
-  //   const numSelected = this.selection.selected.length;
-  //   const numRows = this.dataSource.data.length;
-  //   return numSelected === numRows;
-  // }
-
-  // /** Selects all rows if they are not all selected; otherwise clear selection. */
-  // masterToggle() {
-  //   this.isAllSelected() ?
-  //       this.selection.clear() :
-  //       this.dataSource.data.forEach(row => this.selection.select(row));
-  // }
-
-  // checkboxLabel(row?: PeriodicElement): string {
-  //   if (!row) {
-  //     return `${this.isAllSelected() ? 'select' : 'deselect'} all`;
-  //   }
-  //   return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
-  // }
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
@@ -232,7 +224,11 @@ export class DocumentGoWaitingComponent implements OnInit {
       } else {
         link = '../../documentgo-detail/' + id;
       }
-    } else {
+    } 
+    else if(this.docServices.CheckNullSetZero(type) === 4 || this.docServices.CheckNullSetZero(type) === 5) {
+      link = '../../documentgo-detail/' + id + '/-1';
+    }
+    else {
       link = '../../documentgo-detail/' + id;
     }
     return link;

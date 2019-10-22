@@ -45,7 +45,12 @@ const routes: Routes = [
         data: { title: 'Chờ xử lý' }
       },
       {
-        path: 'documentgo-process/:id',
+        path: 'documentgo-processing/:id',
+        component: DocumentGoWaitingComponent,
+        data: { title: 'Đang xử lý' }
+      },
+      {
+        path: 'documentgo-processed/:id',
         component: DocumentGoWaitingComponent,
         data: { title: 'Đã xử lý' }
       },
@@ -99,6 +104,11 @@ const routes: Routes = [
         path: 'docTo-list/:id',
         component: DocumentWaitingComponent,
         data: { title: 'Chờ xử lý' }
+      },
+      {
+        path: 'docTo-list-approving/:id',
+        component: DocumentWaitingComponent,
+        data: { title: 'Đang xử lý' }
       },
       {
         path: 'docTo-list-approved/:id',

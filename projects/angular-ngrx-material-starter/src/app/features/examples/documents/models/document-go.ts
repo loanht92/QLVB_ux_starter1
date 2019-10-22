@@ -76,7 +76,9 @@ export interface ItemSeletedCode {
 export interface ItemUser {
   UserId: number,
   UserName: string,
-  UserEmail: string
+  UserEmail: string,
+  Role: string,
+  Department: string
 }
 export class AttachmentsObject {
   name: string;
