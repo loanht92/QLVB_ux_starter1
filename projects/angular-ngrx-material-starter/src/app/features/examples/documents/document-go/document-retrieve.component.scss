@@ -1,0 +1,76 @@
+table {
+    width: 100%;
+}
+
+tr.example-element-row:hover {
+    background: rgb(201, 198, 198);
+}
+
+.search-hero {
+    display: flex;
+    float: right;
+    margin-bottom: 10px;
+}
+
+.docadd-filter {
+    padding: 1px 0 !important;
+    -webkit-appearance: textfield !important;
+    background-color: white !important;
+    -webkit-rtl-ordering: logical !important;
+    border-width: 2px !important;
+    border-style: inset !important;
+    border-color: initial !important;
+    border-image: initial !important;
+    background: white !important;
+}
+
+.form-input {
+    padding: 0 10px;
+}
+
+.actions {
+    margin: 10px 0;
+    padding: 0 10px;
+    background: white;
+}
+
+.actions button {
+    margin-right: 10px;
+}
+
+.caption {
+    background: #00000008;
+}
+
+.div-checkbox {
+    margin-bottom: 12px;
+}
+
+.mat-elevation-z8 {
+    margin-top: 10px;
+}
+
+a:hover {
+    cursor: pointer !important;
+}
+
+.mat-elevation-z8 {
+    box-shadow: 0 1px 1px -3px rgba(0, 0, 0, .05), 0 1px 1px 1px rgba(0, 0, 0, .05) !important;
+}
+
+::ng-deep {
+    .cdk-global-overlay-wrapper,
+    .cdk-overlay-container {
+        z-index: 9999!important;
+    }
+    td.mat-cell,
+    td.mat-footer-cell,
+    th.mat-header-cell {
+        padding: 4px !important;
+    }
+    th.mat-header-cell {
+        font-weight: 700;
+        font-size: 14px;
+        color: #212529;
+    }
+}

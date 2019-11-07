@@ -13,6 +13,7 @@ import { DocumentGoDetailComponent } from './document-go/document-go-detail.comp
 import { DocumentGoWaitingComponent } from './document-go/document-go-waiting.component';
 import {ReportDGComponent} from '../documents/document-go/report.component';
 import {ReportAdvanceDGComponent} from '../documents/document-go/report-advance.component';
+import {DocumentGoRetrieveComponent} from './document-go/document-retrieve.component';
 import { CommentComponent }from './document-go/comment.component';
 
 import {DocumentAddComponent} from './document-to/components/document-add.component';
@@ -37,6 +38,11 @@ const routes: Routes = [
         path: 'documentgo/:value',
         component: DocumentGoComponent,
         data: { title: 'Văn bản trình ký' }
+      },
+      {
+        path: 'docGo-retrieve',
+        component: DocumentGoRetrieveComponent,
+        data: { title: 'Thu hồi' }
       },
       {
         path: 'documentgo-waiting-process/:id',

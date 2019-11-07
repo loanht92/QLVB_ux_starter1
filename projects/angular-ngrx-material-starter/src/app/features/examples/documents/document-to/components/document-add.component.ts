@@ -866,7 +866,7 @@ export class DocumentAddComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.userApproverName);
               break;
             case 'ItemUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID);
               break;
             case 'TaskUrl':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID + "/1");

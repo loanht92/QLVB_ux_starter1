@@ -226,7 +226,7 @@ export class DocumentGoComponent implements OnInit {
   }
 
   getListEmailConfig() {
-    const str = `?$select=*&$filter=Title eq 'DT'&$top=1`;
+    const str = `?$select=*&$filter=Title eq 'DG'&$top=1`;
     this.EmailConfig = null;
     this.services.getItem('ListEmailConfig', str).subscribe((itemValue: any[]) => {
       let item = itemValue['value'] as Array<any>;
@@ -1142,9 +1142,6 @@ export class DocumentGoComponent implements OnInit {
         console.log("ContentMail before: " + ContentMail);
         for (let i = 0; i < strContent.length; i++) {
           switch (strContent[i]) {
-            case 'NumberTo':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", '');
-              break;
             case 'DocumentType':
               let itemDocType = this.docServices.FindItemById(this.ListDocType, this.form.get('DocType').value);
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", itemDocType == undefined ? '' : itemDocType.Title);

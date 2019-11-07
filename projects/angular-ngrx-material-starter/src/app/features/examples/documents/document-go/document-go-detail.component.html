@@ -3,9 +3,11 @@
         <button mat-stroked-button color="primary" type="button" class="MR5" ng-model="showList" #undo1 (click)="gotoBack()"><i class="material-icons">undo</i>&nbsp; <span class="Submit1"></span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ViewHistory(viewHistory)"><i class="material-icons">share</i>&nbsp; <span class="Submit1">Xem luồng</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddNewComment(modalAddComment)"><i class="material-icons">chat_bubble_outline</i>&nbsp; <span class="Submit1">Xin ý kiến</span></button>
-        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="NextApprval(template)" *ngIf="isExecution"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Chuyển xử lý</span></button>
-        <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalReturn)" *ngIf="isReturn"><i class="material-icons">repeat</i>&nbsp; <span class="Reset1">Trả lại</span></button>
-        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="FinishRequest()" *ngIf="isFinish"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="NextApprval(template)" *ngIf="(isExecution|async)"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Chuyển xử lý</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(combinerHandle)" *ngIf="(isCombine|async)"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Xử lý</span></button>
+        <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalReturn)" *ngIf="(isReturn|async)"><i class="material-icons">repeat</i>&nbsp; <span class="Reset1">Trả lại</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="FinishRequest()" *ngIf="(isFinish|async)"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
+        <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalRetrieve)" *ngIf="(isRetrieve|async)"><i class="material-icons">reply_all</i>&nbsp; <span class="Reset1">Thu hồi</span></button>
     </div>
     <div fxLayout="row" fxFlexFill fxLayoutGap="15px">
         <div fxFlex="60" fxFlex.sm="100" fxLayout="column" class="content-side">
@@ -267,25 +269,28 @@
                                         <button mat-stroked-button color="primary" type="button" class="MR5 btn-submit" (click)="saveCommentReply(i)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
                                     </div>
                                 </div>
-                                <div class="cmt-item" *ngFor="let itemChild of item.children; let j=index" fxLayout="row" fxLayoutGap="15px">
-                                    <div class="cmt-img" fxFlex="60px">
-                                        <img src="{{itemChild.userPicture}}">
-                                    </div>
-                                    <div class="cmt-content" fxFlex="auto">
-                                        <h3 id="cmt-author">{{itemChild.Author}} <span id="cmt-date">{{itemChild.Created}}</span></h3>
-                                        <button class="btn-submit" mat-stroked-button color="primary" type="button" (click)="Reply(i,j)">Trả lời</button>
-                                        <p id="cmt-title">{{itemChild.Chat_Comments}}</p>
-                                        <div fxLayout="column">
-                                            <a *ngFor="let itemAttChild of itemChild.itemAttach" href="{{itemAttChild.urlFile}}" target="_blank" class="urlFile">{{itemAttChild.name}}</a>
+                                <div class="contentspacer"></div>
+                                <div style="height:800px ;overflow: auto;display: flex;" fxLayout="column" fxLayoutGap="5px">
+                                    <div class="cmt-item" *ngFor="let itemChild of item.children; let j=index" fxLayout="row" fxLayoutGap="15px">
+                                        <div class="cmt-img" fxFlex="60px">
+                                            <img src="{{itemChild.userPicture}}">
                                         </div>
-                                        <div fxLayout="column" class="content-side" [style.display]="itemChild.DisplayReply">
-                                            <div class="row">
-                                                <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                                                    <textarea matInput placeholder="Nội dung trả lời" [(ngModel)]="itemChild.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
-                                                </mat-form-field>
+                                        <div class="cmt-content" fxFlex="auto">
+                                            <h3 id="cmt-author">{{itemChild.Author}} <span id="cmt-date">{{itemChild.Created}}</span></h3>
+                                            <!-- <button class="btn-submit" mat-stroked-button color="primary" type="button" (click)="Reply(i,j)">Trả lời</button> -->
+                                            <p id="cmt-title">{{itemChild.Chat_Comments}}</p>
+                                            <div fxLayout="column">
+                                                <a *ngFor="let itemAttChild of itemChild.itemAttach" href="{{itemAttChild.urlFile}}" target="_blank" class="urlFile">{{itemAttChild.name}}</a>
                                             </div>
-                                            <div>
-                                                <button mat-stroked-button color="primary" type="button" class="MR5 btn-submit" (click)="saveCommentReply(i,j)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
+                                            <div fxLayout="column" class="content-side" [style.display]="itemChild.DisplayReply">
+                                                <div class="row">
+                                                    <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                                                        <textarea matInput placeholder="Nội dung trả lời" [(ngModel)]="itemChild.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
+                                                    </mat-form-field>
+                                                </div>
+                                                <div>
+                                                    <button mat-stroked-button color="primary" type="button" class="MR5 btn-submit" (click)="saveCommentReply(i,j)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -302,9 +307,11 @@
         <button mat-stroked-button color="primary" type="button" class="MR5" ng-model="showList" #undo2 (click)="gotoBack()"><i class="material-icons">undo</i>&nbsp; <span class="Submit1"></span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ViewHistory(viewHistory)"><i class="material-icons">share</i>&nbsp; <span class="Submit1">Xem luồng</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddNewComment(modalAddComment)"><i class="material-icons">chat_bubble_outline</i>&nbsp; <span class="Submit1">Xin ý kiến</span></button>
-        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="NextApprval(template)" *ngIf="isExecution"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Chuyển xử lý</span></button>
-        <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalReturn)" *ngIf="isReturn"><i class="material-icons">repeat</i>&nbsp; <span class="Reset1">Trả lại</span></button>
-        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="FinishRequest()" *ngIf="isFinish"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="NextApprval(template)" *ngIf="(isExecution|async)"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Chuyển xử lý</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(combinerHandle)" *ngIf="(isCombine|async)"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Xử lý</span></button>
+        <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalReturn)" *ngIf="(isReturn|async)"><i class="material-icons">repeat</i>&nbsp; <span class="Reset1">Trả lại</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="FinishRequest()" *ngIf="(isFinish|async)"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
+        <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalRetrieve)" *ngIf="(isRetrieve|async)"><i class="material-icons">reply_all</i>&nbsp; <span class="Reset1">Thu hồi</span></button>
     </div>
 
     <ng-template #template>
@@ -336,7 +343,7 @@
                             <ng-container matColumnDef="process">
                                 <th mat-header-cell *matHeaderCellDef class="input-checkox">Xử lý chính</th>
                                 <td mat-cell *matCellDef="let element" class="input-checkox">
-                                    <mat-checkbox [(ngModel)]="element.IsHandle" (change)="CheckUserHandle(element.Code, element.IsHandle)"></mat-checkbox>
+                                    <mat-checkbox *ngIf="element.isPerson" [(ngModel)]="element.IsHandle" (change)="CheckUserHandle(element.Code, element.IsHandle)"></mat-checkbox>
                                 </td>
                             </ng-container>
 
@@ -344,14 +351,14 @@
                             <ng-container matColumnDef="combine">
                                 <th mat-header-cell *matHeaderCellDef class="input-checkox">Phối hợp xử lý</th>
                                 <td mat-cell *matCellDef="let element" class="input-checkox">
-                                    <mat-checkbox [(ngModel)]="element.IsCombine" (change)="CheckUserNotHandle1(element.Code, element.IsCombine)"></mat-checkbox>
+                                    <mat-checkbox *ngIf="element.isPerson" [(ngModel)]="element.IsCombine" (change)="CheckUserNotHandle1(element.Code, element.IsCombine)"></mat-checkbox>
                                 </td>
                             </ng-container>
 
                             <ng-container matColumnDef="know">
                                 <th mat-header-cell *matHeaderCellDef class="input-checkox">Nhận để biết</th>
                                 <td mat-cell *matCellDef="let element" class="input-checkox">
-                                    <mat-checkbox [(ngModel)]="element.IsKnow" (change)="CheckUserNotHandle2(element.Code, element.IsKnow)">
+                                    <mat-checkbox *ngIf="element.isPerson" [(ngModel)]="element.IsKnow" (change)="CheckUserNotHandle2(element.Code, element.IsKnow)">
                                     </mat-checkbox>
                                 </td>
                             </ng-container>
@@ -423,6 +430,44 @@
         </div>
     </ng-template>
 
+    <ng-template #combinerHandle>
+        <div class="modal-header">
+            <h4 class="modal-title pull-left">Xử lý</h4>
+            <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" fxLayout="column">
+            <div fxFlex="auto" fxLayout="column" fxLayoutGap="10px">
+                <mat-card fxLayout="column">
+                    <mat-form-field fxFlex="100">
+                        <mat-label>Nội dung xử lý <span class="required-field">*</span></mat-label>
+                        <textarea matInput [(ngModel)]="content"></textarea>
+                    </mat-form-field>
+                    <div fxLayout="row" fxLayout.xs="column" fxFlex="100" fxLayoutGap="5px">
+                        <div fxFlex="120px" fxFlex.xs="auto">
+                            <button type="button" mat-stroked-button color="primary" (click)="fileInputHandle.click()">
+                                                    <i class="material-icons">publish</i>&nbsp; <span class="AddfileEdit">Tải tệp</span>
+                                                </button>
+                            <input hidden (change)="addAttachmentFile(1)" #fileInputHandle type="file" id="fileAttachmentHandle">
+                        </div>
+                        <div fxFlex="auto">
+                            <div id="viewAttachment" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="5px">
+                                <div *ngFor="let items of outputFileHandle">
+                                    <a (click)="removeAttachmentFile(items, 1)"> <i class="material-icons delFile">clear</i>&nbsp;</a> {{items.name}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card>
+            </div>
+        </div>
+        <div class="modal-footer" fxLayoutAlign="center center">
+            <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddListTicketCombiner()" style="width: 100px"><i class="material-icons">save</i>&nbsp; Lưu</button>
+            <button mat-stroked-button color="primary" type="button" class="MR5" (click)="bsModalRef.hide()" style="width: 100px"><i class="material-icons">close</i>&nbsp; Đóng</button>
+        </div>
+    </ng-template>
+
     <ng-template #modalReturn>
         <div class="modal-header">
             <h4 class="modal-title pull-left">Gửi trả lại</h4>
@@ -460,6 +505,72 @@
         </div>
         <div class="modal-footer" fxLayoutAlign="center center">
             <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddTicketReturn()" style="width: 100px"><i class="material-icons">save</i>&nbsp; Lưu</button>
+            <button mat-stroked-button color="primary" type="button" class="MR5" (click)="bsModalRef.hide()" style="width: 100px"><i class="material-icons">close</i>&nbsp; Đóng</button>
+        </div>
+    </ng-template>
+
+    <ng-template #modalRetrieve>
+        <div class="modal-header">
+            <h4 class="modal-title pull-left">Thu hồi văn bản</h4>
+            <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+                <span aria-hidden="true">&times;</span>
+              </button>
+        </div>
+        <div class="modal-body" fxLayout="column">
+            <div fxLayout="row" fxLayoutGap="20px">
+                <div fxFlex="auto" fxLayout="column" fxLayoutGap="10px">
+                    <div class="example-container mat-elevation-z8">
+                        <table mat-table [dataSource]="dataSource3">
+                            <ng-container matColumnDef="stt">
+                                <th mat-header-cell *matHeaderCellDef> STT </th>
+                                <td mat-cell *matCellDef="let element"> {{element.stt}} </td>
+                            </ng-container>
+                            <ng-container matColumnDef="select">
+                                <th mat-header-cell *matHeaderCellDef>
+                                    <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()" [indeterminate]="selection.hasValue() && !isAllSelected()" [aria-label]="checkboxLabel()">
+                                    </mat-checkbox>
+                                </th>
+                                <td mat-cell *matCellDef="let row">
+                                    <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null" [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
+                                    </mat-checkbox>
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="department">
+                                <th mat-header-cell *matHeaderCellDef> Tên đơn vị </th>
+                                <td mat-cell *matCellDef="let element"> {{element.Department}} </td>
+                            </ng-container>
+                            <ng-container matColumnDef="role">
+                                <th mat-header-cell *matHeaderCellDef> Vai trò </th>
+                                <td mat-cell *matCellDef="let element"> {{element.Role}} </td>
+                            </ng-container>
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef> Họ và tên </th>
+                                <td mat-cell *matCellDef="let element"> {{element.UserName}} </td>
+                            </ng-container>
+                            <ng-container matColumnDef="type">
+                                <th mat-header-cell *matHeaderCellDef> Loại xử lý </th>
+                                <td mat-cell *matCellDef="let element"> {{element.TaskTypeName}} </td>
+                            </ng-container>
+                            <!-- <ng-container matColumnDef="userId">
+                                <th mat-header-cell *matHeaderCellDef></th>
+                                <td mat-cell *matCellDef="let element"> {{element.UserId}} </td>
+                            </ng-container> -->
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns3; sticky: true"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns3;"></tr>
+                        </table>
+                    </div>
+                    <div style="margin-top: 60px"></div>
+                    <mat-card fxLayout="column">
+                        <mat-form-field fxFlex="100">
+                            <mat-label>Lý do thu hồi</mat-label>
+                            <textarea matInput [(ngModel)]="ReasonRetrieve"></textarea>
+                        </mat-form-field>
+                    </mat-card>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" fxLayoutAlign="center center">
+            <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddTicketRetrieve()" style="width: 100px"><i class="material-icons">save</i>&nbsp; Lưu</button>
             <button mat-stroked-button color="primary" type="button" class="MR5" (click)="bsModalRef.hide()" style="width: 100px"><i class="material-icons">close</i>&nbsp; Đóng</button>
         </div>
     </ng-template>

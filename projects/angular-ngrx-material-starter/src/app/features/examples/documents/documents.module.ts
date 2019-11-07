@@ -24,6 +24,7 @@ import { DocumentGoWaitingComponent } from './document-go/document-go-waiting.co
 import {ReportDGComponent} from '../documents/document-go/report.component';
 import {ReportAdvanceDGComponent} from '../documents/document-go/report-advance.component';
 import { CommentComponent } from './document-go/comment.component';
+import {DocumentGoRetrieveComponent} from './document-go/document-retrieve.component';
 //Loan
 import {DocumentAddComponent, RotiniPanel} from './document-to/components/document-add.component';
 import {DocumentDetailComponent} from './document-to/components/document-detail.component';
@@ -77,6 +78,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     DocumentAddComponent,
     DocumentDetailComponent,
     DocumentWaitingComponent,
+    DocumentGoRetrieveComponent,
     // ChecklistDatabase,
     RotiniPanel,
     ReportComponent,

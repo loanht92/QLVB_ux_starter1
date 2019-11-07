@@ -20,6 +20,7 @@ export class DocumentComponent implements OnInit {
     { link: 'documentgo-waiting-process/1', label: 'Chờ xử lý' },
     { link: 'documentgo-processing/2', label: 'Đang xử lý' },
     { link: 'documentgo-processed/3', label: 'Đã xử lý' },
+    { link: 'docGo-retrieve', label: 'Thu hồi' },
     { link: 'documentgo-waiting-comment/4', label: 'Chờ xin ý kiến' },
     { link: 'documentgo-comment/5', label: 'Đã cho ý kiến' },
     { link: 'reportDocGo', label: 'Báo cáo, thống kê'},

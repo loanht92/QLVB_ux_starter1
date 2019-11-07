@@ -53,35 +53,35 @@
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
             <ng-container matColumnDef="numberTo">
                 <th mat-header-cell *matHeaderCellDef> Số đến </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.numberTo}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.numberTo}}</td>
             </ng-container>
             <ng-container matColumnDef="numberSymbol">
                 <th mat-header-cell *matHeaderCellDef> Số ký hiệu </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.numberSymbol}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.numberSymbol}}</td>
             </ng-container>
             <ng-container matColumnDef="created">
                 <th mat-header-cell *matHeaderCellDef> Ngày tạo </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.created}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.created}}</td>
             </ng-container>
             <ng-container matColumnDef="userRequest">
                 <th mat-header-cell *matHeaderCellDef> Người tạo </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.userRequest}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.userRequest}}</td>
             </ng-container>
             <ng-container matColumnDef="userApprover">
                 <th mat-header-cell *matHeaderCellDef> Người xử lý </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.userApprover}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.userApprover}}</td>
             </ng-container>
             <ng-container matColumnDef="deadline">
                 <th mat-header-cell *matHeaderCellDef> Hạn xử lý </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.deadline}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.deadline}}</td>
             </ng-container>
             <ng-container matColumnDef="compendium">
                 <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.compendium}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.compendium}}</td>
             </ng-container>
             <ng-container matColumnDef="content">
                 <th mat-header-cell *matHeaderCellDef> Nội dung xử lý </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.note}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.note}}</td>
             </ng-container>
             <ng-container matColumnDef="sts">
                 <th mat-header-cell *matHeaderCellDef> Trạng thái </th>

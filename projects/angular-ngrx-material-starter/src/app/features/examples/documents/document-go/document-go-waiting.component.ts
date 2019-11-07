@@ -1,28 +1,19 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ViewRef } from '@angular/core';
-import { Validators, FormBuilder, FormGroup } from '@angular/forms';
-import { Store, select } from '@ngrx/store';
-import { filter, debounceTime, take } from 'rxjs/operators';
-import { TranslateService } from '@ngx-translate/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ViewRef, ViewContainerRef } from '@angular/core';
 import { Observable, from } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material';
 import { FormControl } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import * as moment from 'moment';
 import {PlatformLocation} from '@angular/common';
-import { element } from 'protractor';
+import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
+import { DocumentGoPanel } from './document-go.component';
+import { ComponentPortal } from '@angular/cdk/portal';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../core/core.module';
-
-import { State } from '../../../examples/examples.state';
-import {
-  actionFormReset,
-  actionFormUpdate
-} from '../../../examples/form/form.actions';
-import { selectFormState } from '../../../examples/form/form.selectors';
 import { SharedService } from '../../../../shared/shared-service/shared.service'
 import { DocumentGoService } from './document-go.service';
 import { ItemDocumentGo, ListDocType, ItemSeleted, ItemSeletedCode, ItemUser } from './../models/document-go';
@@ -37,14 +28,14 @@ export class DocumentGoWaitingComponent implements OnInit {
 
  
   constructor(
-    private fb: FormBuilder,
-    private store: Store<State>,
-    private translate: TranslateService,
+    public viewContainerRef: ViewContainerRef,
+    public overlay: Overlay,
     private notificationService: NotificationService,
     private docServices: DocumentGoService,
     private resServices: SharedService,
     private route: ActivatedRoute,
     private ref: ChangeDetectorRef,
+    private routes: Router,
     private location: PlatformLocation
     ) {
       location.onPopState(() => {
@@ -62,16 +53,6 @@ export class DocumentGoWaitingComponent implements OnInit {
   addNew = false;
   showList = true;
   ListDocumentGo: ItemDocumentGo[] = [];
-  // ListBookType: ItemSeletedCode[] = [];
-  // ListDocType: ItemSeleted[] = [];
-  // ListSecret: ItemSeleted[] = [];
-  // ListUrgent: ItemSeleted[] = [];
-  // ListMethodSend: ItemSeleted[] = [];
-  // ListDepartment: ItemSeleted[] = [];
-  // ListSource: ItemSeletedCode[] = [];
-  // ListApproverStep: ItemUser[] = [];
-  // ListUserSigner: ItemUser[] = [];
-  // ListUserCreate: ItemUser[] = [];
   id = null;
   strFilter = '';
   strFilterUser = '';
@@ -80,6 +61,8 @@ export class DocumentGoWaitingComponent implements OnInit {
   currentUserId = '';
   currentUserName = '';
   currentUserEmail='';
+  overlayRef;
+
   ngOnInit() {
 
    // lấy tham số truyền vào qua url
@@ -110,6 +93,12 @@ export class DocumentGoWaitingComponent implements OnInit {
     return moment(date).format('DD/MM/YYYY');
     //return moment(date).format('DD/MM/YYYY hh:mm A');
   }
+ 
+  ClickItem(row) {
+    console.log(row);
+    this.routes.navigate([row.link]);
+  }
+
    //Lấy người dùng hiện tại
    getCurrentUser() {
     this.resServices.getCurrentUser().subscribe(
@@ -165,7 +154,8 @@ export class DocumentGoWaitingComponent implements OnInit {
       TypeCode='XYK';
       strSelect = ` and TypeCode eq 'XYK' and StatusID eq '1'`;
     }
-      let strFilter = `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover`
+    this.openCommentPanel();
+    let strFilter = `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover`
      +`&$filter=UserApprover/Id eq '`+this.currentUserId+`'` + strSelect + `&$orderby=Created desc`;
      console.log('strSelect='+strSelect);
     try {
@@ -209,15 +199,19 @@ export class DocumentGoWaitingComponent implements OnInit {
           }
         })
       },
-        error => console.log(error),
-        () => {
-          console.log("get success");
-          this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
-          if (!(this.ref as ViewRef).destroyed) {
-            this.ref.detectChanges();  
-          } 
-          this.dataSource.paginator = this.paginator;
-        });
+      error => { 
+        console.log(error);
+        this.closeCommentPanel();
+      },
+      () => {
+        console.log("get success");
+        this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
+        this.dataSource.paginator = this.paginator;
+        this.closeCommentPanel();
+      });
     } catch (error) {
       console.log(error);
     }
@@ -231,17 +225,33 @@ export class DocumentGoWaitingComponent implements OnInit {
     let link = '';
     if(this.docServices.CheckNullSetZero(type) === 1) {
       if(taskType === 'XLC' || taskType === 'TL') {
-        link = '../../documentgo-detail/' + id + '/' + step;
+        link = '/Documents/documentgo-detail/' + id + '/' + step;
       } else {
-        link = '../../documentgo-detail/' + id;
+        link = '/Documents/documentgo-detail/' + id;
       }
     } 
     else if(this.docServices.CheckNullSetZero(type) === 4 || this.docServices.CheckNullSetZero(type) === 5) {
-      link = '../../documentgo-detail/' + id + '/-1';
+      link = '/Documents/documentgo-detail/' + id + '/-1';
     }
     else {
-      link = '../../documentgo-detail/' + id;
+      link = '/Documents/documentgo-detail/' + id;
     }
     return link;
   }
+
+  openCommentPanel() {
+    let config = new OverlayConfig();
+    config.positionStrategy = this.overlay.position()
+      .global().centerVertically().centerHorizontally();
+    config.hasBackdrop = true;
+    this.overlayRef = this.overlay.create(config);
+    this.overlayRef.attach(new ComponentPortal(DocumentGoPanel, this.viewContainerRef));
+  }
+
+  closeCommentPanel() {
+    if(this.overlayRef !== undefined) {
+      this.overlayRef.dispose();
+    }
+  }
+
 }

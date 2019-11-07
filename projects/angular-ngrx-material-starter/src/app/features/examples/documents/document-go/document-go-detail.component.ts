@@ -20,7 +20,7 @@ import {SelectionModel} from '@angular/cdk/collections';
 import { ResApiService } from '../../services/res-api.service';
 import { DocumentGoService } from './document-go.service';
 import { DocumentGoPanel } from './document-go.component';
-import { ItemDocumentGo, ListDocType, ItemSeleted, ItemSeletedCode, ItemUser, DocumentGoTicket, AttachmentsObject, UserProfilePropertiesObject } from './../models/document-go';
+import { ItemDocumentGo, DocumentGoTicket, AttachmentsObject, UserProfilePropertiesObject } from './../models/document-go';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
@@ -78,9 +78,7 @@ export class DocumentGoDetailComponent implements OnInit {
   @Input() comments: Comment[];
   bsModalRef: BsModalRef;
   itemDoc: ItemDocumentGo;
-  isDisplay: boolean = false;
-  isExecution: boolean = false;
-  isFinish: boolean = false;
+  isDisplay: boolean = false;  
   ItemId;
   IndexStep = 0;
   totalStep = 0;
@@ -136,6 +134,9 @@ export class DocumentGoDetailComponent implements OnInit {
   currentStep = 0;
   isRetrieve: Observable<boolean>;
   isReturn: Observable<boolean>;
+  isCombine: Observable<boolean>;
+  isExecution: Observable<boolean>;
+  isFinish: Observable<boolean>;
   ArrCurrentRetrieve = [];
   ArrayIdRetrieve = []; 
   dataSource3 = new MatTableDataSource<UserRetieve>();
@@ -224,6 +225,7 @@ export class DocumentGoDetailComponent implements OnInit {
         this.closeCommentPanel()
       },
       () => {
+        this.openCommentPanel();
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName);
         this.resService.getDepartmnetOfUser(this.currentUserId).subscribe(
           itemValue => {
@@ -281,7 +283,11 @@ export class DocumentGoDetailComponent implements OnInit {
           }
         }
       }
-    })
+    },
+    error => {
+      this.closeCommentPanel();
+    }
+    )
   }
 
 
@@ -300,6 +306,7 @@ export class DocumentGoDetailComponent implements OnInit {
     },
     error => {
       console.log("get list department error: " + error);
+      this.closeCommentPanel();
     }, 
     () => {
       this.docServices.getAllUser().subscribe((itemValue: any[]) => {
@@ -386,7 +393,10 @@ export class DocumentGoDetailComponent implements OnInit {
             )
           })
         },
-        error => console.log(error),
+        error => { 
+          console.log(error);
+          this.closeCommentPanel();
+        },
         () => {
           if (this.ArrayUserPofile.length > 0) {
             let pick = this.ArrayUserPofile.find(x => x.Key == "PictureURL");
@@ -413,21 +423,21 @@ export class DocumentGoDetailComponent implements OnInit {
     },
     () => {
       if(this.IndexStep > 0) {
-        this.isExecution = true;
+        this.isExecution = observableOf(true);
         this.isReturn = observableOf(true);
         if(this.IndexStep >= this.totalStep) {
-          this.isExecution = false;
-          this.isFinish = true;
+          this.isExecution = observableOf(false);
+          this.isFinish = observableOf(true);
         } else {
           if(this.IndexStep === this.totalStep - 1) {
             this.isDisplay = true;
           }
           if(this.IsGD === true || this.IsTP === true) {
-            this.isFinish = true;
+            this.isFinish = observableOf(true);
           } else {
-            this.isFinish = false;
+            this.isFinish = observableOf(false);
           }
-          this.isExecution = true;        
+          this.isExecution = observableOf(true);        
         }
       } 
       this.getUserPofile(this.currentUserEmail);
@@ -436,7 +446,7 @@ export class DocumentGoDetailComponent implements OnInit {
   }
   
   getListEmailConfig() {
-    const str = `?$select=*&$filter=Title eq 'DT'&$top=1`;
+    const str = `?$select=*&$filter=Title eq 'DG'&$top=1`;
     this.EmailConfig = null;
     this.resService.getItem('ListEmailConfig', str).subscribe((itemValue: any[]) => {
       let item = itemValue['value'] as Array<any>;
@@ -459,6 +469,9 @@ export class DocumentGoDetailComponent implements OnInit {
           }
       })
       }
+    },
+    error => {
+      this.closeCommentPanel();
     });
   }
 
@@ -483,7 +496,6 @@ export class DocumentGoDetailComponent implements OnInit {
         () => {
           this.numberGo = this.docServices.formatNumberGo(this.currentNumberGo + 1);
           this.numberOfSymbol = this.numberGo + '/Văn bản đi';
-          this.closeCommentPanel();
         }
       );
 
@@ -532,6 +544,7 @@ export class DocumentGoDetailComponent implements OnInit {
         if (!(this.ref as ViewRef).destroyed) {
           this.ref.detectChanges();  
         }
+        this.closeCommentPanel();
         this.getComment();
       })
     } catch(err) {
@@ -583,7 +596,7 @@ export class DocumentGoDetailComponent implements OnInit {
             status: element.StatusName,
             source: '',
             destination: '',
-            taskType: element.TaskTypeCode === 'XLC'? "Xử lý chính" : element.TaskTypeCode === 'PH'? 'Phối hợp' : 'Nhận để biết',
+            taskType: element.TaskTypeCode === 'XLC'? (element.TypeCode === "XYK" ? '' : "Xử lý chính") : element.TaskTypeCode === 'PH'? 'Phối hợp' : 'Nhận để biết',
             typeCode: this.GetTypeCode(element.TypeCode),
             content: this.docServices.checkNull(element.Content),
             indexStep: element.IndexStep,
@@ -1774,17 +1787,24 @@ export class DocumentGoDetailComponent implements OnInit {
       let itemList = itemValue["value"] as Array<any>;
       itemList.forEach(element => {
         let picture;
-        if (element.userPicture !== null && element.userPicture !== '' && element.userPicture !== undefined) {
-          picture = element.userPicture;
+        // if (element.userPicture !== null && element.userPicture !== '' && element.userPicture !== undefined) {
+        //   picture = element.userPicture;
+        // }
+        // else {
+        //   if(environment.usingMockData) {
+        //     picture = '../../../../' + this.assetFolder + '/default-user-image.png';
+        //   } else {
+        //     this.assetFolder = this.assetFolder.replace('../', '');
+        //     picture = this.assetFolder + '/default-user-image.png';
+        //   }
+        // }
+        if(environment.usingMockData) {
+          picture = '../../../../' + this.assetFolder + '/default-user-image.png';
+        } else {
+          this.assetFolder = this.assetFolder.replace('../', '');
+          picture = this.assetFolder + '/default-user-image.png';
         }
-        else {
-          if(environment.usingMockData) {
-            picture = '../../../../' + this.assetFolder + '/default-user-image.png';
-          } else {
-            this.assetFolder = this.assetFolder.replace('../', '');
-            picture = this.assetFolder + '/default-user-image.png';
-          }
-        }
+
         if (this.isNotNull(element.AttachmentFiles)) {
           this.AttachmentsComment = [];
           element.AttachmentFiles.forEach(elementss => {
@@ -2093,8 +2113,8 @@ export class DocumentGoDetailComponent implements OnInit {
         console.log("ContentMail before: " + ContentMail);
         for (let i = 0; i < strContent.length; i++) {
           switch (strContent[i]) {
-            case 'NumberTo':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.itemDoc.NumberGo);
+            case 'DocumentType':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docServices.checkNull(this.itemDoc.BookTypeName));
               break;
             case 'Compendium':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docServices.checkNull(this.itemDoc.Compendium));

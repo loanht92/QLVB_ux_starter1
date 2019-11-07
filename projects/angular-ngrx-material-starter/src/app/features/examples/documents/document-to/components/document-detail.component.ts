@@ -510,7 +510,7 @@ export class DocumentDetailComponent implements OnInit {
             roleRequest: this.docTo.CheckNull(element.RoleUserRequest),
             roleApprover: this.docTo.CheckNull(element.RoleUserApprover),
             taskTypeCode: element.TaskTypeCode,
-            taskType: element.TaskTypeCode === 'XLC'? "Xử lý chính" : element.TaskTypeCode === 'PH'? 'Phối hợp' : 'Nhận để biết',
+            taskType: element.TaskTypeCode === 'XLC'? (element.TypeCode === "XYK" ? '' : "Xử lý chính") : element.TaskTypeCode === 'PH'? 'Phối hợp' : 'Nhận để biết',
             typeCode: this.GetTypeCode(element.TypeCode),
             content: this.docTo.CheckNull(element.Content),
             indexStep: element.IndexStep,
@@ -2015,23 +2015,29 @@ export class DocumentDetailComponent implements OnInit {
   Comments; pictureCurrent; indexComment;selectedUserComment;idItemProcess;contentComment;
   getComment(): void {
     const strComent = `?$select=ID,Chat_Comments,Created,userPicture,ParentID,ProcessID,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title,AttachmentFiles`
-      + `&$expand=Author,UserApprover,AttachmentFiles&$filter=KeyList eq 'ListDocumentTo_` + this.IncomingDocID + `'&$orderby=Created desc`
+      + `&$expand=Author,UserApprover,AttachmentFiles&$filter=KeyList eq 'ListDocumentTo_` + this.IncomingDocID + `'&$orderby=Created asc`
     this.services.getItem("ListComments", strComent).subscribe(itemValue => {
       this.listComment = [];
       this.listCommentParent = [];
       let itemList = itemValue["value"] as Array<any>;
       itemList.forEach(element => {
         let picture;
-        if (element.userPicture !== null && element.userPicture !== '' && element.userPicture !== undefined) {
-          picture = element.userPicture;
-        }
-        else {
-          if(environment.usingMockData) {
-            picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';
-          } else {
-            this.assetFolder = this.assetFolder.replace('../', '');
-            picture = this.assetFolder + '/img/default-user-image.png';
-          }          
+        // if (element.userPicture !== null && element.userPicture !== '' && element.userPicture !== undefined) {
+        //   picture = element.userPicture;
+        // }
+        // else {
+        //   if(environment.usingMockData) {
+        //     picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';
+        //   } else {
+        //     this.assetFolder = this.assetFolder.replace('../', '');
+        //     picture = this.assetFolder + '/img/default-user-image.png';
+        //   }          
+        // }
+        if(environment.usingMockData) {
+          picture = '../../../../' + this.assetFolder + '/default-user-image.png';
+        } else {
+          this.assetFolder = this.assetFolder.replace('../', '');
+          picture = this.assetFolder + '/default-user-image.png';
         }
         if (this.isNotNull(element.AttachmentFiles)) {
           this.AttachmentsComment = [];
@@ -2386,13 +2392,13 @@ export class DocumentDetailComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}",this.docTo.CheckNull(this.selectedApprover) === '' ? '' : this.selectedApprover.split('|')[2]);
               break;
             case 'ItemUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.origin + '/#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '/#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID);
               break;
             case 'TaskUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.origin + '/#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID + '/' + (this.IndexStep + 1));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '/#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID + '/' + (this.IndexStep + 1));
               break;
             case 'HomeUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.origin + '/#/Documents/IncomingDoc');
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '/#/Documents/IncomingDoc');
               break;
           }
         }

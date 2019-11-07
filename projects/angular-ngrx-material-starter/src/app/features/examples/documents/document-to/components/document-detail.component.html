@@ -276,7 +276,7 @@
                                 <div fxLayout="column" class="content-side" [style.display]="item.DisplayReply">
                                     <div class="row">
                                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                                            <textarea matInput class="btn-submit" placeholder="Nội dung trả lời" [(ngModel)]="item.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
+                                            <textarea matInput placeholder="Nội dung trả lời" [(ngModel)]="item.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
                                         </mat-form-field>
                                     </div>
                                     <div>
@@ -284,25 +284,27 @@
                                     </div>
                                 </div>
                                 <div class="contentspacer"></div>
-                                <div class="cmt-item" *ngFor="let itemChild of item.children; let j=index" fxFlex="100" fxLayoutGap="10px">
-                                    <div class="cmt-img" fxFlex="60px">
-                                        <img src="{{itemChild.userPicture}}">
-                                    </div>
-                                    <div class="cmt-content" fxFlex="auto" fxLayout="column">
-                                        <h3 id="cmt-author">{{itemChild.Author}} <span id="cmt-date">{{itemChild.Created}}</span></h3>
-                                        <button mat-stroked-button color="primary" type="button" class="btn-submit" (click)="Reply(i,j)">Trả lời</button>
-                                        <p id="cmt-title">{{itemChild.Chat_Comments}}</p>
-                                        <div fxLayout="column">
-                                            <a *ngFor="let itemAttChild of itemChild.itemAttach" href="{{itemAttChild.urlFile}}" target="_blank" class="urlFile">{{itemAttChild.name}}</a>
+                                <div style="display: flex;" fxLayout="column" fxLayoutGap="5px">
+                                    <div class="cmt-item" *ngFor="let itemChild of item.children; let j=index" fxFlex="100" fxLayoutGap="10px">
+                                        <div class="cmt-img" fxFlex="60px">
+                                            <img src="{{itemChild.userPicture}}">
                                         </div>
-                                        <div fxLayout="column" class="content-side" [style.display]="itemChild.DisplayReply">
-                                            <div class="row">
-                                                <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                                                    <textarea matInput placeholder="Nội dung trả lời" [(ngModel)]="itemChild.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
-                                                </mat-form-field>
+                                        <div class="cmt-content" fxFlex="auto" fxLayout="column">
+                                            <h3 id="cmt-author">{{itemChild.Author}} <span id="cmt-date">{{itemChild.Created}}</span></h3>
+                                            <!-- <button mat-stroked-button color="primary" type="button" class="btn-submit" (click)="Reply(i,j)">Trả lời</button> -->
+                                            <p id="cmt-title">{{itemChild.Chat_Comments}}</p>
+                                            <div fxLayout="column">
+                                                <a *ngFor="let itemAttChild of itemChild.itemAttach" href="{{itemAttChild.urlFile}}" target="_blank" class="urlFile">{{itemAttChild.name}}</a>
                                             </div>
-                                            <div>
-                                                <button mat-stroked-button color="primary" type="button" class="MR5 btn-submit" (click)="saveCommentReply(i,j)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
+                                            <div fxLayout="column" class="content-side" [style.display]="itemChild.DisplayReply">
+                                                <div class="row">
+                                                    <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                                                        <textarea matInput placeholder="Nội dung trả lời" [(ngModel)]="itemChild.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
+                                                    </mat-form-field>
+                                                </div>
+                                                <div>
+                                                    <button mat-stroked-button color="primary" type="button" class="MR5 btn-submit" (click)="saveCommentReply(i,j)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

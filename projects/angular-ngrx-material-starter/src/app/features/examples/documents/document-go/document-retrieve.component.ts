@@ -7,15 +7,18 @@ import * as moment from 'moment';
 import {PlatformLocation} from '@angular/common';
 import { filter, pairwise } from 'rxjs/operators';
 import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
-import {IncomingDocService, IncomingTicket} from '../incoming-doc.service';
-import {RotiniPanel} from './document-add.component';
-import {ResApiService} from '../../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
+import { DocumentGoPanel } from './document-go.component';
 import { ComponentPortal } from '@angular/cdk/portal';
+import {ResApiService} from '../../services/res-api.service';
+import { ItemDocumentGo, ListDocType, ItemSeleted, ItemSeletedCode, ItemUser } from './../models/document-go';
+import { SharedService } from '../../../../shared/shared-service/shared.service'
+import { DocumentGoService } from './document-go.service';
+
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
-} from '../../../../../core/core.module';
+} from '../../../../core/core.module';
 
 export class ItemRetrieve {
   Department: string;
@@ -30,11 +33,11 @@ export class ItemRetrieve {
   styleUrls: ['./document-retrieve.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DocumentRetrieveComponent implements OnInit {
-  listTitle = "ListProcessRequestTo";
-  inDocs$: IncomingTicket[]= [];
-  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium']; //'select', 'userApprover'
-  dataSource = new MatTableDataSource<IncomingTicket>();
+export class DocumentGoRetrieveComponent implements OnInit {
+  listTitle = "ListProcessRequestGo";
+  inDocs$: ItemDocumentGo[]= [];
+  displayedColumns: string[] = ['numberGo', 'DocTypeName', 'created', 'userRequest', 'userApprover', 'deadline','compendium']; //'select', 'userApprover'
+  dataSource = new MatTableDataSource<ItemDocumentGo>();
   displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
   dataSource2 = new MatTableDataSource<ItemRetrieve>();
   ListItem: ItemRetrieve[] = [];
@@ -48,38 +51,30 @@ export class DocumentRetrieveComponent implements OnInit {
   overlayRef;
   bsModalRef;
 
-   constructor(private docTo: IncomingDocService, 
-              private services: ResApiService, private ref: ChangeDetectorRef,
-              private readonly notificationService: NotificationService,
-              public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private route: ActivatedRoute, private modalService: BsModalService,
-              private location: PlatformLocation, private routes: Router
-    ) {
-      location.onPopState(() => {
-        //alert(window.location);
-        //window.location.reload();
-        this.routes.events
-      .pipe(filter((e: any) => e instanceof RoutesRecognized),
-          pairwise()
-      ).subscribe((e: any) => {
-          let url = e[0].urlAfterRedirects;
-          console.log(url);
-          this.ngOnInit();
-      });
-    });
-    }
+  constructor(public viewContainerRef: ViewContainerRef,
+              public overlay: Overlay,
+              private docServices: DocumentGoService,
+              private resServices: SharedService,
+              private route: ActivatedRoute,
+              private ref: ChangeDetectorRef,
+              private routes: Router,
+              private modalService: BsModalService,) { }
 
   ngOnInit() {
     this.getCurrentUser();
   }
-  
+
+  applyFilter(filterValue: string) {
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
   ClickItem(template, row) {
     let docId = row.documentID;
-    this.OpenRotiniPanel();
+    this.openCommentPanel();
     let strSelect = '';
     strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
-    this.strFilter = `&$filter=NoteBookID eq ` + docId + strSelect;
-    this.docTo.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
+    this.strFilter = `&$filter=DocumentGoID eq ` + docId + strSelect;
+    this.docServices.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       this.ListItem = [];
       item.forEach(element => {
@@ -93,7 +88,7 @@ export class DocumentRetrieveComponent implements OnInit {
     },
     error => { 
       console.log("error: " + error);
-      this.CloseRotiniPanel();
+      this.closeCommentPanel();
     },
     () => {
       this.dataSource2 = new MatTableDataSource<ItemRetrieve>(this.ListItem);
@@ -102,7 +97,7 @@ export class DocumentRetrieveComponent implements OnInit {
       } 
       this.dataSource2.paginator = this.paginator;
       this.bsModalRef = this.modalService.show(template, {class: 'modal-lg'});
-      this.CloseRotiniPanel();
+      this.closeCommentPanel();
     })
   }
   
@@ -110,68 +105,72 @@ export class DocumentRetrieveComponent implements OnInit {
     let strSelect = '';
     strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
     this.strFilter = `&$filter=UserApprover/Id eq ` + this.currentUserId + strSelect;
-    this.docTo.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
+    this.docServices.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>;     
       this.inDocs$ = []; 
       item.forEach(element => {
-        if(this.inDocs$.findIndex(e => e.documentID === element.NoteBookID) < 0) {
+        if(this.inDocs$.findIndex(e => e.ID === element.DocumentGoID) < 0) {
           this.inDocs$.push({
-            STT: this.inDocs$.length + 1,
-            ID: element.ID,
-            documentID: element.NoteBookID, 
-            compendium: element.Compendium, 
-            userRequest: element.UserRequest !== undefined ? element.UserRequest.Title : '',
-            userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
-            userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
-            deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
-            status: 'Chờ xử lý',
-            statusID: element.StatusID,
-            source: '',
-            destination: '',
-            taskType: '',
-            typeCode: '',
-            content: this.docTo.CheckNull(element.Content),
-            indexStep: element.IndexStep,
-            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
-            numberTo: element.Title,
-            link: '',
-            stsClass: ''
+            ID: element.DocumentGoID,
+            NumberGo: this.docServices.formatNumberGo(element.NumberGo),
+            DocTypeName: this.docServices.checkNull(element.DocTypeName),
+            NumberSymbol:this.docServices.checkNull(element.Title),
+            Compendium: this.docServices.checkNull(element.Compendium),
+            UserCreateName: element.Author == undefined ? '' : element.Author.Title,
+            DateCreated: this.formatDateTime(element.DateCreated),
+            UserOfHandleName: element.UserApprover == undefined ? '' : element.UserApprover.Title,
+            UserOfKnowName: element.UserOfKnow == undefined ? '' : element.UserOfKnow.Title,
+            UserOfCombinateName: element.UserOfCombinate == undefined ? '' : element.UserOfCombinate.Title,
+            Deadline: this.formatDateTime(element.Deadline),
+            StatusName: this.docServices.checkNull(element.StatusName),
+            BookTypeName: '',
+            UnitCreateName: '',
+            RecipientsInName: '',
+            RecipientsOutName: '',
+            SecretLevelName: '',
+            UrgentLevelName: '',
+            MethodSendName: '',
+            DateIssued:'',
+            SignerName: '',
+            Note:'',
+            NumOfPaper :'',
+            link: ''
           })
         } 
         else if(element.IsFinished === 1) {
-          let index = this.inDocs$.findIndex(e => e.documentID === element.NoteBookID);
+          let index = this.inDocs$.findIndex(e => e.ID === element.DocumentGoID);
           if(index >= 0) {
             this.inDocs$.splice(index, 1);
           }
         }
       })
-      this.dataSource = new MatTableDataSource<IncomingTicket>(this.inDocs$);
+      this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.inDocs$);
       if (!(this.ref as ViewRef).destroyed) {
         this.ref.detectChanges();  
       } 
       this.dataSource.paginator = this.paginator;
-      this.CloseRotiniPanel();
+      this.closeCommentPanel();
     },
     error => { 
       console.log("error: " + error);
-      this.CloseRotiniPanel();
+      this.closeCommentPanel();
     },
     () => {
-      this.CloseRotiniPanel();
+      this.closeCommentPanel();
     }
     );   
   }
 
   getCurrentUser(){
-    this.OpenRotiniPanel();
-    this.services.getCurrentUser().subscribe(
+    this.openCommentPanel();
+    this.resServices.getCurrentUser().subscribe(
       itemValue => {
           this.currentUserId = itemValue["Id"];
           this.currentUserName = itemValue["Title"];
         },
       error => { 
         console.log("error: " + error);
-        this.CloseRotiniPanel();
+        this.closeCommentPanel();
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
@@ -181,11 +180,11 @@ export class DocumentRetrieveComponent implements OnInit {
   }
 
   getInforRetrieve(template, docId) {
-    this.OpenRotiniPanel();
+    this.openCommentPanel();
     let strSelect = '';
     strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
     this.strFilter = `&$filter=NoteBookID eq ` + docId + strSelect;
-    this.docTo.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
+    this.docServices.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       this.ListItem = [];
       item.forEach(element => {
@@ -199,7 +198,7 @@ export class DocumentRetrieveComponent implements OnInit {
     },
     error => { 
       console.log("error: " + error);
-      this.CloseRotiniPanel();
+      this.closeCommentPanel();
     },
     () => {
       this.dataSource2 = new MatTableDataSource<ItemRetrieve>(this.ListItem);
@@ -208,27 +207,31 @@ export class DocumentRetrieveComponent implements OnInit {
       } 
       this.dataSource2.paginator = this.paginator;
       this.bsModalRef = this.modalService.show(template, {class: 'modal-lg'});
-      this.CloseRotiniPanel();
+      this.closeCommentPanel();
     })
   }
-  
-  applyFilter(filterValue: string) {
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+
+  // format định dạng ngày    
+  formatDateTime(date: Date): string {
+    if (!date) {
+      return '';
+    }
+    return moment(date).format('DD/MM/YYYY');
+    //return moment(date).format('DD/MM/YYYY hh:mm A');
   }
 
-  OpenRotiniPanel() {
+  openCommentPanel() {
     let config = new OverlayConfig();
     config.positionStrategy = this.overlay.position()
       .global().centerVertically().centerHorizontally();
     config.hasBackdrop = true;
     this.overlayRef = this.overlay.create(config);
-    this.overlayRef.attach(new ComponentPortal(RotiniPanel, this.viewContainerRef));
+    this.overlayRef.attach(new ComponentPortal(DocumentGoPanel, this.viewContainerRef));
   }
 
-  CloseRotiniPanel() {
+  closeCommentPanel() {
     if(this.overlayRef !== undefined) {
       this.overlayRef.dispose();
     }
   }
-
 }
