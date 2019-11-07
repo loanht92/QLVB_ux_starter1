@@ -49,3 +49,18 @@ table {
     border-image: initial !important;
     background: white !important;
 }
+
+::ng-deep {
+    .mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline {
+        background-image: none !important;
+        background-color: rgba(0, 0, 0, 0.42) !important;
+    }
+    .default-theme .mat-select-disabled .mat-select-value {
+        color: rgba(0, 0, 0, 0.87) !important;
+    }
+    td.mat-cell,
+    td.mat-footer-cell,
+    th.mat-header-cell {
+        padding: 4px !important;
+    }
+}

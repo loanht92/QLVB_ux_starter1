@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ViewRef } from '@angular/core';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { Store, select } from '@ngrx/store';
 import { filter, debounceTime, take } from 'rxjs/operators';
@@ -10,7 +10,7 @@ import { MatTableDataSource } from '@angular/material';
 import { FormControl } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import * as moment from 'moment';
-
+import {PlatformLocation} from '@angular/common';
 import { element } from 'protractor';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
@@ -45,7 +45,13 @@ export class DocumentGoWaitingComponent implements OnInit {
     private resServices: SharedService,
     private route: ActivatedRoute,
     private ref: ChangeDetectorRef,
-  ) { }
+    private location: PlatformLocation
+    ) {
+      location.onPopState(() => {
+        //alert(window.location);
+        //window.location.reload();
+     });
+    }
 
   displayedColumns: string[] = ['ID', 'DocTypeName',  'DateCreated', 'UserCreateName', 'UserOfHandle', 'Deadline', 'Compendium'];
   dataSource = new MatTableDataSource<ItemDocumentGo>();
@@ -128,6 +134,7 @@ export class DocumentGoWaitingComponent implements OnInit {
     let idStatus;
     let TypeCode='';
     let strSelect = '';
+    // {-1:Thu hồi, 1:chờ xử lý, 2:Đang xử lý, 3:Đã xử lý, 4:Chờ xin ý kiến, 5:Đã cho ý kiến}
     //chờ xử lý
     if(this.id=='1') {
       idStatus=0;
@@ -176,6 +183,8 @@ export class DocumentGoWaitingComponent implements OnInit {
               UserCreateName: element.Author == undefined ? '' : element.Author.Title,
               DateCreated: this.formatDateTime(element.DateCreated),
               UserOfHandleName: element.UserApprover == undefined ? '' : element.UserApprover.Title,
+              UserOfKnowName: element.UserOfKnow == undefined ? '' : element.UserOfKnow.Title,
+              UserOfCombinateName: element.UserOfCombinate == undefined ? '' : element.UserOfCombinate.Title,
               Deadline: this.formatDateTime(element.Deadline),
               StatusName: this.CheckNull(element.StatusName),
               BookTypeName: '',
@@ -204,7 +213,9 @@ export class DocumentGoWaitingComponent implements OnInit {
         () => {
           console.log("get success");
           this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
-          this.ref.detectChanges();
+          if (!(this.ref as ViewRef).destroyed) {
+            this.ref.detectChanges();  
+          } 
           this.dataSource.paginator = this.paginator;
         });
     } catch (error) {

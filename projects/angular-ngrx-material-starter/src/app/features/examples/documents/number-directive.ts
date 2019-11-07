@@ -14,14 +14,23 @@ export class NumberDirective {
   }
   @HostListener('input', ['$event']) onInputChange(event) {
     const initalValue = this._el.nativeElement.value;
-    this._el.nativeElement.value = initalValue.replace(/[^0-9,]*/g, '');
+    this._el.nativeElement.value = initalValue.replace(/[^0-9]*/g, '');
     if ( initalValue !== this._el.nativeElement.value) {
       event.stopPropagation();
     } else {
       this._el.nativeElement.value = this.docTo.formatNumberTo(initalValue);
     }   
   }
+}
 
+@Directive({
+  selector: 'window'
+})
+export class WindowBackHistory {
+  constructor() {}
+  @HostListener('window:popstate', ['$event']) onPopState(event) {
+      console.log('Back button pressed');
+  }
 }
 
 @Directive({
@@ -35,7 +44,7 @@ export class FormatMoneyDirective {
   }
   @HostListener('input', ['$event']) onInputChange(event) {
     const initalValue = this._el.nativeElement.value;
-    this._el.nativeElement.value = initalValue.replace(/[^0-9,]*/g, '');
+    this._el.nativeElement.value = initalValue.replace(/[^0-9]*/g, '');
     if ( initalValue !== this._el.nativeElement.value) {
       event.stopPropagation();
     }

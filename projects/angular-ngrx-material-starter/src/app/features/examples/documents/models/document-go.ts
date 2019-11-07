@@ -10,6 +10,8 @@ export interface ItemDocumentGo {
   DateCreated: string;
   UserCreateName: string;
   UserOfHandleName: string;
+  UserOfKnowName: string;
+  UserOfCombinateName: string;
   StatusName: string;
   BookTypeName: string;
   UnitCreateName: string;
@@ -78,7 +80,9 @@ export interface ItemUser {
   UserName: string,
   UserEmail: string,
   Role: string,
-  Department: string
+  Department: string,
+  RoleCode: string,
+  DepartmentCode: string
 }
 export class AttachmentsObject {
   name: string;

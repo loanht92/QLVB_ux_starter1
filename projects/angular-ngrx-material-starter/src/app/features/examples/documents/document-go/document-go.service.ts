@@ -89,6 +89,10 @@ export class DocumentGoService {
     return this.http.get(`${this.restUrl}/_api/web/currentUser`);
   }
 
+  getRoleCurrentUser(id) {
+    return this.http.get(`${this.restUrl}/_api/web/lists/getbytitle('ListMapEmployee')/items?$select=*,User/Name,User/Title,User/Id&$expand=User&$filter=User/Id eq '` + id + `'`);
+  }
+
   //attachment file
   inserAttachmentFile(data, filename, listName, indexItem) {
     return this.http.post(`${this.restUrl}/_api/web/lists/GetByTitle('` + listName + `')/items(` + indexItem + `)/AttachmentFiles/add(FileName='` + filename + `')`, data, this.httpOptionsFile);
@@ -121,7 +125,8 @@ export class DocumentGoService {
   private getProcessRequestGo= "/_api/web/lists/getbytitle('ListProcessRequestGo')/items?$select=*,UserRequest/Title,UserRequest/Id,Author/Id,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title&$expand=Author/Id,UserApprover/Id,UserRequest";
   private  urlGroupApprover = "/_api/web/lists/getbytitle('ListMapEmployee')/items?$select=*,User/Name,User/Title,User/Id&$expand=User"
   private urlDetailLeave = "/_api/web/lists/getbytitle('ListDocumentGo')/items?$select=*,Author/Id,Author/Title,Author/Name,UserOfHandle/Id,UserOfHandle/Title,UserOfHandle/Name,"
-  + "Signer/Id,Signer/Title,Signer/Name,AttachmentFiles&$expand=UserOfHandle,Author,Signer,AttachmentFiles&$filter=ID eq ";
+  + "UserOfCombinate/Title,UserOfCombinate/Id,UserOfCombinate/Name,UserOfKnow/Title,UserOfKnow/Id,UserOfKnow/Name,Signer/Id,Signer/Title,Signer/Name,AttachmentFiles"
+  + "&$expand=UserOfHandle,UserOfCombinate,UserOfKnow,Author,Signer,AttachmentFiles&$filter=ID eq ";
  
   getHistoryStep(noteBookID, step) {
     return this.http.get(

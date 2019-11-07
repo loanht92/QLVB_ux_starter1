@@ -29,28 +29,28 @@
                     </div>
                     <div class="row DN">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <mat-select placeholder="Sổ văn bản" formControlName="BookType" disabled>
-                                <mat-option *ngFor="let item of ListBookType" value={{item.Code}}>{{item.Title}}</mat-option>
-                            </mat-select>
-                        </mat-form-field>
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <input matInput placeholder="Số đi" formControlName="NumberGo">
                         </mat-form-field>
                     </div>
                     <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                            <mat-select placeholder="Sổ văn bản" formControlName="BookType" disabled>
+                                <mat-option *ngFor="let item of ListBookType" value={{item.Code}}>{{item.Title}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Loại văn bản" [(ngModel)]="selectedDocType" formControlName="DocType">
                                 <mat-option *ngFor="let item of ListDocType" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                        <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <input matInput placeholder="Số ký hiệu" formControlName="NumberSymbol">
-                        </mat-form-field>
+                        </mat-form-field> -->
                     </div>
                     <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-label>Trích yếu <span class="required-field">*</span></mat-label>
-                            <textarea matInput formControlName="Compendium" minlength="2" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="3" cdkAutosizeMaxRows="10"></textarea>
+                            <textarea matInput formControlName="Compendium" minlength="2" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
                             <mat-hint align="end">{{form.get('Compendium').value?.length}} / 1000
                             </mat-hint>
                             <mat-error *ngIf="form.get('Compendium').hasError('required')">Bạn chưa nhập thông tin Trích yếu
@@ -87,7 +87,7 @@
                             </mat-error>
                         </mat-form-field>
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <input matInput [matDatepicker]="picker1" (click)="picker1.open()" [matDatepickerFilter]="myFilter" placeholder="Hạn xử lý" [value]="" formControlName="Deadline" (keydown)="false">
+                            <input matInput [matDatepicker]="picker1" (click)="picker1.open()" [matDatepickerFilter]="myFilter" placeholder="Hạn xử lý" [value]="" formControlName="Deadline" (keypress)="validateQty($event)">
                             <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
                             <mat-datepicker #picker1></mat-datepicker>
                         </mat-form-field>
@@ -137,16 +137,13 @@
                         </mat-form-field>
                     </div>
                     <div class="row">
-                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements">
+                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements" style="padding-top: 15px;">
                             <mat-select placeholder="Phương thức gửi" formControlName="MethodSend">
                                 <mat-option *ngFor="let item of ListMethodSend" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
-                    </div>
-
-                    <div class="row">
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <textarea matInput placeholder="Nội dung xử lý" formControlName="Note" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="3" cdkAutosizeMaxRows="10"></textarea>
+                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements">
+                            <textarea matInput placeholder="Nội dung xử lý" formControlName="Note" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
                         </mat-form-field>
                     </div>
                     <div class="row DN">

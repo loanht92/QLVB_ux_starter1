@@ -1,15 +1,15 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild,ViewContainerRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild,ViewContainerRef, ViewRef} from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { filter, debounceTime, take } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable, from } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material';
 import { FormControl , FormBuilder, FormGroup, FormGroupDirective, Validators, NgForm} from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import * as moment from 'moment';
-
+import {PlatformLocation} from '@angular/common';
 import { element } from 'protractor';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
@@ -96,7 +96,7 @@ export class DocumentGoComponent implements OnInit {
   userApproverId = '';
   userApproverEmail = '';
   userApproverName = '';
-  currentUserId = '';
+  currentUserId = 0;
   currentUserName='';
   currentUserEmail = '';
   currentNumberGo = 0;
@@ -110,6 +110,9 @@ export class DocumentGoComponent implements OnInit {
   ItemAttachments: AttachmentsObject[] = [];
   urlAttachment;
   EmailConfig;
+  UserOfCombinate = 0;
+  UserOfKnow = 0;
+  DocumentToId = '';
 
   constructor(
     private fb: FormBuilder,
@@ -121,23 +124,33 @@ export class DocumentGoComponent implements OnInit {
     private route: ActivatedRoute,
     private ref: ChangeDetectorRef,
     public overlay: Overlay,
-    public viewContainerRef: ViewContainerRef
-  ) { }
+    public viewContainerRef: ViewContainerRef,
+    private location: PlatformLocation,
+    private routes: Router
+    ) {
+      location.onPopState(() => {
+        //alert(window.location);
+        // window.location.reload();
+     });
+    }
 
   ngOnInit() {
-      // danh mục
-      this.getListBookType();
-      this.getListDepartment();
-      this.getListDocType();
-      this.getListMethodSend();
-      this.getListSecret();
-      this.getListUrgent();
-      this.getSourceAddress();
-      this.getUserApproverStep();
-      this.getUserSigner();
-      this.getUserCreate();
-      this.getListEmailConfig();
-      this.getCurrentUser();
+    this.route.paramMap.subscribe(parames => {
+      this.DocumentToId = this.docServices.checkNull(parames.get('value'));
+    });
+    this.getCurrentUser();
+    // danh mục
+    this.getListBookType();
+    this.getListDepartment();
+    this.getListDocType();
+    this.getListMethodSend();
+    this.getListSecret();
+    this.getListUrgent();
+    this.getSourceAddress();
+    this.getUserApproverStep();
+    this.getUserSigner();
+    this.getUserCreate();
+    this.getListEmailConfig();
   }
   
   myFilter = (d: Date): boolean => {
@@ -152,6 +165,16 @@ export class DocumentGoComponent implements OnInit {
     return day < moment().toDate();
   }
 
+  validateQty(event) {
+    var key = window.event ? event.keyCode : event.which;
+    if (event.keyCode === 8) {
+        return true;
+    }
+    else {
+      return false;
+    }
+  };
+
   //Lấy người dùng hiện tại
   getCurrentUser(){
     this.services.getCurrentUser().subscribe(
@@ -165,10 +188,28 @@ export class DocumentGoComponent implements OnInit {
           this.CloseDocumentGoPanel();
         },
         () => {
+          this. CheckPermission();
           console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
           this.getListDocumentGo();
         }
       );
+  }
+
+  CheckPermission() {
+    this.docServices.getRoleCurrentUser(this.currentUserId).subscribe((itemValue: any[]) => {
+      let item = itemValue["value"] as Array<any>; 
+      if(item.length < 0) {
+        this.notificationService.info("Bạn không có quyền truy cập");
+        this.routes.navigate(['/']);
+      }
+    },
+    error => {
+      console.log("Check permission failed") ;
+      this.CloseDocumentGoPanel();
+    },
+    () => {
+     console.log("Check permission success");
+    })
   }
 
   OpenDocumentGoPanel() {
@@ -229,6 +270,8 @@ export class DocumentGoComponent implements OnInit {
             UserCreateName: element.UserCreate == undefined ? '' : element.UserCreate.Title,
             DateCreated: this.docServices.formatDateTime(element.DateCreated),
             UserOfHandleName: element.UserOfHandle == undefined ? '' : element.UserOfHandle.Title,
+            UserOfKnowName: element.UserOfKnow == undefined ? '' : element.UserOfKnow.Title,
+            UserOfCombinateName: element.UserOfCombinate == undefined ? '' : element.UserOfCombinate.Title,
             Deadline: this.docServices.formatDateTime(element.Deadline),
             StatusName: this.docServices.checkNull(element.StatusName),
             BookTypeName: '',
@@ -241,8 +284,8 @@ export class DocumentGoComponent implements OnInit {
             DateIssued:'',
             SignerName: '',
             Note:'',
-           NumOfPaper :'',
-           link:''
+            NumOfPaper :'',
+            link:''
           })
         })
       },
@@ -250,7 +293,9 @@ export class DocumentGoComponent implements OnInit {
       () => {
         console.log("get success");
         this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
         this.dataSource.paginator = this.paginator;
       });
     } catch (error) {
@@ -356,7 +401,9 @@ export class DocumentGoComponent implements OnInit {
             UserName: element.User.Title,
             UserEmail: element.User.Name.split("|")[2],
             Role: element.RoleName,
-            Department: element.DepartmentName
+            RoleCode: element.RoleCode,
+            Department: element.DepartmentName,
+            DepartmentCode: element.DepartmentCode
           })
         }
       })
@@ -373,7 +420,9 @@ export class DocumentGoComponent implements OnInit {
               UserName: element.User.Title,
               UserEmail: element.User.Name.split("|")[2],
               Role: element.RoleName,
-              Department: element.DepartmentName
+              RoleCode: element.RoleCode,
+              Department: element.DepartmentName,
+              DepartmentCode: element.DepartmentCode
             });     
           }    
         })  
@@ -400,7 +449,9 @@ export class DocumentGoComponent implements OnInit {
           UserName: element.User.Title,
           UserEmail: element.User.Name.split("|")[2],
           Role: element.RoleName,
-          Department: element.DepartmentName
+          RoleCode: element.RoleCode,
+          Department: element.DepartmentName,
+          DepartmentCode: element.DepartmentCode
         })
       })
     })
@@ -415,11 +466,14 @@ export class DocumentGoComponent implements OnInit {
           UserName: element.User.Title,
           UserEmail: element.User.Name.split("|")[2],
           Role: element.RoleName,
-          Department: element.DepartmentName
+          RoleCode: element.RoleCode,
+          Department: element.DepartmentName,
+          DepartmentCode: element.DepartmentCode
         })
       })
     })
   }
+
   //lấy ra id , email 
   splitDataUserApprover(value) {
     this.userApproverId = value.split("|")[0];
@@ -440,24 +494,23 @@ export class DocumentGoComponent implements OnInit {
         let itemSecretLevel = this.docServices.FindItemById(this.ListSecret, this.form.get('SecretLevel').value);
         let itemUrgentLevel = this.docServices.FindItemById(this.ListUrgent, this.form.get('UrgentLevel').value);
         let itemMethodSend = this.docServices.FindItemById(this.ListMethodSend, this.form.get('MethodSend').value);
-        let itemUnitCreate = this.docServices.FindItemById(this.ListDepartment, this.form.get('UnitCreate').value);
+        let itemUnitCreate = this.ListAllUser.find(item => item.UserId == this.currentUserId && (item.RoleCode === "NV" || item.RoleCode === "TP"));
         // console.log('UserCreate:'+this.form.get('UserCreate').value);
         // console.log('DocTypeID:'+this.form.get('DocType').value);
         //  console.log('UserOfHandle:'+ this.form.get('UserOfHandle').value);
         // console.log('UserOfHandle:'+ dataForm.UserOfHandle);
         let UserCreate = (dataForm.UserCreate == null || dataForm.UserCreate == 0) ? null : dataForm.UserCreate.split("|")[0];
         let UserOfHandle = (dataForm.UserOfHandle == null || dataForm.UserOfHandle == 0) ? null : dataForm.UserOfHandle.split("|")[0];
-        this.userApproverId=UserOfHandle;
-        let UserOfCombinate = (dataForm.UserOfCombinate == null || dataForm.UserOfCombinate == 0) ? null : dataForm.UserOfCombinate.split("|")[0];
-        let UserOfKnow = (dataForm.UserOfKnow == null || dataForm.UserOfKnow == 0) ? null : dataForm.UserOfKnow.split("|")[0];
+        this.userApproverId = UserOfHandle;
+        this.UserOfCombinate = (dataForm.UserOfCombinate == null || dataForm.UserOfCombinate == 0) ? 0 : dataForm.UserOfCombinate.split("|")[0];
+        this.UserOfKnow = (dataForm.UserOfKnow == null || dataForm.UserOfKnow == 0) ? 0 : dataForm.UserOfKnow.split("|")[0];
         let Signer = (dataForm.Signer == null || dataForm.Signer == 0) ? null : dataForm.Signer.split("|")[0];
         const data = {
           __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
           Title: 'Văn bản đi',
           BookTypeName: itemBookType == undefined ? '' : itemBookType.Title,
           BookTypeCode: this.form.get('BookType').value,
-          NumberGo: this.form.get('NumberGo').value,
-          NumberSymbol: this.form.get('NumberSymbol').value,
+          // NumberSymbol: this.form.get('NumberSymbol').value,
           DocTypeID: this.form.get('DocType').value,
           Compendium: this.form.get('Compendium').value,
           RecipientsInID: this.form.get('RecipientsIn').value,
@@ -476,7 +529,7 @@ export class DocumentGoComponent implements OnInit {
           SecretLevelName: itemSecretLevel == undefined ? '' : itemSecretLevel.Title,
           UrgentLevelName: itemUrgentLevel == undefined ? '' : itemUrgentLevel.Title,
           MethodSendName: itemMethodSend == undefined ? '' : itemMethodSend.Title,
-          UnitCreateName: itemUnitCreate == undefined ? '' : itemUnitCreate.Title,
+          UnitCreateName: itemUnitCreate == undefined ? '' : itemUnitCreate.Department,
           Note:this.form.get('Note').value,
           UnitCreateID: this.form.get('UnitCreate').value,
           NumOfPaper: this.form.get('NumOfPaper').value,
@@ -490,7 +543,7 @@ export class DocumentGoComponent implements OnInit {
           ListUserApprover: this.userApproverId + '_' + this.userApproverName,
         }
         console.log('data=' + data);
-        if(this.IdEdit==0){
+        if(this.IdEdit == 0){
         this.services.AddItemToList(this.listTitle, data).subscribe(
           item => {
             this.DocumentID = item['d'].Id;
@@ -503,12 +556,11 @@ export class DocumentGoComponent implements OnInit {
           () => {
             console.log("Add item of approval user to list " + this.listTitle + " successfully!");
             if(isChuyenXL === 0) {//chuyển xử lý
-              this.AddHistoryStep();
+              this.FinishDocumentTo();
             } 
-            //else {
+            else {
               this.saveItemAttachment(0, this.DocumentID);
-              this.callbackfunc();
-           // }
+            }
           });
         } else {
           this.services.updateListById(this.listTitle, data, this.IdEdit).subscribe(
@@ -532,10 +584,10 @@ export class DocumentGoComponent implements OnInit {
                   ' successfully!'
               );
               if (isChuyenXL === 0) {
-                this.AddHistoryStep();
-              } 
+                this.FinishDocumentTo();
+              } else {
                 this.saveItemAttachment(0, this.DocumentID);
-                this.callbackfunc();
+              }
             }
           );
         }
@@ -543,6 +595,90 @@ export class DocumentGoComponent implements OnInit {
     }
     catch (error) {
       console.log("error add:" + error);
+    }
+  }
+
+  FinishDocumentTo() {
+    try {
+      if(this.docServices.checkNull(this.DocumentToId).indexOf('|') > 0) {
+        let idDocTo = 0;
+        idDocTo = this.docServices.CheckNullSetZero(this.DocumentToId.split('|')[0]);
+        let idHisTo = this.docServices.CheckNullSetZero(this.DocumentToId.split('|')[1]);
+        let arrIdProcessTo = this.docServices.checkNull(this.DocumentToId.split('|')[2]);
+        const data = {
+          __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+          StatusID: 1, StatusName: "Đã xử lý",
+        };
+        this.services.updateListById('ListDocumentTo', data, idDocTo).subscribe(
+          item => {},
+          error => {
+            this.CloseDocumentGoPanel();
+            console.log(
+              'error when update item to list ListDocumentTo: ' +
+                error.error.error.message.value
+            );
+          },
+          () => {
+            let arrItem = arrIdProcessTo.split(',');
+            this.UpdateDocToFinish(arrItem, 0);
+            if(idHisTo > 0) {
+              const dataTicket = {
+                __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' },
+                StatusID: 1, StatusName: "Đã xử lý",
+              };
+              this.services.updateListById('ListHistoryRequestTo', dataTicket, idHisTo).subscribe(
+                item => {},
+                error => {
+                  this.CloseDocumentGoPanel();
+                  console.log(
+                    'error when update item to list ListHistoryRequestTo: ' +
+                      error.error.error.message.value
+                  );
+                },
+                () => {
+                  console.log("Update list HistoryRequestTo success");
+                })
+              }
+          })
+        } else {
+          this.AddHistoryStep();
+        }
+    } catch(err) {
+      console.log("FinishDocumentTo failed: " + err);
+      this.CloseDocumentGoPanel();
+    }
+  }
+
+  UpdateDocToFinish(listItem, index) {
+    if(listItem !== undefined && listItem.length > 0) {
+      const dataTicket = {
+        __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+        StatusID: 1, StatusName: "Đã xử lý",
+        IsFinished: 1
+      };
+      this.services.updateListById('ListProcessRequestTo', dataTicket, listItem[index]).subscribe(
+        item => {},
+        error => {
+          this.CloseDocumentGoPanel();
+          console.log(
+            'error when update item to list ListProcessRequestTo: ' +
+              error.error.error.message.value
+          ),
+            this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
+        },
+        () => {
+          console.log(
+            'update item ' + listItem[index] + ' of approval user to list ListProcessRequestTo successfully!'
+          );
+          index ++;
+          if(index < listItem.length) {
+            this.UpdateDocToFinish(listItem, index);
+          }
+          else {
+            this.AddHistoryStep();
+          }
+        }
+      );
     }
   }
 
@@ -554,7 +690,7 @@ export class DocumentGoComponent implements OnInit {
     const dataForm = this.form.getRawValue();
     const data = {
       __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' },
-      Title: dataForm.NumberSymbol,
+      // Title: dataForm.NumberSymbol,
       DateCreated: new Date(),
       DocumentGoID: this.DocumentID,
       UserRequestId: this.currentUserId,
@@ -589,10 +725,10 @@ export class DocumentGoComponent implements OnInit {
   AddListTicket() {
     const dataForm = this.form.getRawValue();
     let DocTypeName = this.docServices.FindItemById(this.ListDocType, dataForm.DocType);
- //phiếu xử lý cho người tạo
+    //phiếu xử lý cho người tạo
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
-      Title:dataForm.NumberSymbol,
+      // Title:dataForm.NumberSymbol,
       DocTypeName: DocTypeName==undefined?'':DocTypeName.Title,
       DateCreated: new Date(),
       DocumentGoID: this.DocumentID,
@@ -612,7 +748,7 @@ export class DocumentGoComponent implements OnInit {
     //phiếu cho người xử lý tiếp theo
     const data1 = {
       __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
-      Title:dataForm.NumberSymbol,
+      // Title:dataForm.NumberSymbol,
       DocTypeName: DocTypeName==undefined?'':DocTypeName.Title,
       DateCreated: new Date(),
       DocumentGoID: this.DocumentID,
@@ -649,9 +785,96 @@ export class DocumentGoComponent implements OnInit {
           () => {
            // this.CloseDocumentGoPanel();
           //  this.callbackfunc();
+          if(this.UserOfCombinate > 0) {
+            this.AddUserCombine();
+          } else if(this.UserOfKnow > 0) {
+            this.AddUserKnow();
+          } else {
+            this.saveItemAttachment(0, this.DocumentID);
+          }
             console.log("Add item of approval user to list ListProcessRequestGo successfully!");
           });
       });
+  }
+
+  AddUserCombine() {
+    const dataForm = this.form.getRawValue();
+    let DocTypeName = this.docServices.FindItemById(this.ListDocType, dataForm.DocType);
+    const data = {
+      __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
+      // Title:dataForm.NumberSymbol,
+      DocTypeName: DocTypeName==undefined?'':DocTypeName.Title,
+      DateCreated: new Date(),
+      DocumentGoID: this.DocumentID,
+      UserRequestId: this.currentUserId,
+      UserApproverId: this.UserOfCombinate,
+      Deadline: dataForm.Deadline,
+      StatusID: 0,
+      StatusName: "Chờ xử lý",
+      TaskTypeCode: 'PH',
+      TaskTypeName: 'Phối hợp',
+      TypeCode: 'CXL',
+      TypeName: 'Chuyển xử lý',
+      Content: dataForm.Note,
+      IndexStep: 2,
+      Compendium: dataForm.Compendium,
+    }
+    this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
+      item => {},
+      error => {
+        this.CloseDocumentGoPanel();
+        console.log(
+          'error when add item to list ListProcessRequestTo: ' +
+            error.error.error.message.value
+        ),
+          this.notificationService.error('Thêm phiếu xử lý thất bại');
+      },
+      () => {
+        if(this.UserOfKnow > 0) {
+          this.AddUserKnow();
+        } else {
+          this.saveItemAttachment(0, this.DocumentID);
+        }
+      }
+    );
+  }
+
+  AddUserKnow() {
+    const dataForm = this.form.getRawValue();
+    let DocTypeName = this.docServices.FindItemById(this.ListDocType, dataForm.DocType);
+    const data = {
+      __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
+      // Title:dataForm.NumberSymbol,
+      DocTypeName: DocTypeName==undefined?'':DocTypeName.Title,
+      DateCreated: new Date(),
+      DocumentGoID: this.DocumentID,
+      UserRequestId: this.currentUserId,
+      UserApproverId: this.UserOfKnow,
+      Deadline: dataForm.Deadline,
+      StatusID: 0,
+      StatusName: "Chờ xử lý",
+      TaskTypeCode: 'NĐB',
+      TaskTypeName: 'Nhận để biết',
+      TypeCode: 'CXL',
+      TypeName: 'Chuyển xử lý',
+      Content: dataForm.Note,
+      IndexStep: 2,
+      Compendium: dataForm.Compendium,
+    }
+    this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
+      item => {},
+      error => {
+        this.CloseDocumentGoPanel();
+        console.log(
+          'error when add item to list ListProcessRequestTo: ' +
+            error.error.error.message.value
+        ),
+          this.notificationService.error('Thêm phiếu xử lý thất bại');
+      },
+      () => {
+        this.saveItemAttachment(0, this.DocumentID);
+      }
+    );
   }
 
   DeleteItem(id){
@@ -679,7 +902,9 @@ export class DocumentGoComponent implements OnInit {
         }
         this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
         this.dataSource.paginator = this.paginator;
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
         this.CloseDocumentGoPanel();
       })
     }
@@ -714,12 +939,13 @@ export class DocumentGoComponent implements OnInit {
           UserCreateName: itemList[0].Author == undefined ? '' : itemList[0].Author.Title,
           DateCreated: this.docServices.formatDateTime(itemList[0].DateCreated),
           UserOfHandleName: itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Id + '|' + itemList[0].UserOfHandle.Name.split('|')[2],
+          UserOfKnowName: itemList[0].UserOfKnow == undefined ? '' : itemList[0].UserOfKnow.Id,
+          UserOfCombinateName: itemList[0].UserOfCombinate == undefined ? '' : itemList[0].UserOfCombinate.Id,
           Deadline: itemList[0].Deadline,
           link:'',
-         StatusName: this.docServices.checkNull(itemList[0].StatusName),
-         BookTypeName: itemList[0].BookTypeName,
-         UnitCreateName: itemList[0].UnitCreateName,
-
+          StatusName: this.docServices.checkNull(itemList[0].StatusName),
+          BookTypeName: itemList[0].BookTypeName,
+          UnitCreateName: itemList[0].UnitCreateName,
           RecipientsInName: this.docServices.checkNull(itemList[0].RecipientsInID),
           RecipientsOutName: this.docServices.checkNull(itemList[0].RecipientsOutID),
           SecretLevelName: this.docServices.checkNull(itemList[0].SecretLevelID),
@@ -731,7 +957,7 @@ export class DocumentGoComponent implements OnInit {
           Note: itemList[0].Note,
         };
         this.form.patchValue({
-          NumberSymbol: this.itemDoc.NumberSymbol,
+          // NumberSymbol: this.itemDoc.NumberSymbol,
           DocType: this.itemDoc.DocTypeName==''?null:Number(this.itemDoc.DocTypeName)+'',
           Compendium: this.itemDoc.Compendium,
           RecipientsIn: this.itemDoc.RecipientsInName==''?null:Number(this.itemDoc.RecipientsInName)+'',
@@ -748,7 +974,9 @@ export class DocumentGoComponent implements OnInit {
           Deadline: this.itemDoc.Deadline,
           // DateIssued: this.itemDoc.DateIssued,
         });
-      this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
       this.CloseDocumentGoPanel();
     });
   }
@@ -757,10 +985,7 @@ export class DocumentGoComponent implements OnInit {
     this.form.reset();
     this.form.clearValidators();
     this.form.clearAsyncValidators();
-    //this.form.controls['bookType'].setValue('GT');
-    this.ItemAttachments=[];
-    // this.form.controls['numberTo'].setValue(this.docTo.formatNumberTo(this.currentNumberTo));
-    // this.form.controls['numberOfSymbol'].setValue(this.docTo.formatNumberTo(this.currentNumberTo) + '/VBĐ');
+    this.ItemAttachments = [];
   }
 
  
@@ -822,32 +1047,34 @@ export class DocumentGoComponent implements OnInit {
 
   saveItemAttachment(index, idItem){
     try {
-      if(this.outputFile.length>0){
-      this.buffer = this.getFileBuffer(this.outputFile[index]);
-      this.buffer.onload = (e: any) => {
-        console.log(e.target.result);
-        const dataFile = e.target.result;
-        this.services.inserAttachmentFile(dataFile, this.outputFile[index].name, this.listTitle, idItem).subscribe(
-          itemAttach => {
-            console.log('inserAttachmentFile success');
-          },
-          error => { 
-            console.log("error: " + error);
-            this.CloseDocumentGoPanel();
-          },
-          () => {
-            console.log('inserAttachmentFile successfully');
-            if(Number(index) < (this.outputFile.length-1)){
-              this.saveItemAttachment((Number(index)+ 1), idItem);
+      if(this.outputFile.length > 0){
+        this.buffer = this.getFileBuffer(this.outputFile[index]);
+        this.buffer.onload = (e: any) => {
+          console.log(e.target.result);
+          const dataFile = e.target.result;
+          this.services.inserAttachmentFile(dataFile, this.outputFile[index].name, this.listTitle, idItem).subscribe(
+            itemAttach => {
+              console.log('inserAttachmentFile success');
+            },
+            error => { 
+              console.log("error: " + error);
+              this.CloseDocumentGoPanel();
+            },
+            () => {
+              console.log('inserAttachmentFile successfully');
+              if(Number(index) < (this.outputFile.length-1)) {
+                this.saveItemAttachment((Number(index)+ 1), idItem);
+              }
+              else {
+                //alert("Save request successfully");
+                this.callbackfunc();
+              }
             }
-            else{
-              //alert("Save request successfully");
-              this.callbackfunc();
-            }
-          }
-        )
+          )
+        } 
+      } else {
+        this.callbackfunc(); 
       }
-    }
     } catch (error) {
       console.log("saveItemAttachment error: "+error);
     }
@@ -915,6 +1142,9 @@ export class DocumentGoComponent implements OnInit {
         console.log("ContentMail before: " + ContentMail);
         for (let i = 0; i < strContent.length; i++) {
           switch (strContent[i]) {
+            case 'NumberTo':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", '');
+              break;
             case 'DocumentType':
               let itemDocType = this.docServices.FindItemById(this.ListDocType, this.form.get('DocType').value);
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", itemDocType == undefined ? '' : itemDocType.Title);
@@ -938,13 +1168,13 @@ export class DocumentGoComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.userApproverName);
               break;
             case 'ItemUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documnets/documentgo-detail/' + this.DocumentID);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documents/documentgo-detail/' + this.DocumentID);
               break;
             case 'TaskUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/documentgo-detail/' + this.DocumentID + "/1");
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/documentgo-detail/' + this.DocumentID + "/1");
               break;
             case 'HomeUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/documentgo');
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents');
               break;
           }
         }
@@ -969,9 +1199,10 @@ export class DocumentGoComponent implements OnInit {
   callbackfunc(){
     this.CloseDocumentGoPanel();
     this.notificationService.success('Thêm văn bản trình thành công');
-    this.getListDocumentGo();
-    this.addNew = !this.addNew;
-    this.showList = !this.showList;
+    this.routes.navigate(['/Documents/documentgo-detail/' + this.DocumentID]);
+    // this.getListDocumentGo();
+    // this.addNew = !this.addNew;
+    // this.showList = !this.showList;
   }
 
 }

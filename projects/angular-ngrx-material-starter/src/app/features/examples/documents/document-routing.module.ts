@@ -20,10 +20,9 @@ import {DocumentDetailComponent} from './document-to/components/document-detail.
 import { DocumentWaitingComponent } from './document-to/components/document-waiting.component';
 import {ReportComponent} from './document-to/components/report.component';
 import {ReportAdvanceComponent} from './document-to/components/report-advance.component';
-
+import {DocumentRetrieveComponent} from './document-to/components/document-retrieve.component';
 import {DataListComponent} from './data-list/data-list.component'
 
-import { from } from 'rxjs';
 const routes: Routes = [
   {
     path: '',
@@ -35,7 +34,7 @@ const routes: Routes = [
         pathMatch: 'full'
       },
       {
-        path: 'documentgo',
+        path: 'documentgo/:value',
         component: DocumentGoComponent,
         data: { title: 'Văn bản trình ký' }
       },
@@ -101,6 +100,11 @@ const routes: Routes = [
         data: { title: 'Tiếp nhận văn bản' }
       },
       {
+        path: 'docTo-retrieve',
+        component: DocumentRetrieveComponent,
+        data: { title: 'Thu hồi' }
+      },
+      {
         path: 'docTo-list/:id',
         component: DocumentWaitingComponent,
         data: { title: 'Chờ xử lý' }
@@ -109,7 +113,7 @@ const routes: Routes = [
         path: 'docTo-list-approving/:id',
         component: DocumentWaitingComponent,
         data: { title: 'Đang xử lý' }
-      },
+      },      
       {
         path: 'docTo-list-approved/:id',
         component: DocumentWaitingComponent,

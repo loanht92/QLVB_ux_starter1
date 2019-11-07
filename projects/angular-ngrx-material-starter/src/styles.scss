@@ -86,9 +86,13 @@ body {
 }
 
 .form-label {
-    // font-weight: 700;
+    font-weight: 700;
     color: #646262;
     min-width: 180px;
+}
+
+.contentspacer {
+    height: 15px;
 }
 
 .form-input {
@@ -96,7 +100,10 @@ body {
 }
 
 .item-detail {
-    margin-bottom: 8px !important;
+    margin-bottom: 15px !important;
+    p:not(.form-label) {
+        color: #E7505A;
+    }
 }
 
 .Ongoing {
@@ -111,12 +118,18 @@ body {
     color: white;
 }
 
-.CXL {
+.CXL,
+.NĐB {
     color: #26C281;
 }
 
-.TL {
+.TL,
+.XLC {
     color: #E7505A;
+}
+
+.PH {
+    color: #07C;
 }
 
 .XYK {

@@ -7,6 +7,7 @@ import {FlatTreeControl} from '@angular/cdk/tree';
 import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
 import {BehaviorSubject} from 'rxjs';
 import * as moment from 'moment';
+import {PlatformLocation} from '@angular/common';
 import {IncomingDoc, ItemSeleted, IncomingDocService, IncomingTicket} from '../incoming-doc.service';
 import {RotiniPanel} from './document-add.component';
 import {ResApiService} from '../../../services/res-api.service';
@@ -47,13 +48,30 @@ export class ReportComponent implements OnInit {
   constructor(private fb: FormBuilder, private docTo: IncomingDocService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
-              public overlay: Overlay, public viewContainerRef: ViewContainerRef) { }
+              public overlay: Overlay, public viewContainerRef: ViewContainerRef,
+              private location: PlatformLocation
+    ) {
+      location.onPopState(() => {
+        //alert(window.location);
+        // window.location.reload();
+     });
+    }
 
   ngOnInit() {
     this.getDocType();
     this.getAllListRequest();
     this.getCurrentUser();
   }
+  
+  validateQty(event) {
+    var key = window.event ? event.keyCode : event.which;
+    if (event.keyCode === 8) {
+        return true;
+    }
+    else {
+      return false;
+    }
+  };
   
   getAllListRequest() {
     try{
@@ -106,7 +124,7 @@ export class ReportComponent implements OnInit {
             note: this.docTo.CheckNull(element.Note),
             created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documnets/IncomingDoc/docTo-detail/' + element.ID
+            link: '/Documents/IncomingDoc/docTo-detail/' + element.ID
           })
         })   
         

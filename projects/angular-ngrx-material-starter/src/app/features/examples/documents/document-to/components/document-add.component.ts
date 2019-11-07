@@ -4,7 +4,8 @@ import {
   ChangeDetectionStrategy,
   ViewChild,
   ChangeDetectorRef,
-  ViewContainerRef
+  ViewContainerRef,
+  ViewRef
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material';
@@ -30,12 +31,17 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { environment } from '../../../../../../environments/environment';
-import { ActivatedRoute, Router} from '@angular/router';
+import { filter, pairwise } from 'rxjs/operators';
+import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
+import {PlatformLocation} from '@angular/common';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
+import { UserChoice } from '../../document-go/document-go-detail.component';
+import { AppComponent } from '../../../../../app/app.component';
 
+declare const _spPageContextInfo;  
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(
@@ -83,6 +89,7 @@ export class DocumentAddComponent implements OnInit {
   userApproverName = '';
   currentNumberTo = 0;
   EmailConfig;
+  CurrentItem;
   IncomingDocform: FormGroup;
   ListBookType: ItemSeleted[] = [];
   ListDocType: ItemSeleted[] = [];
@@ -90,6 +97,7 @@ export class DocumentAddComponent implements OnInit {
   ListUrgent: ItemSeleted[] = [];
   ListMethodReceipt: ItemSeleted[] = [];
   ListSource: ItemSeleted[] = [];
+  ListAllUser: UserChoice[] = [];
   ApproverStep = [];
   DocumentID = 0;
   outputFile = [];
@@ -114,7 +122,22 @@ export class DocumentAddComponent implements OnInit {
     public overlay: Overlay,
     public viewContainerRef: ViewContainerRef,
     private routes: Router,
-  ) {}
+    private location: PlatformLocation,
+    private app: AppComponent
+    ) {
+    //   location.onPopState(() => {
+    //     //alert(window.location);
+    //     //window.location.reload();
+    //     this.routes.events
+    //   .pipe(filter((e: any) => e instanceof RoutesRecognized),
+    //       pairwise()
+    //   ).subscribe((e: any) => {
+    //       let url = e[0].urlAfterRedirects;
+    //       console.log(url);
+    //       this.ngOnInit();
+    //   });
+    // });
+    }
 
   ngOnInit() {
     this.getCurrentUser();
@@ -163,6 +186,16 @@ export class DocumentAddComponent implements OnInit {
     return day < moment().toDate();
   }
 
+  validateQty(event) {
+    var key = window.event ? event.keyCode : event.which;
+    if (event.keyCode === 8) {
+        return true;
+    }
+    else {
+      return false;
+    }
+  };
+
   getAllListDocument() {
     this.OpenRotiniPanel();
     this.docTo.getListDocumentTo(this.currentUserId).subscribe(
@@ -208,16 +241,25 @@ export class DocumentAddComponent implements OnInit {
           });
         });
         this.dataSource = new MatTableDataSource<IncomingDoc>(this.inDocs$);
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
         this.dataSource.paginator = this.paginator;
       },
       error => {
         console.log('error: ' + error);
         this.CloseRotiniPanel();
       },
-      () => {}
+      () => {
+        this.CloseRotiniPanel();
+      }
     );
+  }
 
+  ShowFormAddNew(){
+    this.addNew = !this.addNew; 
+    this.showList = !this.showList;
+    this.OpenRotiniPanel();
     this.docTo.getDocumentToMax().subscribe(
       (itemValue: any[]) => {
         let item = itemValue['value'] as Array<any>;
@@ -243,14 +285,6 @@ export class DocumentAddComponent implements OnInit {
         this.CloseRotiniPanel();
       }
     );
-  }
-
-  ChangeNumberTo() {
-    const dataForm = this.IncomingDocform.getRawValue();
-    let numer = dataForm.numberTo;
-    this.IncomingDocform.controls['numberOfSymbol'].setValue(
-      numer + '/Văn bản đến'
-    );    
   }
 
   OpenRotiniPanel() {
@@ -309,6 +343,7 @@ export class DocumentAddComponent implements OnInit {
         this.CloseRotiniPanel();
       },
       () => {
+        this.CheckPermission();
         console.log(
           'Current user email is: \n' +
             'Current user Id is: ' +
@@ -320,6 +355,23 @@ export class DocumentAddComponent implements OnInit {
         this.getAllListDocument();
       }
     );
+  }
+
+  CheckPermission() {
+    this.docTo.getRoleCurrentUser(this.currentUserId).subscribe((itemValue: any[]) => {
+      let item = itemValue["value"] as Array<any>; 
+      if(item.length < 0) {
+        this.notificationService.info("Bạn không có quyền truy cập");
+        this.routes.navigate(['/']);
+      }
+    },
+    error => {
+      console.log("Check permission failed") ;
+      this.CloseRotiniPanel();
+    },
+    () => {
+     console.log("Check permission success");
+    })
   }
 
   getBookType() {
@@ -435,6 +487,24 @@ export class DocumentAddComponent implements OnInit {
           Department: element.DepartmentName
         });
       });
+    },
+    error => {},
+    () => {
+      this.docTo.getAllUser().subscribe((itemValue: any[]) => {
+        let item = itemValue['value'] as Array<any>;
+        this.ListAllUser = [];
+        item.forEach(element => {
+          this.ListAllUser.push({
+            Id: element.User.Id,
+            DisplayName: element.User.Title,
+            Email: element.User.Name.split('|')[2],
+            DeCode: element.DepartmentCode,
+            DeName: element.DepartmentName,
+            RoleCode: element.RoleCode,
+            RoleName: element.RoleName
+          })         
+        })
+      })
     });
   }
 
@@ -444,130 +514,158 @@ export class DocumentAddComponent implements OnInit {
     this.userApproverName = value.split('_')[2];
   }
 
-  AddNewItem(sts) {
+  validation() {
     const dataForm = this.IncomingDocform.getRawValue();
-    if(this.IdEdit <= 0 && this.docTo.CheckNullSetZero(dataForm.numberTo) < this.currentNumberTo) {
-      this.notificationService.warn('Số đến không hợp lệ! Vui lòng kiểm tra lại');
+
+    // if(this.IdEdit <= 0 && this.docTo.CheckNullSetZero(dataForm.numberTo) < this.currentNumberTo) {
+    //   this.notificationService.warn('Số đến không hợp lệ! Vui lòng kiểm tra lại');
+    //   return false;
+    // } 
+    if(this.docTo.CheckNull(dataForm.numberOfSymbol).indexOf(this.docTo.formatNumberTo(this.currentNumberTo) + '/') < 0) {
+      this.notificationService.warn('Số ký hiệu không hợp lệ! Vui lòng kiểm tra lại');
+      return false;
+    }
+    else if(this.docTo.CheckNull(dataForm.promulgatedDate) !== '' && this.docTo.CheckNull(dataForm.dateTo) !== '') {
+      let diff = moment(dataForm.dateTo).diff(moment(dataForm.promulgatedDate), 'day');
+      if(diff < 0) {
+        this.notificationService.warn('Ngày đến phải lớn hơn hoặc bằng ngày ban hành! Vui lòng kiểm tra lại');
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return true;
+    }
+  }
+
+  AddNewItem(sts) {
+    if(!this.validation()) {
       return;
     }
-    if (this.IncomingDocform.valid) {
-      this.OpenRotiniPanel();      
-      let bookT = this.docTo.FindItemByCode(
-        this.ListBookType,
-        dataForm.bookType
-      );
-      let docT = this.docTo.FindItemById(this.ListDocType, dataForm.docType);
-      let secretL = this.docTo.FindItemById(
-        this.ListSecret,
-        dataForm.secretLevel
-      );
-      let urgentL = this.docTo.FindItemById(
-        this.ListUrgent,
-        dataForm.urgentLevel
-      );
-      let method = this.docTo.FindItemById(
-        this.ListMethodReceipt,
-        dataForm.methodReceipt
-      );
-      let sourceT = this.docTo.FindItemById(this.ListSource, dataForm.source);
-      this.splitDataUserApprover(dataForm.userHandle);
-      this.Title =  dataForm.numberTo + '/Văn bản đến'
-      const data = {
-        __metadata: { type: 'SP.Data.ListDocumentToListItem' },
-        Title: dataForm.bookType,
-        BookTypeCode: dataForm.bookType,
-        BookTypeName: bookT === undefined ? '' : bookT.title,
-        NumberTo: dataForm.numberTo,
-        NumberToSub: this.docTo.CheckNullSetZero(dataForm.numberToSub),
-        NumberOfSymbol: dataForm.numberOfSymbol,
-        SourceID: this.docTo.CheckNullSetZero(dataForm.source),
-        Source: sourceT === undefined ? '' : sourceT.title,
-        DocTypeID: this.docTo.CheckNullSetZero(dataForm.docType),
-        DocTypeName: docT === undefined ? '' : docT.title,
-        PromulgatedDate: this.docTo.CheckNull(dataForm.promulgatedDate) === '' ? null : moment(dataForm.promulgatedDate).toDate(),
-        DateTo: this.docTo.CheckNull(dataForm.dateTo) === '' ? null : moment(dataForm.dateTo).toDate(),
-        DateCreated: new Date(),
-        Compendium: dataForm.compendium,
-        SecretLevelID: this.docTo.CheckNullSetZero(dataForm.secretLevel),
-        SecretLevelName: secretL === undefined ? '' : secretL.title,
-        UrgentLevelID: this.docTo.CheckNullSetZero(dataForm.urgentLevel),
-        UrgentLevelName: urgentL === undefined ? '' : urgentL.title,
-        Deadline: this.docTo.CheckNull(dataForm.deadline) === '' ? null : moment(dataForm.deadline).toDate(),
-        NumOfCopies: this.docTo.CheckNullSetZero(dataForm.numberOfCopies),
-        MethodReceiptID: this.docTo.CheckNullSetZero(dataForm.methodReceipt),
-        MethodReceipt: method === undefined ? '' : method.title,
-        UserOfHandleId: this.userApproverId,
-        Note: dataForm.note,
-        IsResponse: dataForm.isResponse ? 1 : 0,
-        // IsRetrieve: dataForm.isRetrieve ? 1 : 0,
-        StatusID: sts,
-        StatusName: sts === 0 ? 'Chờ xử lý' : 'Lưu tạm',
-        Signer: dataForm.signer,
-        ListUserApprover: this.userApproverId + '_' + this.userApproverName,
-      };
-      if(this.IdEdit <= 0) {
-        this.services.AddItemToList(this.listTitle, data).subscribe(
-          item => {
-            this.DocumentID = item['d'].Id;
-          },
-          error => {
-            this.CloseRotiniPanel();
-            console.log(
-              'error when add item to list ' +
-                this.listTitle +
-                ': ' +
-                error.error.error.message.value
-            ),
-              this.notificationService.error('Thêm văn bản đến thất bại');
-          },
-          () => {
-            console.log(
-              'Add item of approval user to list ' +
-                this.listTitle +
-                ' successfully!'
-            );
-            if (sts === 0) {
-              this.AddHistoryStep();
-            } else {
-              this.saveItemAttachment(0, this.DocumentID);
-            }
-          }
+    else if(this.validation()) {
+      const dataForm = this.IncomingDocform.getRawValue();  
+      if (this.IncomingDocform.valid) {
+        this.OpenRotiniPanel();      
+        let bookT = this.docTo.FindItemByCode(
+          this.ListBookType,
+          dataForm.bookType
         );
-      } else {
-        this.services.updateListById(this.listTitle, data, this.IdEdit).subscribe(
-          item => {
-            this.DocumentID = this.IdEdit;
-          },
-          error => {
-            this.CloseRotiniPanel();
-            console.log(
-              'error when update item to list ' +
-                this.listTitle +
-                ': ' +
-                error
-            ),
-              this.notificationService.error('Thêm văn bản đến thất bại');
-          },
-          () => {
-            console.log(
-              'update item of approval user to list ' +
-                this.listTitle +
-                ' successfully!'
-            );
-            if (sts === 0) {
-              this.AddHistoryStep();
-            } else {
-              this.saveItemAttachment(0, this.DocumentID);
-            }
-          }
+        let docT = this.docTo.FindItemById(this.ListDocType, dataForm.docType);
+        let secretL = this.docTo.FindItemById(
+          this.ListSecret,
+          dataForm.secretLevel
         );
+        let urgentL = this.docTo.FindItemById(
+          this.ListUrgent,
+          dataForm.urgentLevel
+        );
+        let method = this.docTo.FindItemById(
+          this.ListMethodReceipt,
+          dataForm.methodReceipt
+        );
+        let sourceT = this.docTo.FindItemById(this.ListSource, dataForm.source);
+        this.splitDataUserApprover(dataForm.userHandle);
+        this.Title =  dataForm.numberTo + '/Văn bản đến'
+        const data = {
+          __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+          Title: dataForm.bookType,
+          BookTypeCode: dataForm.bookType,
+          BookTypeName: bookT === undefined ? '' : bookT.title,
+          NumberTo: dataForm.numberTo,
+          NumberToSub: this.docTo.CheckNullSetZero(dataForm.numberToSub),
+          NumberOfSymbol: dataForm.numberOfSymbol,
+          SourceID: this.docTo.CheckNullSetZero(dataForm.source),
+          Source: sourceT === undefined ? '' : sourceT.title,
+          DocTypeID: this.docTo.CheckNullSetZero(dataForm.docType),
+          DocTypeName: docT === undefined ? '' : docT.title,
+          PromulgatedDate: this.docTo.CheckNull(dataForm.promulgatedDate) === '' ? null : moment(dataForm.promulgatedDate).toDate(),
+          DateTo: this.docTo.CheckNull(dataForm.dateTo) === '' ? null : moment(dataForm.dateTo).toDate(),
+          DateCreated: new Date(),
+          Compendium: dataForm.compendium,
+          SecretLevelID: this.docTo.CheckNullSetZero(dataForm.secretLevel),
+          SecretLevelName: secretL === undefined ? '' : secretL.title,
+          UrgentLevelID: this.docTo.CheckNullSetZero(dataForm.urgentLevel),
+          UrgentLevelName: urgentL === undefined ? '' : urgentL.title,
+          Deadline: this.docTo.CheckNull(dataForm.deadline) === '' ? null : moment(dataForm.deadline).toDate(),
+          NumOfCopies: this.docTo.CheckNullSetZero(dataForm.numberOfCopies),
+          MethodReceiptID: this.docTo.CheckNullSetZero(dataForm.methodReceipt),
+          MethodReceipt: method === undefined ? '' : method.title,
+          UserOfHandleId: this.userApproverId,
+          Note: dataForm.note,
+          IsResponse: dataForm.isResponse ? 1 : 0,
+          // IsRetrieve: dataForm.isRetrieve ? 1 : 0,
+          StatusID: sts,
+          StatusName: sts === 0 ? 'Chờ xử lý' : 'Lưu tạm',
+          Signer: dataForm.signer,
+          ListUserApprover: this.userApproverId + '_' + this.userApproverName,
+        };
+        if(this.IdEdit <= 0) {
+          this.services.AddItemToList(this.listTitle, data).subscribe(
+            item => {
+              this.DocumentID = item['d'].Id;
+              this.CurrentItem = item['d'];
+            },
+            error => {
+              this.CloseRotiniPanel();
+              console.log(
+                'error when add item to list ' +
+                  this.listTitle +
+                  ': ' +
+                  error.error.error.message.value
+              ),
+                this.notificationService.error('Thêm văn bản đến thất bại');
+            },
+            () => {
+              console.log(
+                'Add item of approval user to list ' +
+                  this.listTitle +
+                  ' successfully!'
+              );
+              if (sts === 0) {
+                this.AddHistoryStep();
+              } else {
+                this.saveItemAttachment(0, this.DocumentID);
+              }
+            }
+          );
+        } else {
+          this.services.updateListById(this.listTitle, data, this.IdEdit).subscribe(
+            item => {
+              this.DocumentID = this.IdEdit;
+            },
+            error => {
+              this.CloseRotiniPanel();
+              console.log(
+                'error when update item to list ' +
+                  this.listTitle +
+                  ': ' +
+                  error
+              ),
+                this.notificationService.error('Thêm văn bản đến thất bại');
+            },
+            () => {
+              console.log(
+                'update item of approval user to list ' +
+                  this.listTitle +
+                  ' successfully!'
+              );
+              if (sts === 0) {
+                this.AddHistoryStep();
+              } else {
+                this.saveItemAttachment(0, this.DocumentID);
+              }
+            }
+          );
+        }
       }
     }
   }
 
   AddListTicket() {
     const dataForm = this.IncomingDocform.getRawValue();
-    let sourceT = this.docTo.FindItemById(this.ListSource, dataForm.source);
+    let request, approver;
+    request = this.ListAllUser.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId) && item.RoleCode === "VT");
+    approver = this.ListAllUser.find(item => item.Id === this.docTo.CheckNullSetZero(this.userApproverId));
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
       Title: dataForm.numberTo,
@@ -575,11 +673,13 @@ export class DocumentAddComponent implements OnInit {
       NoteBookID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.userApproverId,
-      Deadline: dataForm.deadline,
+      Deadline:  this.docTo.CheckNull(dataForm.deadline) === '' ? null : moment(dataForm.deadline).toDate(),
       StatusID: 0,
       StatusName: 'Chờ xử lý',
-      Source: sourceT === undefined ? '' : sourceT.title,
-      Destination: '',
+      Source: request === undefined ? '' : request.DeName,
+      Destination: approver === undefined ? '' : approver.DeName,
+      RoleUserRequest :request === undefined ? '' : request.RoleName,
+      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
       TaskTypeCode: 'XLC',
       TaskTypeName: 'Xử lý chính',
       TypeCode: 'CXL',
@@ -589,6 +689,7 @@ export class DocumentAddComponent implements OnInit {
       Compendium: dataForm.compendium
     };
 
+    let sourceT = this.docTo.FindItemById(this.ListSource, dataForm.source);
     const data2 = {
       __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
       Title: dataForm.numberTo,
@@ -596,11 +697,13 @@ export class DocumentAddComponent implements OnInit {
       NoteBookID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.currentUserId,
-      Deadline: dataForm.deadline,
+      Deadline: this.docTo.CheckNull(dataForm.deadline) === '' ? null : moment(dataForm.deadline).toDate(),
       StatusID: 1,
       StatusName: 'Đã xử lý',
       Source: sourceT === undefined ? '' : sourceT.title,
-      Destination: '',
+      Destination: request === undefined ? '' : request.DeName,
+      RoleUserRequest :'',
+      RoleUserApprover: request === undefined ? '' : request.RoleName,
       TaskTypeCode: 'XLC',
       TaskTypeName: 'Xử lý chính',
       TypeCode: 'CXL',
@@ -652,7 +755,7 @@ export class DocumentAddComponent implements OnInit {
       NoteBookID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.userApproverId,
-      Deadline: dataForm.deadline,
+      Deadline: this.docTo.CheckNull(dataForm.deadline) === '' ? null : moment(dataForm.deadline).toDate(),
       StatusID: 0,
       StatusName: 'Chờ xử lý',
       Content: dataForm.note,
@@ -740,13 +843,15 @@ export class DocumentAddComponent implements OnInit {
         for (let i = 0; i < strContent.length; i++) {
           switch (strContent[i]) {
             case 'NumberTo':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.formatNumberTo(this.IncomingDocform.controls['numberTo'].value));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.formatNumberTo(this.currentNumberTo));
               break;
             case 'Compendium':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.IncomingDocform.controls['compendium'].value));
+              // ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.IncomingDocform.controls['compendium'].value));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.CurrentItem.Compendium);
               break;
             case 'Content':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.IncomingDocform.controls['note'].value));
+              // ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.IncomingDocform.controls['note'].value));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.CurrentItem.Note);
               break;
             case 'UserRequest':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.currentUserName);
@@ -761,13 +866,13 @@ export class DocumentAddComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.userApproverName);
               break;
             case 'ItemUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documnets/IncomingDoc/docTo-detail/' + this.DocumentID);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID);
               break;
             case 'TaskUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/IncomingDoc/docTo-detail/' + this.DocumentID + "/1");
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID + "/1");
               break;
             case 'HomeUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/IncomingDoc');
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc');
               break;
           }
         }
@@ -911,11 +1016,11 @@ export class DocumentAddComponent implements OnInit {
     // window.location.href = '/workflows/LeaveofAbsence/detail/'+ id;
     this.CloseRotiniPanel();
     this.notificationService.success('Thêm văn bản đến thành công');
-    this.currentNumberTo += 1;
-    this.getAllListDocument();
-    this.addNew = !this.addNew;
-    this.showList = !this.showList;
-    this.reset();
+    this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.CurrentItem.Id]);
+    // this.getAllListDocument();
+    // this.addNew = !this.addNew;
+    // this.showList = !this.showList;
+    // this.reset();
   }
 
   DeleteItem(id){
@@ -942,7 +1047,9 @@ export class DocumentAddComponent implements OnInit {
           this.inDocs$.splice(index, 1);
         }
         this.dataSource = new MatTableDataSource<IncomingDoc>(this.inDocs$);
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
         this.dataSource.paginator = this.paginator;
         this.CloseRotiniPanel();
       })
@@ -963,6 +1070,7 @@ export class DocumentAddComponent implements OnInit {
             this.ItemAttachments.push({name: element.FileName});
           });
         }
+        this.currentNumberTo = itemList[0].NumberTo;
         this.itemDocEdit = {
           ID: itemList[0].ID,
           bookType: itemList[0].BookTypeID,
@@ -991,7 +1099,7 @@ export class DocumentAddComponent implements OnInit {
           methodReceipt: itemList[0].MethodReceiptID,
           userHandle:
             itemList[0].UserOfHandle !== undefined
-              ? itemList[0].UserOfHandle.Id + '_' + itemList[0].UserOfHandle.Name.split('|')[2]
+              ? itemList[0].UserOfHandle.Id + '_' + itemList[0].UserOfHandle.Name.split('|')[2] + '_' + itemList[0].UserOfHandle.Title
               : '',
           note: this.docTo.CheckNull(itemList[0].Note) === '' ? '' : itemList[0].Note,
           isResponse: itemList[0].IsResponse,
@@ -1022,7 +1130,9 @@ export class DocumentAddComponent implements OnInit {
           signer: this.itemDocEdit.signer
         });
       }
-      this.ref.detectChanges();
+      if (!(this.ref as ViewRef).destroyed) {
+        this.ref.detectChanges();
+      }
       this.CloseRotiniPanel();
     });
   }

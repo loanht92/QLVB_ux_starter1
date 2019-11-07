@@ -8,6 +8,7 @@ import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
 import * as moment from 'moment';
+import {PlatformLocation} from '@angular/common';
 import {ItemSeleted, IncomingDocService, IncomingTicket, ApproverObject} from '../incoming-doc.service';
 import {RotiniPanel} from './document-add.component';
 import {ResApiService} from '../../../services/res-api.service';
@@ -28,7 +29,7 @@ import { any } from 'bluebird';
 export class ReportAdvanceComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'content', 'sts']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -69,7 +70,14 @@ export class ReportAdvanceComponent implements OnInit {
   constructor(private fb: FormBuilder, private docTo: IncomingDocService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
-              public overlay: Overlay, public viewContainerRef: ViewContainerRef) { }
+              public overlay: Overlay, public viewContainerRef: ViewContainerRef,
+              private location: PlatformLocation
+    ) {
+      location.onPopState(() => {
+        //alert(window.location);
+        // window.location.reload();
+     });
+    }
 
   ngOnInit() {
     this.filteredOptions = this.userApprover.valueChanges
@@ -87,6 +95,16 @@ export class ReportAdvanceComponent implements OnInit {
     this.getCurrentUser();
   }
 
+  validateQty(event) {
+    var key = window.event ? event.keyCode : event.which;
+    if (event.keyCode === 8) {
+        return true;
+    }
+    else {
+      return false;
+    }
+  };
+  
   onDisplayValue(user?: ApproverObject): string | undefined {
     return user ? user.UserName : undefined;
   }
@@ -245,7 +263,7 @@ export class ReportAdvanceComponent implements OnInit {
             note: this.docTo.CheckNull(element.Note),
             created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documnets/IncomingDoc/docTo-detail/' + element.ID
+            link: '/Documents/IncomingDoc/docTo-detail/' + element.ID
           })
         })   
         

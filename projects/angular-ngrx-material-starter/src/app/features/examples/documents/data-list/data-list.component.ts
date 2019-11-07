@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ElementRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ElementRef, ViewRef} from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material';
 import {SelectionModel} from '@angular/cdk/collections';
@@ -187,7 +187,9 @@ export class DataListComponent implements OnInit {
       () => {
         this.dataSource2 = new MatTableDataSource<ItemListEmp>(this.ListAllEmployee);
         this.dataSource2.paginator = this.paginator;
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
         this.CloseRotiniPanel();
       }
       )
@@ -217,7 +219,9 @@ export class DataListComponent implements OnInit {
         this.dataSource = new MatTableDataSource<ItemList>(this.ListAllItem);
         this.dataSource.paginator = this.paginator;
         this.isAdd = true;
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
         this.CloseRotiniPanel();
         // this.services.getFieldInList(this.selectedType).subscribe((itemValue: any[]) => {
         //   let item = itemValue["value"] as Array<any>;    
@@ -261,7 +265,9 @@ export class DataListComponent implements OnInit {
         },
         () => {
           console.log("load user success");
-          this.ref.detectChanges();
+          if (!(this.ref as ViewRef).destroyed) {
+            this.ref.detectChanges();  
+          } 
           this.CloseRotiniPanel();
         });
   }
@@ -370,7 +376,9 @@ export class DataListComponent implements OnInit {
               Code: this.Code
             })
           }
-          this.ref.detectChanges();
+          if (!(this.ref as ViewRef).destroyed) {
+            this.ref.detectChanges();  
+          } 
         }
       )
     }
@@ -429,7 +437,9 @@ export class DataListComponent implements OnInit {
             Department: this.Department.split('|')[1],
             Role: this.Role.split('|')[1],
           })
-          this.ref.detectChanges();
+          if (!(this.ref as ViewRef).destroyed) {
+            this.ref.detectChanges();  
+          } 
         }
       )
     }

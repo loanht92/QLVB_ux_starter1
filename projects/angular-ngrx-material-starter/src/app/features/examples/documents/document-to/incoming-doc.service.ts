@@ -124,7 +124,7 @@ export class IncomingDocService {
   }
 
   urlRequestTo =
-    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$orderby=ID desc&$expand=UserApprover,UserRequest";
+    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id,UserRetrieve/Id,UserRetrieve/Title&$orderby=ID desc&$expand=UserApprover,UserRequest,UserRetrieve";
   getListRequestTo(strFilter): Observable<any> {
     return this.http.get(`${this.restUrl}${this.urlRequestTo}` + strFilter);
   }
@@ -153,10 +153,14 @@ export class IncomingDocService {
       `${this.restUrl}` + `/_api/web/lists/getbytitle('ListMapEmployee')/items?$select=*,User/Name,User/Title,User/Id&$expand=User`
     );
   }
+  
+  getRoleCurrentUser(id) {
+    return this.http.get(`${this.restUrl}/_api/web/lists/getbytitle('ListMapEmployee')/items?$select=*,User/Name,User/Title,User/Id&$expand=User&$filter=User/Id eq '` + id + `'`);
+  }
 
-  getHistoryStep(noteBookID, step) {
+  getHistoryStep(noteBookID, strFilter) {
     return this.http.get(
-      `${this.restUrl}` + `/_api/web/lists/getbytitle('ListHistoryRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$expand=UserRequest,UserApprover&$filter=NoteBookID eq '` + noteBookID + `' and IndexStep eq '` + step + `'`
+      `${this.restUrl}` + `/_api/web/lists/getbytitle('ListHistoryRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$expand=UserRequest,UserApprover&$filter=NoteBookID eq '` + noteBookID + `'` + strFilter
     );
   }
 
@@ -214,6 +218,7 @@ export interface IncomingTicket {
   userApprover: string;
   deadline: string;
   status: string;
+  statusID: number;
   source: string;
   destination: string;
   taskType: string;

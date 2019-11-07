@@ -16,7 +16,7 @@ export class DocumentComponent implements OnInit {
   currentUser;
 
   documents = [
-    { link: 'documentgo', label: 'Văn bản trình', display: true },
+    { link: 'documentgo/0', label: 'Văn bản trình', display: true },
     { link: 'documentgo-waiting-process/1', label: 'Chờ xử lý' },
     { link: 'documentgo-processing/2', label: 'Đang xử lý' },
     { link: 'documentgo-processed/3', label: 'Đã xử lý' },

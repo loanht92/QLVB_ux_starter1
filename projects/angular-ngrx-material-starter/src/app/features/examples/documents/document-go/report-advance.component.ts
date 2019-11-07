@@ -12,6 +12,7 @@ import { DocumentGoService } from './document-go.service';
 import {ResApiService} from '../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import {PlatformLocation} from '@angular/common';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
@@ -25,9 +26,9 @@ import { any } from 'bluebird';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReportAdvanceDGComponent implements OnInit {
-  listTitle = "ListProcessRequestTo";
+  listTitle = "ListProcessRequestGo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberGo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'content', 'sts']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberGo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -68,7 +69,14 @@ export class ReportAdvanceDGComponent implements OnInit {
   constructor(private fb: FormBuilder, private docTo: DocumentGoService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
-              public overlay: Overlay, public viewContainerRef: ViewContainerRef) { }
+              public overlay: Overlay, public viewContainerRef: ViewContainerRef,
+              private location: PlatformLocation
+    ) {
+      location.onPopState(() => {
+        //alert(window.location);
+        //window.location.reload();
+     });
+    }
 
   ngOnInit() {
     this.filteredOptions = this.userApprover.valueChanges
@@ -86,6 +94,16 @@ export class ReportAdvanceDGComponent implements OnInit {
     this.getCurrentUser();
   }
 
+  validateQty(event) {
+    var key = window.event ? event.keyCode : event.which;
+    if (event.keyCode === 8) {
+        return true;
+    }
+    else {
+      return false;
+    }
+  };
+  
   onDisplayValue(user?: ItemUser): string | undefined {
     return user ? user.UserName : undefined;
   }
@@ -106,6 +124,10 @@ export class ReportAdvanceDGComponent implements OnInit {
               UserId: element.User.Id,
               UserName: element.User.Title,
               UserEmail: element.User.Name.split('|')[2],
+              Role: element.RoleName,
+              Department: element.DepartmentName,
+              RoleCode: element.RoleCode,
+              DepartmentCode: element.DepartmentCode,
             });
           }
         })   
@@ -240,7 +262,7 @@ export class ReportAdvanceDGComponent implements OnInit {
             note: this.docTo.checkNull(element.Note),
             created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documnets/documentgo-detail/' + element.ID
+            link: '/Documents/documentgo-detail/' + element.ID
           })
         })   
         

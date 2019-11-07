@@ -13,6 +13,7 @@ import { DocumentGoService } from './document-go.service';
 import {ResApiService} from '../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import {PlatformLocation} from '@angular/common';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
@@ -27,7 +28,7 @@ import {
 export class ReportDGComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberGo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'content', 'sts']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberGo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover','content',
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -46,13 +47,30 @@ export class ReportDGComponent implements OnInit {
   constructor(private fb: FormBuilder, private docTo: DocumentGoService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
-              public overlay: Overlay, public viewContainerRef: ViewContainerRef) { }
+              public overlay: Overlay, public viewContainerRef: ViewContainerRef,
+              private location: PlatformLocation
+    ) {
+      location.onPopState(() => {
+        //alert(window.location);
+        // window.location.reload();
+     });
+    }
 
   ngOnInit() {
     this.getDocType();
     this.getAllListRequest();
     this.getCurrentUser();
   }
+  
+  validateQty(event) {
+    var key = window.event ? event.keyCode : event.which;
+    if (event.keyCode === 8) {
+        return true;
+    }
+    else {
+      return false;
+    }
+  };
   
   getAllListRequest() {
     try{
@@ -91,7 +109,7 @@ export class ReportDGComponent implements OnInit {
             note: this.docTo.checkNull(element.Note),
             created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documnets/documentgo-detail/' + element.ID
+            link: '/Documents/documentgo-detail/' + element.ID
           })
         })   
         

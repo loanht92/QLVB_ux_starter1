@@ -18,7 +18,7 @@
                 <form class="example-form" *ngIf="itemDoc">
                     <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
-                            <p fxFlex="25" class="form-label">Đơn vị tạo:</p>
+                            <p fxFlex="25" class="form-label">Đơn vị soạn thảo:</p>
                             <p fxFlex="auto">{{itemDoc.UnitCreateName}}</p>
                         </div>
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
@@ -28,18 +28,18 @@
                     </div>
                     <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
-                            <p fxFlex="25" class="form-label">Sổ văn bản:</p>
-                            <p fxFlex="auto">{{itemDoc.BookTypeName}}</p>
+                            <p fxFlex="25" class="form-label">Ngày tạo</p>
+                            <p fxFlex="auto">{{itemDoc.DateCreated}}</p>
                         </div>
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
-                            <p fxFlex="25" class="form-label">Số đi:</p>
-                            <p fxFlex="auto">{{itemDoc.NumberGo}}</p>
+                            <p fxFlex="25" class="form-label">Sổ văn bản:</p>
+                            <p fxFlex="auto">{{itemDoc.BookTypeName}}</p>
                         </div>
                     </div>
                     <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
-                            <p fxFlex="25" class="form-label">Số phụ:</p>
-                            <p fxFlex="auto"></p>
+                            <p fxFlex="25" class="form-label">Số đi:</p>
+                            <p fxFlex="auto">{{itemDoc.NumberGo}}</p>
                         </div>
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Số / Ký hiệu:</p>
@@ -54,6 +54,10 @@
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Loại văn bản:</p>
                             <p fxFlex="auto">{{itemDoc.DocTypeName}}</p>
+                        </div>
+                        <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
+                            <p fxFlex="25" class="form-label">Hạn xử lý:</p>
+                            <p fxFlex="auto">{{itemDoc.Deadline}}</p>
                         </div>
                     </div>
 
@@ -74,27 +78,26 @@
                         </div>
                     </div>
 
-                    <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
+                    <!-- <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Người xử lý:</p>
-                            <p fxFlex="auto">{{itemDoc.UserHandleName}}</p>
+                            <p fxFlex="auto">{{itemDoc.UserOfHandleName}}</p>
                         </div>
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Hạn xử lý:</p>
-                            <p fxFlex="auto">{{itemDoc.deadline}}</p>
+                            <p fxFlex="auto">{{itemDoc.Deadline}}</p>
                         </div>
                     </div>
                     <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Người Phối hợp:</p>
-                            <!-- <p fxFlex="auto">{{itemDoc.UserHandleName}}</p> -->
+                            <p fxFlex="auto">{{itemDoc.UserOfCombinateName}}</p>
                         </div>
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Người nhận để biết:</p>
-                            <!-- <p fxFlex="auto">{{itemDoc.deadline}}</p> -->
+                            <p fxFlex="auto">{{itemDoc.UserOfKnowName}}</p>
                         </div>
-                    </div>
-
+                    </div> -->
 
                     <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
@@ -113,7 +116,7 @@
                         </div>
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Phương thức nhận:</p>
-                            <p fxFlex="auto">{{itemDoc.MethodReceiptName}}</p>
+                            <p fxFlex="auto">{{itemDoc.MethodSendName}}</p>
                         </div>
                     </div>
                     <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
@@ -127,12 +130,12 @@
                             <p fxFlex="auto">{{itemDoc.DateIssued}}</p>
                         </div>
                     </div>
-                    <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
+                    <!-- <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="100">
                             <p fxFlex="12.5" class="form-label">Nội dung xử lý:</p>
                             <p fxFlex="auto">{{itemDoc.Note}}</p>
                         </div>
-                    </div>
+                    </div> -->
                     <!-- <div fxLayout="row" fxLayout.xs="column" fxFlexFill class="item-detail">
                         <div fxLayout="row" fxLayout.xs="column" fxFlex="50">
                             <p fxFlex="25" class="form-label">Là văn bản trả lời:</p>
@@ -162,7 +165,7 @@
                 <table mat-table [dataSource]="dataSource_Ticket" class="mat-elevation-z8">
                     <ng-container matColumnDef="stt">
                         <th mat-header-cell *matHeaderCellDef> STT </th>
-                        <td mat-cell *matCellDef="let element">{{element.numberTo}}</td>
+                        <td mat-cell *matCellDef="let element">{{element.STT}}</td>
                     </ng-container>
                     <ng-container matColumnDef="created">
                         <th mat-header-cell *matHeaderCellDef> Ngày gửi </th>
@@ -173,8 +176,10 @@
                         <td mat-cell *matCellDef="let element">{{element.userRequest}}</td>
                     </ng-container>
                     <ng-container matColumnDef="userApprover">
-                        <th mat-header-cell *matHeaderCellDef> Ngày nhận </th>
-                        <td mat-cell *matCellDef="let element">{{element.userApprover}}</td>
+                        <th mat-header-cell *matHeaderCellDef> Người nhận </th>
+                        <td mat-cell *matCellDef="let element">
+                            <p class="{{element.stsTaskCode}}">{{element.userApprover}}</p>
+                        </td>
                     </ng-container>
                     <ng-container matColumnDef="deadline">
                         <th mat-header-cell *matHeaderCellDef> Hạn xử lý </th>
@@ -240,14 +245,14 @@
                             <button mat-stroked-button color="primary" type="button" (click)="SendComment(this.Comments,false,null)"> <i class="material-icons">mail</i>&nbsp; <span class="Submit1">Gửi</span></button>
                         </div>
                     </div>
-                    <div style="height:800px ;overflow: auto;">
-                        <div class="cmt-item" *ngFor="let item of listCommentParent; let i=index; ">
-                            <div class="cmt-img">
+                    <div style="height:800px ;overflow: auto;display: flex;" fxLayout="column" fxLayoutGap="10px">
+                        <div class="cmt-item" *ngFor="let item of listCommentParent; let i=index;" fxLayout="row" fxLayoutGap="15px">
+                            <div class="cmt-img" fxFlex="60px">
                                 <img src="{{item.userPicture}}">
                             </div>
-                            <div class="cmt-content">
+                            <div class="cmt-content" fxFlex="auto">
                                 <h3 id="cmt-author">{{item.Author}} <span *ngIf="item.UserApprover!=''"> xin ý kiến </span> {{item.UserApprover}} <span id="cmt-date">{{item.Created}}</span></h3>
-                                <button mat-stroked-button color="primary" type="button" (click)="Reply(i)" *ngIf="item.Reply">Trả lời</button>
+                                <button class="btn-submit" mat-stroked-button color="primary" type="button" (click)="Reply(i)" *ngIf="item.Reply">Trả lời</button>
                                 <p id="cmt-title">{{item.Chat_Comments}}</p>
                                 <div fxLayout="column">
                                     <a *ngFor="let itemAtt of item.itemAttach" href="{{itemAtt.urlFile}}" target="_blank" class="urlFile">{{itemAtt.name}}</a>
@@ -258,17 +263,17 @@
                                             <textarea matInput placeholder="Nội dung trả lời" [(ngModel)]="item.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
                                         </mat-form-field>
                                     </div>
-                                    <div class="actions">
-                                        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="saveCommentReply(i)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
+                                    <div>
+                                        <button mat-stroked-button color="primary" type="button" class="MR5 btn-submit" (click)="saveCommentReply(i)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
                                     </div>
                                 </div>
-                                <div class="cmt-item" *ngFor="let itemChild of item.children; let j=index">
-                                    <div class="cmt-img">
+                                <div class="cmt-item" *ngFor="let itemChild of item.children; let j=index" fxLayout="row" fxLayoutGap="15px">
+                                    <div class="cmt-img" fxFlex="60px">
                                         <img src="{{itemChild.userPicture}}">
                                     </div>
-                                    <div class="cmt-content">
+                                    <div class="cmt-content" fxFlex="auto">
                                         <h3 id="cmt-author">{{itemChild.Author}} <span id="cmt-date">{{itemChild.Created}}</span></h3>
-                                        <button mat-stroked-button color="primary" type="button" (click)="Reply(i,j)">Trả lời</button>
+                                        <button class="btn-submit" mat-stroked-button color="primary" type="button" (click)="Reply(i,j)">Trả lời</button>
                                         <p id="cmt-title">{{itemChild.Chat_Comments}}</p>
                                         <div fxLayout="column">
                                             <a *ngFor="let itemAttChild of itemChild.itemAttach" href="{{itemAttChild.urlFile}}" target="_blank" class="urlFile">{{itemAttChild.name}}</a>
@@ -279,8 +284,8 @@
                                                     <textarea matInput placeholder="Nội dung trả lời" [(ngModel)]="itemChild.Content" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="10"></textarea>
                                                 </mat-form-field>
                                             </div>
-                                            <div class="actions">
-                                                <button mat-stroked-button color="primary" type="button" class="MR5" (click)="saveCommentReply(i,j)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
+                                            <div>
+                                                <button mat-stroked-button color="primary" type="button" class="MR5 btn-submit" (click)="saveCommentReply(i,j)"><i class="material-icons">send</i>&nbsp; <span class="Submit1">Gửi</span></button>
                                             </div>
                                         </div>
                                     </div>

@@ -15,13 +15,13 @@
         <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
             <mat-form-field fxFlex="50">
                 <mat-label>Hạn xử lý, từ ngày</mat-label>
-                <input matInput [matDatepicker]="picker" [(ngModel)]="deadlineFrom">
+                <input matInput [matDatepicker]="picker" (click)="picker.open()" [(ngModel)]="deadlineFrom" (keypress)="validateQty($event)">
                 <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                 <mat-datepicker #picker disabled="false"></mat-datepicker>
             </mat-form-field>
             <mat-form-field fxFlex="50">
                 <mat-label>đến ngày</mat-label>
-                <input matInput [matDatepicker]="picker2" [(ngModel)]="deadlineTo">
+                <input matInput [matDatepicker]="picker2" (click)="picker2.open()" [(ngModel)]="deadlineTo" (keypress)="validateQty($event)">
                 <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
                 <mat-datepicker #picker2 disabled="false"></mat-datepicker>
             </mat-form-field>
@@ -29,13 +29,13 @@
         <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
             <mat-form-field fxFlex="50">
                 <mat-label>Ngày đến, từ ngày</mat-label>
-                <input matInput [matDatepicker]="picker3" [(ngModel)]="dateFrom">
+                <input matInput [matDatepicker]="picker3" (click)="picker3.open()" [(ngModel)]="dateFrom" (keypress)="validateQty($event)">
                 <mat-datepicker-toggle matSuffix [for]="picker3"></mat-datepicker-toggle>
                 <mat-datepicker #picker3 disabled="false"></mat-datepicker>
             </mat-form-field>
             <mat-form-field fxFlex="50">
                 <mat-label>đến ngày</mat-label>
-                <input matInput [matDatepicker]="picker4" [(ngModel)]="dateTo">
+                <input matInput [matDatepicker]="picker4" (click)="picker4.open()" [(ngModel)]="dateTo" (keypress)="validateQty($event)">
                 <mat-datepicker-toggle matSuffix [for]="picker4"></mat-datepicker-toggle>
                 <mat-datepicker #picker4 disabled="false"></mat-datepicker>
             </mat-form-field>

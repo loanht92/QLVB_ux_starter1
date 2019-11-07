@@ -4,6 +4,9 @@ import { Observable, of as observableOf } from 'rxjs';
 import {SharedService} from '../../../../../shared/shared-service/shared.service';
 import { State } from '../../../examples.state';
 import {AppComponent} from '../../../../../app/app.component';
+import { PlatformLocation } from '@angular/common';
+import { filter, pairwise } from 'rxjs/operators';
+import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
 
 @Component({
   selector: 'anms-document',
@@ -20,13 +23,28 @@ export class IncomingDocumentComponent implements OnInit {
     { link: 'docTo-list/1', label: 'Chờ xử lý' },
     { link: 'docTo-list-approving/2', label: 'Đang xử lý' },
     { link: 'docTo-list-approved/3', label: 'Đã xử lý' },
+    { link: 'docTo-retrieve', label: 'Thu hồi' },
     { link: 'docTo-list-waiting-comment/4', label: 'Chờ xin ý kiến' },
     { link: 'docTo-list-response-comment/5', label: 'Đã cho ý kiến' },
     { link: 'reportDocTo', label: 'Báo cáo, thống kế' },
     { link: 'reportAdvanceDocTo', label: 'Tra cứu văn bản'},
   ];
 
-  constructor(private store: Store<State>, private shareService: SharedService, private app: AppComponent) {
+  constructor(private store: Store<State>, private shareService: SharedService, private app: AppComponent,
+    private location: PlatformLocation, private routes: Router) 
+    {
+      location.onPopState(() => {
+        //alert(window.location);
+        //window.location.reload();
+        this.routes.events
+      .pipe(filter((e: any) => e instanceof RoutesRecognized),
+          pairwise()
+      ).subscribe((e: any) => {
+          let url = e[0].urlAfterRedirects;
+          console.log(url);
+          this.ngOnInit();
+      });
+    });
     this.isAuthenticated$ = app.isVanThu$;
   }
 

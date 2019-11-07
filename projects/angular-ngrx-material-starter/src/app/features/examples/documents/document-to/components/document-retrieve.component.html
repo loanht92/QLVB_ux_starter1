@@ -1,0 +1,73 @@
+<div class="row" style="display:inline">
+    <div fxFlexFill fxLayoutAlign="end" class=" form-input">
+        <input class="docadd-filter" fxFlex="200px" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
+    </div>
+    <div fxFlexFill class=" form-input">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+            <ng-container matColumnDef="numberTo">
+                <th mat-header-cell *matHeaderCellDef> Số đến </th>
+                <!-- <td mat-cell *matCellDef="let element">{{element.numberTo}}</td> -->
+                <td mat-cell *matCellDef="let element">{{element.numberTo}}</td>
+            </ng-container>
+            <ng-container matColumnDef="created">
+                <th mat-header-cell *matHeaderCellDef> Ngày gửi </th>
+                <td mat-cell *matCellDef="let element">{{element.created}}</td>
+            </ng-container>
+            <ng-container matColumnDef="userRequest">
+                <th mat-header-cell *matHeaderCellDef> Người gửi </th>
+                <td mat-cell *matCellDef="let element">{{element.userRequest}}</td>
+            </ng-container>
+            <ng-container matColumnDef="userApprover">
+                <th mat-header-cell *matHeaderCellDef> Người xử lý </th>
+                <td mat-cell *matCellDef="let element">{{element.userApprover}}</td>
+            </ng-container>
+            <ng-container matColumnDef="deadline">
+                <th mat-header-cell *matHeaderCellDef> Hạn xử lý </th>
+                <td mat-cell *matCellDef="let element">{{element.deadline}}</td>
+            </ng-container>
+            <ng-container matColumnDef="compendium">
+                <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
+                <td mat-cell *matCellDef="let element">{{element.compendium}}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(modalTemp, row)" class="example-element-row"></tr>
+        </table>
+        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+    </div>
+
+    <ng-template #modalTemp>
+        <div class="modal-header">
+            <h5 class="modal-title pull-left">Văn bản đã bị thu hồi</h5>
+            <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+        </div>
+        <div class="modal-body" fxLayout="column">
+            <div class="example-container mat-elevation-z8">
+                <table mat-table [dataSource]="dataSource2">
+                    <ng-container matColumnDef="department">
+                        <th mat-header-cell *matHeaderCellDef> Đơn vị thu hồi </th>
+                        <td mat-cell *matCellDef="let element"> {{element.Department}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="userName">
+                        <th mat-header-cell *matHeaderCellDef> Người thu hồi </th>
+                        <td mat-cell *matCellDef="let element"> {{element.UserName}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="time">
+                        <th mat-header-cell *matHeaderCellDef> Thời gian thu hồi </th>
+                        <td mat-cell *matCellDef="let element"> {{element.TimeRetrieve}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="reason">
+                        <th mat-header-cell *matHeaderCellDef> Lý do thu hồi </th>
+                        <td mat-cell *matCellDef="let element"> {{element.Reason}} </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns2; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns2;"></tr>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer" fxLayoutAlign="center center">
+            <button mat-stroked-button color="primary" type="button" class="MR5" (click)="bsModalRef.hide()" style="width: 100px"><i class="material-icons">close</i>&nbsp; Đóng</button>
+        </div>
+    </ng-template>
+</div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Injectable, ViewContainerRef, Inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Injectable, ViewContainerRef, Inject, ChangeDetectorRef, ViewRef} from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
@@ -58,7 +58,9 @@ export class CommentComponent implements OnInit {
     //this.getListUser();
     this.getListEmailConfig();
     this.listUser = this.data[1];
-    this.ref.detectChanges();
+    if (!(this.ref as ViewRef).destroyed) {
+      this.ref.detectChanges();  
+    } 
   }
 
   //Lấy người dùng hiện tại
@@ -160,7 +162,9 @@ export class CommentComponent implements OnInit {
         error => console.log(error),
         () => {
           console.log('getListUser success');
-          this.ref.detectChanges();
+          if (!(this.ref as ViewRef).destroyed) {
+            this.ref.detectChanges();  
+          } 
         }
       );
     } catch (error) {
@@ -369,7 +373,7 @@ export class CommentComponent implements OnInit {
   }
 
   callbackfunc() {
-    this.routes.navigate(['Documnets/documentgo-detail/' + this.data[0].ID]);
+    this.routes.navigate(['Documents/documentgo-detail/' + this.data[0].ID]);
   }
 
   openCommentPanel() {
@@ -424,13 +428,13 @@ export class CommentComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.selectedApprover.split('|')[2]);
               break;
             case 'ItemUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documnets/documentgo-detail/' + this.data[0].ID);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documents/documentgo-detail/' + this.data[0].ID);
               break;
             case 'TaskUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/documentgo-detail/' + this.data[0].ID + '/1');
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/documentgo-detail/' + this.data[0].ID + '/1');
               break;
             case 'HomeUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/documentgo');
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents');
               break;
           }
         }

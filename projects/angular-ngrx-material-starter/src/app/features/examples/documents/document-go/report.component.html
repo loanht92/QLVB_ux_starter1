@@ -3,13 +3,13 @@
         <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
             <mat-form-field fxFlex="50">
                 <mat-label>Ngày ban hành, từ ngày</mat-label>
-                <input matInput [matDatepicker]="picker" [(ngModel)]="dateIssuedFrom">
+                <input matInput [matDatepicker]="picker" (click)="picker.open()" [(ngModel)]="dateIssuedFrom" (keypress)="validateQty($event)">
                 <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                 <mat-datepicker #picker disabled="false"></mat-datepicker>
             </mat-form-field>
             <mat-form-field fxFlex="50">
                 <mat-label>đến ngày</mat-label>
-                <input matInput [matDatepicker]="picker2" [(ngModel)]="dateIssuedTo">
+                <input matInput [matDatepicker]="picker2" (click)="picker2.open()" [(ngModel)]="dateIssuedTo" (keypress)="validateQty($event)">
                 <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
                 <mat-datepicker #picker2 disabled="false"></mat-datepicker>
             </mat-form-field>
@@ -62,10 +62,10 @@
                 <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
                 <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.compendium}}</a></td>
             </ng-container>
-            <ng-container matColumnDef="content">
+            <!-- <ng-container matColumnDef="content">
                 <th mat-header-cell *matHeaderCellDef> Nội dung xử lý </th>
                 <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.note}}</a></td>
-            </ng-container>
+            </ng-container> -->
             <ng-container matColumnDef="sts">
                 <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
                 <td mat-cell *matCellDef="let element">

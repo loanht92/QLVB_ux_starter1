@@ -30,14 +30,14 @@ const routes: Routes = [
       import('./features/settings/settings.module').then(m => m.SettingsModule)
   },  
   {
-    path: 'Documnets',
+    path: 'Documents',
     loadChildren: () =>
       import('./features/examples/documents/documents.module').then(m => m.DocumentsModule)
   },
   {
     path: '**',
     redirectTo: 'about'
-  }
+  },
 ];
 
 @NgModule({

@@ -31,7 +31,8 @@ import { DocumentWaitingComponent, ChecklistDatabase} from './document-to/compon
 import { ReportComponent} from './document-to/components/report.component';
 import { ReportAdvanceComponent} from './document-to/components/report-advance.component';
 import { DataListComponent } from './data-list/data-list.component';
-import { NumberDirective, FormatMoneyDirective } from './number-directive';
+import { NumberDirective, FormatMoneyDirective, WindowBackHistory } from './number-directive';
+import { DocumentRetrieveComponent } from './document-to/components/document-retrieve.component';
 
 export function HttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(
@@ -82,7 +83,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     ReportAdvanceComponent,
     DataListComponent,
     NumberDirective, 
-    FormatMoneyDirective
+    FormatMoneyDirective, 
+    WindowBackHistory,
+    DocumentRetrieveComponent
   ],
   entryComponents: [
     DocumentGoPanel,

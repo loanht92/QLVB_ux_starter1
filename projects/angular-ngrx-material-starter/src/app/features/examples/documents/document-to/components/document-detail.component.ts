@@ -5,7 +5,8 @@ import {
   ChangeDetectorRef,
   ViewChild,
   ViewContainerRef,
-  TemplateRef
+  TemplateRef,
+  ViewRef
 } from '@angular/core';
 import {
   IncomingDoc,
@@ -13,12 +14,14 @@ import {
   IncomingDocService,
   IncomingTicket
 } from '../incoming-doc.service';
+import {PlatformLocation} from '@angular/common';
+import { filter, pairwise } from 'rxjs/operators';
 import { environment } from '../../../../../../environments/environment';
 import {RotiniPanel} from './document-add.component';
 import {ResApiService} from '../../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { ActivatedRoute, Router} from '@angular/router';
+import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import {SelectionModel} from '@angular/cdk/collections';
 import { MatTableDataSource } from '@angular/material';
@@ -29,7 +32,7 @@ import {
   NotificationService
 } from '../../../../../core/core.module';
 import { AppComponent } from '../../../../../app/app.component';
-import { Observable, of as observableOf } from 'rxjs';
+import { Observable, of as observableOf, from} from 'rxjs';
 
 export interface PeriodicElement {
   name: string;
@@ -56,6 +59,18 @@ export class UserOfDepartment {
   IsKnow : boolean;
   Icon: string;
   Class: string;
+  isPerson:any
+}
+
+export class UserRetieve {
+  Id: number;
+  stt: number;
+  Department: string;
+  Name: string;
+  Role: string;
+  TaskType: string;
+  TaskTypeCode: string;
+  UserId: number;
 }
 
 export class UserChoice {
@@ -77,18 +92,24 @@ export class UserChoice {
 })
 export class DocumentDetailComponent implements OnInit {
   bsModalRef: BsModalRef;
-  itemDoc: IncomingDoc;
+  itemDoc;
   isExecution: Observable<boolean>;
+  isCombine: Observable<boolean>;
   isFinish: Observable<boolean>;
   isReturn: Observable<boolean>;
   isRetrieve: Observable<boolean>;
   ArrayItemId = []; IncomingDocID;
+  ArrCurrentRetrieve = [];
+  ArrayIdRetrieve = [];
   IndexStep = 0;
+  currentDepartment = '';
   DepartmentCode = [];
   RoleCode = [];
   ListDepartment = [];
   ListUserApprover = [];
+  ListHistoryId = [];
   ListUserChoice: UserChoice[] = [];
+  ListAllUser: Observable<UserChoice[]>;
   ListUserOfDepartment: UserOfDepartment[] = [];
   ListUserCombine = [];
   ListUserKnow = [];
@@ -107,19 +128,24 @@ export class DocumentDetailComponent implements OnInit {
   outputFileReturn = [];
   displayFile = '';
   closeResult = '';
+  ContentReply = '';
   imgUserDefault = '../../../../' + this.assetFolder + '/img/profile.jpg'
   historyId = 0;
   processId = 0;
   buffer;
   index = 0;
   totalStep = 0;
-  IsGD; IsTP;
+  currentStep = 0;
+  IsGD; IsTP; IsVT;
   overlayRef;
   selectedKnower = []; selectedCombiner = []; selectedApprover;
   UserAppoverName = '';
+  currentRoleTask = '';
   EmailConfig;
   ReasonReturn;
   content;deadline;
+  ReasonRetrieve;
+  AuthorComment;
   displayedColumns: string[] = [
     'stt',
     'created',
@@ -132,12 +158,20 @@ export class DocumentDetailComponent implements OnInit {
   ]; //'select'
   ListItem = [];
   dataSource = new MatTableDataSource<IncomingTicket>();
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  // @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  private paginator: MatPaginator;
+
+  @ViewChild(MatPaginator, { static: true }) set matPaginator(mp: MatPaginator) {
+    this.paginator = mp;
+    this.dataSource.paginator = this.paginator;
+  }
 
   displayedColumns2 = ['person', 'role', 'process', 'combine', 'know'];
+  displayedColumns3: string[] = ['stt', 'select', 'department', 'role', 'name', 'type']; // 'userId'
   //dataSource2 = ELEMENT_DATA;
   dataSource2 = new MatTableDataSource<UserOfDepartment>();
-  selection = new SelectionModel<UserOfDepartment>(true, []);
+  dataSource3 = new MatTableDataSource<UserRetieve>();
+  selection = new SelectionModel<UserRetieve>(true, []);
 
   constructor(
     private docTo: IncomingDocService,
@@ -149,14 +183,62 @@ export class DocumentDetailComponent implements OnInit {
     private modalService: BsModalService,
     public overlay: Overlay, 
     public viewContainerRef: ViewContainerRef,
-    private app: AppComponent
-  ) {}
+    private app: AppComponent,
+    private location: PlatformLocation
+  ) {
+    // location.onPopState(() => {
+    //   // window.location.reload();
+    //   //alert(window.location);
+    //   this.routes.events
+    //     .pipe(filter((e: any) => e instanceof RoutesRecognized),
+    //         pairwise()
+    //     ).subscribe((e: any) => {
+    //         let url = e[0].urlAfterRedirects;
+    //         console.log(url); // previous url
+    //         this.ngOnInit();
+    //     });
+    // });
+  }
 
   ngOnInit() {
-    this.GetTotalStep();
-    this.GetAllUser();
-    this.getListEmailConfig();
+    this.route.paramMap.subscribe(parames => {
+      this.IncomingDocID = parseInt(parames.get('id'));
+      this.IndexStep = parseInt(parames.get('step'));
+    });
+    this.getCurrentUser();
   }
+
+   /** Whether the number of selected elements matches the total number of rows. */
+   isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource3.data.length;
+    return numSelected === numRows;
+  }
+
+  /** Selects all rows if they are not all selected; otherwise clear selection. */
+  masterToggle() {
+    this.isAllSelected() ?
+        this.selection.clear() :
+        this.dataSource3.data.forEach(row => this.selection.select(row));
+  }
+
+  /** The label for the checkbox on the passed row */
+  checkboxLabel(row?: UserRetieve): string {
+    if (!row) {
+      return `${this.isAllSelected() ? 'select' : 'deselect'} all`;
+    }
+    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.stt + 1}`;
+  }
+
+  validateQty(event) {
+    var key = window.event ? event.keyCode : event.which;
+    if (event.keyCode === 8) {
+        return true;
+    }
+    else {
+      return false;
+    }
+  };
 
   OpenRotiniPanel() {
     let config = new OverlayConfig();
@@ -183,29 +265,51 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   GetTotalStep() {
-    this.route.paramMap.subscribe(parames => {
-      this.IncomingDocID = parseInt(parames.get('id'));
-      this.IndexStep = parseInt(parames.get('step'));
-      if(this.IndexStep > 0) {
-        this.isExecution = observableOf(true);
+    this.services.getListTotalStep('DT').subscribe(items => {
+      let itemList = items['value'] as Array<any>;
+      if(itemList.length > 0){
+        this.totalStep = itemList[0].TotalStep;          
       }
-      this.services.getListTotalStep('DT').subscribe(items => {
-        let itemList = items['value'] as Array<any>;
-        if(itemList.length > 0){
-          this.totalStep = itemList[0].TotalStep;          
+    },
+    error => {
+      console.log("Load total step error: " + error);
+      this.CloseRotiniPanel();
+    },
+    () => {
+      if(this.IndexStep >= this.totalStep) {
+        if(this.currentRoleTask === "XLC") {
+          this.isExecution = observableOf(false);
+          this.isFinish = observableOf(true);
+        } else if(this.currentRoleTask === "PH") {
+          this.isExecution = observableOf(false);
+          this.isFinish = observableOf(false);
+        } else {
+          this.isExecution = observableOf(false);
+          this.isFinish = observableOf(false);
+        }       
+      } else if(this.IndexStep > 0){    
+        if(this.currentRoleTask === "XLC") {
+          this.isExecution = observableOf(true);
+          this.isFinish = observableOf(true);
+          // if(this.IsTP || this.IsGD) {
+          //   this.isFinish = observableOf(true);
+          // } else {
+          //   this.isFinish = observableOf(false);
+          // }
+        } else if(this.currentRoleTask === "PH") {
+          this.isExecution = observableOf(false);
+          this.isFinish = observableOf(false);
+          this.isCombine = observableOf(true);
+        } else {
+          this.isExecution = observableOf(false);
+          this.isFinish = observableOf(false);
+          this.isCombine = observableOf(false);
         }
-      },
-      error => {
-        console.log("Load total step error: " + error);
-        this.CloseRotiniPanel();
-      },
-      () => {
-        this.getCurrentUser();
-        this.GetItemDetail();
-        this.GetHistory();
-        this.getComment();
       }
-      )
+      this.GetItemDetail();
+      this.GetHistory();
+      this.getComment();
+      this.GetAllUser();
     })
   }
 
@@ -216,6 +320,10 @@ export class DocumentDetailComponent implements OnInit {
       console.log('items: ' + items);
       this.ItemAttachments=[];
       let itemList = items['value'] as Array<any>;
+      // if(this.docTo.CheckNull(itemList[0].ListUserApprover).indexOf(this.currentUserId + '_' + this.currentUserName) < 0) {
+      //   this.notificationService.info("Bạn không có quyền truy cập");
+      //   this.routes.navigate(['/']);
+      // }
       if(itemList.length > 0){
         if (itemList[0].AttachmentFiles.length > 0) {
           itemList[0].AttachmentFiles.forEach(element => {
@@ -247,7 +355,10 @@ export class DocumentDetailComponent implements OnInit {
           compendium: itemList[0].Compendium,
           secretLevel: itemList[0].SecretLevelName,
           urgentLevel: itemList[0].UrgentLevelName,
-          deadline:
+          deadline: this.docTo.CheckNull(itemList[0].Deadline) === ''
+          ? null
+          : itemList[0].Deadline,
+          deadlineShow:
             this.docTo.CheckNull(itemList[0].Deadline) === ''
               ? ''
               : moment(itemList[0].Deadline).format('DD/MM/YYYY'),
@@ -265,7 +376,9 @@ export class DocumentDetailComponent implements OnInit {
           created: itemList[0].Author.Id
         };
       }
-      this.ref.detectChanges();
+      if (!(this.ref as ViewRef).destroyed) {
+        this.ref.detectChanges();  
+      }  
       this.CloseRotiniPanel();
     },
     error => {
@@ -307,6 +420,43 @@ export class DocumentDetailComponent implements OnInit {
     // }
   }
 
+  CheckPermission() {
+    let strSelect = '';
+    if(this.IndexStep > 0) {
+      strSelect = `' and NoteBookID eq '` + this.IncomingDocID + `' and IndexStep eq '` + this.IndexStep + `'`;
+    } else {
+      strSelect = `' and NoteBookID eq '` + this.IncomingDocID + `'`;
+    }
+    let strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
+    this.docTo.getListRequestTo(strFilter).subscribe((itemValue: any[]) => {
+      let item = itemValue["value"] as Array<any>; 
+      if(item.length < 0) {
+        this.notificationService.info("Bạn không có quyền truy cập");
+        this.routes.navigate(['/']);
+      } else {
+        if(this.IndexStep > 0) {
+          let _item = item.find(i => i.IndexStep === this.IndexStep);
+          if(_item !== undefined) {
+            this.currentRoleTask = _item.TaskTypeCode;
+            // if(_item.StatusID === 1 || _item.TaskTypeCode !== 'XLC') {
+            //   this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+            // }
+          } else {
+            this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+          }
+        }
+      }
+    },
+    error => {
+      console.log("Check permission failed") ;
+      this.CloseRotiniPanel();
+    },
+    () => {
+     console.log("Check permission success");
+     this.GetTotalStep();
+    })
+  }
+
   GetHistory() {
     this.docTo
       .getListRequestByDocID(this.IncomingDocID)
@@ -315,7 +465,8 @@ export class DocumentDetailComponent implements OnInit {
         this.ListItem = [];
         item.forEach(element => {
           if(element.IndexStep === this.IndexStep) {
-            if(element.TypeCode === "TL") {
+            // if(element.TypeCode === "TL") {
+            if(this.IndexStep <= 1) {
               this.isReturn = observableOf(false);
             } else {
               this.isReturn = observableOf(true);
@@ -325,6 +476,7 @@ export class DocumentDetailComponent implements OnInit {
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
             if(element.UserRequest.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
               this.isRetrieve = observableOf(true);
+              this.currentStep = element.IndexStep;
             }
           }
 
@@ -344,29 +496,35 @@ export class DocumentDetailComponent implements OnInit {
               element.UserApprover !== undefined
                 ? element.UserApprover.Title
                 : '',
+            userApproverId:
+              element.UserApprover !== undefined
+                ? element.UserApprover.Id
+                : 0,
             deadline:
               this.docTo.CheckNull(element.Deadline) === ''
                 ? ''
                 : moment(element.Deadline).format('DD/MM/YYYY'),
-            status: element.StatusID === 0? 'Chờ xử lý' : 'Đã xử lý',
+            status: this.getStatusName(element.StatusID),
             source: this.docTo.CheckNull(element.Source),
-            destination: '',
+            destination: this.docTo.CheckNull(element.Destination),
+            roleRequest: this.docTo.CheckNull(element.RoleUserRequest),
+            roleApprover: this.docTo.CheckNull(element.RoleUserApprover),
+            taskTypeCode: element.TaskTypeCode,
             taskType: element.TaskTypeCode === 'XLC'? "Xử lý chính" : element.TaskTypeCode === 'PH'? 'Phối hợp' : 'Nhận để biết',
             typeCode: this.GetTypeCode(element.TypeCode),
             content: this.docTo.CheckNull(element.Content),
             indexStep: element.IndexStep,
-            created:
-              this.docTo.CheckNull(element.DateCreated) === ''
-                ? ''
-                : moment(element.DateCreated).format('DD/MM/YYYY'),
+            created: element.IndexStep === 1 ?
+            (this.docTo.CheckNull(element.DateTo) === '' ? moment(element.DateCreated).format('DD/MM/YYYY') : moment(element.DateTo).format('DD/MM/YYYY')) :
+            moment(element.DateCreated).format('DD/MM/YYYY'),
             numberTo: element.Title,
             link: '',
             stsClass: element.StatusID === 0? 'Ongoing' : 'Approved',
             stsTypeCode: element.TypeCode,
+            stsTaskCode: element.TaskTypeCode
           });
         });
-        this.dataSource = new MatTableDataSource<IncomingTicket>(this.ListItem);
-        this.ref.detectChanges();
+        this.dataSource = new MatTableDataSource<IncomingTicket>(this.ListItem);     
         this.dataSource.paginator = this.paginator;
         this.ArrayItemId = this.ListItem.filter(e => e.indexStep === this.IndexStep);
       },
@@ -375,7 +533,29 @@ export class DocumentDetailComponent implements OnInit {
         this.CloseRotiniPanel();
       },
       () => {
-        this.docTo.getHistoryStep(this.IncomingDocID, this.IndexStep).subscribe((itemValue: any[]) => {
+        this.ArrCurrentRetrieve = [];
+        this.ListItem.forEach(element => {
+          if(element.indexStep === this.currentStep) {
+            this.ArrCurrentRetrieve.push({
+              Id: element.ID,
+              UserId: element.userApproverId,
+              stt: this.ArrCurrentRetrieve.length + 1,
+              Department: element.destination,
+              Role: element.roleApprover,
+              UserName: element.userApprover,
+              TaskTypeName: element.taskType,
+              TaskTypeCode: element.taskTypeCode
+            })
+          }
+        });
+        this.dataSource3 = new MatTableDataSource<UserRetieve>(this.ArrCurrentRetrieve);     
+        this.dataSource3.paginator = this.paginator;
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        }  
+
+        let strFilter = ` and IndexStep eq '` + this.IndexStep + `'`;
+        this.docTo.getHistoryStep(this.IncomingDocID, strFilter).subscribe((itemValue: any[]) => {
           let item = itemValue['value'] as Array<any>;
           if(item.length > 0) {
             this.historyId = item[0].ID;
@@ -411,20 +591,39 @@ export class DocumentDetailComponent implements OnInit {
         let ListDe = [];
         this.ListUserChoice = [];
         item.forEach(element => {
-          if(this.ListUserChoice.findIndex(i => i.Id === element.User.Id) < 0) {
-            this.ListUserChoice.push({
-              STT: this.ListUserChoice.length + 1,
-              Id: element.User.Id,
-              DisplayName: element.User.Title,
-              Email: element.User.Name.split('|')[2],
-              DeCode: element.DepartmentCode,
-              DeName: element.DepartmentName,
-              RoleCode: element.RoleCode,
-              RoleName: element.RoleName
-            });
-          }
-          if(ListDe.indexOf(element.DepartmentCode) < 0) {
-            ListDe.push(element.DepartmentCode);
+          if(this.IsGD || this.IsVT) {
+            if(this.ListUserChoice.findIndex(i => i.Id === element.User.Id) < 0) {
+              this.ListUserChoice.push({
+                STT: this.ListUserChoice.length + 1,
+                Id: element.User.Id,
+                DisplayName: element.User.Title,
+                Email: element.User.Name.split('|')[2],
+                DeCode: element.DepartmentCode,
+                DeName: element.DepartmentName,
+                RoleCode: element.RoleCode,
+                RoleName: element.RoleName
+              });
+            }
+            if(ListDe.indexOf(element.DepartmentCode) < 0) {
+              ListDe.push(element.DepartmentCode);
+            }
+          } else {
+            if(element.DepartmentCode === this.currentDepartment) {            
+              this.ListUserChoice.push({
+                STT: this.ListUserChoice.length + 1,
+                Id: element.User.Id,
+                DisplayName: element.User.Title,
+                Email: element.User.Name.split('|')[2],
+                DeCode: element.DepartmentCode,
+                DeName: element.DepartmentName,
+                RoleCode: element.RoleCode,
+                RoleName: element.RoleName
+              });
+              
+              if(ListDe.indexOf(element.DepartmentCode) < 0) {
+                ListDe.push(element.DepartmentCode);
+              }
+            }
           }
         })
         console.log("array " + ListDe);
@@ -444,7 +643,8 @@ export class DocumentDetailComponent implements OnInit {
             IsCombine: false,
             IsKnow: false,
             Icon: 'business',
-            Class: 'dev'
+            Class: 'dev',
+            isPerson: undefined
           })
           this.ListUserChoice.forEach(user => {
             if(user.DeCode === element) {
@@ -458,20 +658,25 @@ export class DocumentDetailComponent implements OnInit {
                 IsCombine: false,
                 IsKnow: false,
                 Icon: 'person',
-                Class: 'user-choice'
+                Class: 'user-choice',
+                isPerson: true
               })
             }
           })
-        })
-        console.log("List User " + this.ListUserOfDepartment);
-        this.dataSource2 = new MatTableDataSource<UserOfDepartment>(this.ListUserOfDepartment);
-        this.ref.detectChanges();        
+        })       
       },
       error => {
         console.log("Load all user error " + error);
         this.CloseRotiniPanel();
       },
-      () =>{}
+      () =>{
+        console.log("List User " + this.ListUserOfDepartment);
+        this.dataSource2 = new MatTableDataSource<UserOfDepartment>(this.ListUserOfDepartment);
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        }      
+        this.ListAllUser = observableOf(this.ListUserChoice)
+      }
       )
     })
   }
@@ -491,38 +696,42 @@ export class DocumentDetailComponent implements OnInit {
         console.log("error: " + error);
       },
       () => {
+        this.CheckPermission();
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
         this.services.getDepartmnetOfUser(this.currentUserId).subscribe(
           itemValue => {
             let item = itemValue['value'] as Array<any>;
-            this.DepartmentCode = [];
-            this.RoleCode = [];
-            item.forEach(element => {
-              this.DepartmentCode.push(element.DepartmentCode);
-              this.RoleCode.push(element.RoleCode);
-              if(element.RoleCode === "TP") {
-                this.IsTP = true;
-              } else if (element.RoleCode === "GĐ") {
-                this.IsGD = true;
-              }
-            });      
+            if(item.length > 0) {
+              this.DepartmentCode = [];
+              this.RoleCode = [];
+              item.forEach(element => {
+                this.DepartmentCode.push(element.DepartmentCode);
+                this.RoleCode.push(element.RoleCode);
+                if(element.RoleCode === "TP") {
+                  this.IsTP = true;
+                  this.currentDepartment = element.DepartmentCode;
+                }
+                else if (element.RoleCode === "GĐ") {
+                  this.IsGD = true;
+                }
+                else if (element.RoleCode === "VT") {
+                  this.IsVT = true;
+                }
+                else if (element.RoleCode === "NV") {
+                  this.currentDepartment = element.DepartmentCode;
+                }
+              });   
+              this.getListEmailConfig();
+            } else {
+              this.notificationService.info("Bạn không có quyền truy cập");
+              this.routes.navigate(['/']);
+            }
           },
           error => { 
             console.log("Load department code error: " + error);
             this.CloseRotiniPanel();
           },
-          () => {
-            if(this.IndexStep >= this.totalStep) {
-              this.isExecution = observableOf(false);
-              this.isFinish = observableOf(true);
-            } else if(this.IndexStep > 0){        
-              this.isExecution = observableOf(true);  
-              if(this.IsTP || this.IsGD) {
-                this.isFinish = observableOf(true);
-              } else {
-                this.isFinish = observableOf(false);
-              }
-            }
+          () => {           
           }
         )
       }
@@ -545,6 +754,20 @@ export class DocumentDetailComponent implements OnInit {
   ReturnRequest(template: TemplateRef<any>) {
     //this.notificationService.warn('Chọn phòng ban để trả lại');
     this.bsModalRef = this.modalService.show(template, {class: 'modal-md'});
+    let strFilter = ` and IndexStep ge '` + this.currentStep + `'`;
+    this.docTo.getHistoryStep(this.IncomingDocID, strFilter).subscribe((itemValue: any[]) => {
+      let item = itemValue['value'] as Array<any>;
+      this.ListHistoryId = [];
+      item.forEach(element => {
+        if(this.ListHistoryId.indexOf(element.ID) < 0) {
+          this.ListHistoryId.push(element.ID);
+        }
+      });     
+    },
+    error => {
+      console.log("Load history id item: " + error);
+      this.CloseRotiniPanel();
+    })
   }
 
   ViewHistory(template: TemplateRef<any>) {
@@ -553,7 +776,7 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   getListEmailConfig() {
-    const str = `?$select=*&$filter=Title eq 'DT'&$top=1`;
+    const str = `?$select=*&$filter=Title eq 'DT'`;
     this.EmailConfig = null;
     this.services.getItem('ListEmailConfig', str).subscribe((itemValue: any[]) => {
       let item = itemValue['value'] as Array<any>;
@@ -570,7 +793,9 @@ export class DocumentDetailComponent implements OnInit {
             FinishEmailSubject: element.FinishRequestSubject,
             FinishEmailBody: element.FinishRequestBody,
             CommentSubject:element.CommentRequestSubject,
-            CommentBody:element.CommentRequestBody
+            CommentBody:element.CommentRequestBody,
+            ReplyCommentSubject: element.ReplyCommentSubject,
+            ReplyCommentBody: element.ReplyCommentBody
           }
       })
       }
@@ -650,24 +875,155 @@ export class DocumentDetailComponent implements OnInit {
     });
   }
 
-  validation() {
-    if (this.docTo.CheckNull(this.selectedApprover) === '') {
-      this.notificationService.warn("Bạn chưa chọn Người xử lý chính! Vui lòng kiểm tra lại");
-      return false;
-    }
-    else if (this.docTo.CheckNull(this.content) === '') {
-      this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
-      return false;
-    }
-    // else if (this.docTo.CheckNull(this.deadline) === '') {
-    //   this.notificationService.warn("Bạn chưa nhập Hạn xử lý! Vui lòng kiểm tra lại");
-    //   return false;
-    // } 
-    else {
-      return true;
+  // Thu hồi
+  AddTicketRetrieve() {
+    // DateRetrieve 
+    const length = this.selection.selected.length;
+    if(length > 0) {
+      this.OpenRotiniPanel();
+      for(let i = 0; i < length; i++) {
+        if(this.ArrayIdRetrieve.indexOf(this.selection.selected[i].Id) < 0) {
+          this.ArrayIdRetrieve.push(this.selection.selected[i].Id);
+        }
+        if(this.selection.selected[i].TaskTypeCode === "XLC") {
+          this.ListItem.forEach(element => {
+            if(element.indexStep > this.currentStep) {
+              if(this.ArrayIdRetrieve.indexOf(element.ID) < 0) {
+                this.ArrayIdRetrieve.push(element.ID);
+              }
+            }
+          });
+        }
+      }
+      this.UpdateTicketRetrieve(0);
+    }    
+  }
+
+  UpdateTicketRetrieve(index) {
+    try {
+      if(this.ArrayIdRetrieve !== undefined && this.ArrayIdRetrieve.length > 0) {
+        let request;
+        request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+
+        const dataTicket = {
+          __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+          StatusID: -1, StatusName: "Đã thu hồi",
+          DateRetrieve: new Date(), Content: this.docTo.CheckNull(this.ReasonRetrieve) === '' ? '' : this.ReasonRetrieve,
+          UserRetrieveId: this.currentUserId
+        };
+        if(request !== undefined) {
+          Object.assign(dataTicket, { Source: request.DeName});
+        }
+        this.services.updateListById('ListProcessRequestTo', dataTicket, this.ArrayIdRetrieve[index]).subscribe(
+          item => {},
+          error => {
+            this.CloseRotiniPanel();
+            console.log(
+              'error when update item to list ListProcessRequestTo: ' +
+                error.error.error.message.value
+            ),
+              this.notificationService.error('Thu hồi văn bản thất bại');
+          },
+          () => {
+            console.log(
+              'update item ' + this.ArrayIdRetrieve[index] + ' of approval user to list ListProcessRequestTo successfully!'
+            );
+            index ++;
+            if(index < this.ArrayIdRetrieve.length) {
+              this.UpdateTicketRetrieve(index);
+            }
+            else {
+              if(this.ListHistoryId.length > 0) {
+                this.DeleteHistoryRetrieve(0);
+              } else {
+                this.callbackRetrieve();
+              }
+            }
+          }
+        );
+      }
+    } catch(err) {
+      console.log("update ticket retrieve failed");
+      this.CloseRotiniPanel();
     }
   }
 
+  DeleteHistoryRetrieve(index) {
+    const data = {
+      __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' },
+    }
+    this.services.DeleteItemById('ListHistoryRequestTo', data, this.ListHistoryId[index]).subscribe(item => {},
+    error => {
+      this.CloseRotiniPanel();
+      console.log(
+        'error when delete item to list ListHistoryRequestTo: ' + error
+      ),
+      console.log('Xóa lịch sử thất bại');
+    },
+    () => {
+      console.log(
+        'Delete item in list ListHistoryRequestTo successfully!'
+      );
+      console.log('Xóa lịch sử thành công');
+      index ++;
+      if(index < this.ListHistoryId.length) {
+        this.DeleteHistoryRetrieve(index);
+      } else {
+        this.callbackRetrieve();
+      }
+    })
+  }
+
+  callbackRetrieve() {
+    let itemUpdate = this.ListItem.find(item => item.indexStep === (this.currentStep - 1) && item.taskTypeCode === "XLC");
+    if(itemUpdate !== undefined) {
+      const data = {
+        __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+        Title: this.itemDoc.numberTo,
+        DateCreated: new Date(),
+        NoteBookID: this.IncomingDocID,
+        UserRequestId: itemUpdate.userApproverId,
+        UserApproverId: this.currentUserId,
+        Deadline: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline) : this.deadline,
+        StatusID: 0,
+        StatusName: 'Chờ xử lý',
+        Source: this.docTo.CheckNull(itemUpdate.destination),
+        Destination: this.docTo.CheckNull(itemUpdate.source),
+        RoleUserRequest :itemUpdate.roleApprover,
+        RoleUserApprover: itemUpdate.roleRequest,
+        TaskTypeCode: 'XLC',
+        TaskTypeName: 'Xử lý chính',
+        TypeCode: 'TH',
+        TypeName: 'Phiếu thu hồi',
+        Content: this.docTo.CheckNull(this.ReasonRetrieve),
+        IndexStep: this.currentStep - 1,
+        Compendium: this.itemDoc.compendium
+      };   
+
+      this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
+        item => {},
+        error => {
+          this.CloseRotiniPanel();
+          console.log(
+            'error when update item to list ListProcessRequestTo: ' +
+              error.error.error.message.value
+          ),
+            this.notificationService.error('Thu hồi văn bản thất bại');
+        },
+        () => {
+          this.bsModalRef.hide();
+          this.CloseRotiniPanel();
+          this.notificationService.success('Thu hồi văn bản thành công');
+          this.isRetrieve = observableOf(false);
+        })
+    } else {
+      this.bsModalRef.hide();
+      this.CloseRotiniPanel();
+      this.notificationService.success('Thu hồi văn bản thành công');
+    }
+  }
+ 
+  // Trả lại
   AddTicketReturn() {
     try {
       if (this.docTo.CheckNull(this.ReasonReturn) === '') {
@@ -677,10 +1033,13 @@ export class DocumentDetailComponent implements OnInit {
       this.bsModalRef.hide();
       this.OpenRotiniPanel();
       let item  = this.ListItem.find(i => i.indexStep === this.IndexStep);
-      let approver;
+      let approverId;
       if(item !== undefined) {
-        approver = item.userRequestId;
+        approverId = item.userRequestId;
       }
+      let request, approver;
+      request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+      approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(approverId));
 
       const data = {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
@@ -688,12 +1047,14 @@ export class DocumentDetailComponent implements OnInit {
         DateCreated: new Date(),
         NoteBookID: this.IncomingDocID,
         UserRequestId: this.currentUserId,
-        UserApproverId: approver,
-        // Deadline: this.deadline,
+        UserApproverId: approverId,
+        Deadline: this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline,
         StatusID: 0,
         StatusName: 'Chờ xử lý',
-        Source: '',
-        Destination: '',
+        Source: request === undefined ? '' : request.DeName,
+        Destination: approver === undefined ? '' : approver.DeName,
+        RoleUserRequest :request === undefined ? '' : request.RoleName,
+        RoleUserApprover: approver === undefined ? '' : approver.RoleName,
         TaskTypeCode: 'XLC',
         TaskTypeName: 'Xử lý chính',
         TypeCode: 'TL',
@@ -715,10 +1076,13 @@ export class DocumentDetailComponent implements OnInit {
         },
         () => {
           console.log(
-            'Add item of approval user to list ListHistoryRequestTo successfully!'
+            'Add item of approval user to list ListProcessRequestTo successfully!'
           );
           // update user approver
-          this.UserAppoverName += ';' + this.selectedApprover.split('|')[0] + '_' + this.selectedApprover.split('|')[2];
+          if(item !== undefined) {
+            this.UserAppoverName += ';' + item.userRequestId + '_' + item.userRequest;
+          }
+         
           const data = {
             __metadata: { type: 'SP.Data.ListDocumentToListItem' },
             ListUserApprover: this.UserAppoverName
@@ -756,7 +1120,7 @@ export class DocumentDetailComponent implements OnInit {
               () => {}
             );
           }
-          this.UpdateStatus(0, 0);
+          this.UpdateStatus(1, 0, 0);
         }
       );
     } catch (err) {
@@ -765,7 +1129,40 @@ export class DocumentDetailComponent implements OnInit {
     }
   }
 
-  // Add phiếu xử lý
+  // Add phiếu xử lý  
+  validation() {
+    if (this.docTo.CheckNull(this.selectedApprover) === '') {
+      this.notificationService.warn("Bạn chưa chọn Người xử lý chính! Vui lòng kiểm tra lại");
+      return false;
+    }
+    else if (this.docTo.CheckNull(this.content) === '') {
+      this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
+      return false;
+    }
+    // else if (this.docTo.CheckNull(this.deadline) === '') {
+    //   this.notificationService.warn("Bạn chưa nhập Hạn xử lý! Vui lòng kiểm tra lại");
+    //   return false;
+    // } 
+    else {
+      return true;
+    }
+  }
+
+  AddDocumentGo() {
+    let strId = '';
+    let i = 0;
+    if(this.ListItem !== undefined && this.ListItem.length > 0) {
+      for(i = 0; i < this.ListItem.length; i++) {
+        if(i < this.ListItem.length - 1) {
+        strId += this.ListItem[i].ID + ','
+        } else {
+          strId += this.ListItem[i].ID;
+        }
+      }
+    }
+    this.routes.navigate(['/Documents/documentgo/' + this.IncomingDocID + '|' + this.docTo.CheckNullSetZero(this.historyId) + '|' + strId]);
+  }
+
   AddListTicket() {
     try {
       if(this.validation()) {
@@ -773,6 +1170,10 @@ export class DocumentDetailComponent implements OnInit {
         this.bsModalRef.hide();
         this.OpenRotiniPanel();
         //let data: Array<any> = [];
+        let request, approver;
+        request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+        approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedApprover.split('|')[0]));
+
         const data = {
           __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
           Title: this.itemDoc.numberTo,
@@ -780,11 +1181,13 @@ export class DocumentDetailComponent implements OnInit {
           NoteBookID: this.IncomingDocID,
           UserRequestId: this.currentUserId,
           UserApproverId: this.selectedApprover.split('|')[0],
-          Deadline: this.docTo.CheckNull(this.deadline) === '' ? null : this.deadline,
+          Deadline: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline) : this.deadline,
           StatusID: 0,
           StatusName: 'Chờ xử lý',
-          Source: '',
-          Destination: '',
+          Source: request === undefined ? '' : request.DeName,
+          Destination: approver === undefined ? '' : approver.DeName,
+          RoleUserRequest :request === undefined ? '' : request.RoleName,
+          RoleUserApprover: approver === undefined ? '' : approver.RoleName,
           TaskTypeCode: 'XLC',
           TaskTypeName: 'Xử lý chính',
           TypeCode: 'CXL',
@@ -848,7 +1251,7 @@ export class DocumentDetailComponent implements OnInit {
                 () => {}
               );
             }
-            this.UpdateStatus(1, 0);
+            this.UpdateStatus(1, 0, 1);
           }
         );
       }
@@ -859,6 +1262,9 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   AddUserCombine() {
+    let request, approver;
+    request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+    approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedCombiner[this.index].split('|')[0]));
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
       Title: this.itemDoc.numberTo,
@@ -866,11 +1272,13 @@ export class DocumentDetailComponent implements OnInit {
       NoteBookID: this.IncomingDocID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.selectedCombiner[this.index].split('|')[0],
-      Deadline: this.docTo.CheckNull(this.deadline) === '' ? null : this.deadline,
+      Deadline: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline) : this.deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
-      Source: '',
-      Destination: '',
+      Source: request === undefined ? '' : request.DeName,
+      Destination: approver === undefined ? '' : approver.DeName,
+      RoleUserRequest :request === undefined ? '' : request.RoleName,
+      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
       TaskTypeCode: 'PH',
       TaskTypeName: 'Phối hợp',
       TypeCode: 'CXL',
@@ -902,7 +1310,7 @@ export class DocumentDetailComponent implements OnInit {
           if(this.selectedKnower !== undefined && this.selectedKnower.length > 0) {
             this.AddUserKnow();
           } else {
-            this.callbackFunc(this.processId, this.IncomingDocID);
+            this.callbackFunc(this.processId, this.IncomingDocID, false);
             // this.CloseRotiniPanel();     
             // this.notificationService.success('Cập nhật thông tin xử lý thành công.');
           }
@@ -912,18 +1320,23 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   AddUserKnow() {
+    let request, approver;
+    request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+    approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedKnower[this.index].split('|')[0]));
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
       Title: this.itemDoc.numberTo,
       DateCreated: new Date(),
       NoteBookID: this.IncomingDocID,
       UserRequestId: this.currentUserId,
-      UserApproverId: this.selectedCombiner[this.index].split('|')[0],
-      Deadline: this.docTo.CheckNull(this.deadline) === '' ? null : this.deadline,
+      UserApproverId: this.selectedKnower[this.index].split('|')[0],
+      Deadline: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline) : this.deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
-      Source: '',
-      Destination: '',
+      Source: request === undefined ? '' : request.DeName,
+      Destination: approver === undefined ? '' : approver.DeName,
+      RoleUserRequest :request === undefined ? '' : request.RoleName,
+      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
       TaskTypeCode: 'NĐB',
       TaskTypeName: 'Nhận để biết',
       TypeCode: 'CXL',
@@ -951,7 +1364,7 @@ export class DocumentDetailComponent implements OnInit {
           this.AddUserKnow();
         }
         else {
-          this.callbackFunc(this.processId, this.IncomingDocID);
+          this.callbackFunc(this.processId, this.IncomingDocID, false);
           // this.CloseRotiniPanel();     
           // this.notificationService.success('Cập nhật thông tin xử lý thành công.');  
         }
@@ -959,14 +1372,20 @@ export class DocumentDetailComponent implements OnInit {
     );
   }
 
-  UpdateStatus(sts, isFinish) {
-    if(this.ArrayItemId !== undefined && this.ArrayItemId.length > 0) {
+  UpdateStatus(sts, isFinish, callback) {
+    let arr = [];
+    if(isFinish === 0) {
+      arr = this.ArrayItemId;
+    } else if(isFinish === 1){
+      arr = this.ListItem;
+    }
+    if(arr !== undefined && arr.length > 0) {
       const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
-        StatusID: 1, StatusName: "Đã xử lý",
+        StatusID: sts, StatusName: sts === 1 ? "Đã xử lý" : "Thu hồi",
         IsFinished: isFinish
       };
-      this.services.updateListById('ListProcessRequestTo', dataTicket, this.ArrayItemId[this.index].ID).subscribe(
+      this.services.updateListById('ListProcessRequestTo', dataTicket, arr[this.index].ID).subscribe(
         item => {},
         error => {
           this.CloseRotiniPanel();
@@ -978,18 +1397,18 @@ export class DocumentDetailComponent implements OnInit {
         },
         () => {
           console.log(
-            'update item ' + this.ArrayItemId[this.index] + ' of approval user to list ListProcessRequestTo successfully!'
+            'update item ' + arr[this.index] + ' of approval user to list ListProcessRequestTo successfully!'
           );
           this.index ++;
-          if(this.index < this.ArrayItemId.length) {
-            this.UpdateStatus(sts, isFinish);
+          if(this.index < arr.length) {
+            this.UpdateStatus(sts, isFinish, callback);
           }
           else {
             this.index = 0;
-            if(sts === 0) {
-              this.callbackFunc(this.processId, this.IncomingDocID);
-            } else if(sts === 1) {
-              this.AddHistoryStep();
+            if(callback === 0) {
+              this.callbackFunc(this.processId, this.IncomingDocID, false);
+            } else if(callback === 1) {
+              this.AddHistoryStep(false);
             }
           }
         }
@@ -997,7 +1416,7 @@ export class DocumentDetailComponent implements OnInit {
     }
   }
 
-  AddHistoryStep() {
+  AddHistoryStep(isReturn) {
     const data = {
       __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' },
       Title: this.itemDoc.numberTo,
@@ -1005,7 +1424,7 @@ export class DocumentDetailComponent implements OnInit {
       NoteBookID: this.itemDoc.ID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.selectedApprover.split('|')[0],
-      Deadline: this.docTo.CheckNull(this.deadline) === '' ? null : this.deadline,
+      Deadline: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline) : this.deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
       Content: this.content,
@@ -1027,16 +1446,14 @@ export class DocumentDetailComponent implements OnInit {
         console.log(
           'Add item of approval user to list ListHistoryRequestTo successfully!'
         );
-        // gui mail
-        this.addItemSendMail();
-
+       
         // Luu phieu cho nguoi phoi hop va nhan de biet
         if(this.selectedCombiner !== undefined && this.selectedCombiner.length > 0) {
           this.AddUserCombine();
         } else if(this.selectedKnower !== undefined && this.selectedKnower.length > 0) {
           this.AddUserKnow();
         } else {
-          this.callbackFunc(this.processId, this.IncomingDocID);
+          this.callbackFunc(this.processId, this.IncomingDocID, isReturn);
           // this.CloseRotiniPanel();
           // this.notificationService.success('Cập nhật thông tin xử lý thành công.');
         }
@@ -1075,17 +1492,51 @@ export class DocumentDetailComponent implements OnInit {
               );
             },
             () => {
-              this.UpdateStatus(0, 1);
+              this.UpdateStatusFinish(0);
             }
           );
         } else {
-          this.UpdateStatus(0, 1);
+          this.UpdateStatusFinish(0);
         }
       }
     );
   }
 
-  callbackFunc(id, idDocument) {
+  UpdateStatusFinish(index) {
+    if(this.ListItem !== undefined && this.ListItem.length > 0) {
+      const dataTicket = {
+        __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+        StatusID: 1, StatusName: "Đã xử lý",
+        IsFinished: 1
+      };
+      this.services.updateListById('ListProcessRequestTo', dataTicket, this.ListItem[index].ID).subscribe(
+        item => {},
+        error => {
+          this.CloseRotiniPanel();
+          console.log(
+            'error when update item to list ListProcessRequestTo: ' +
+              error.error.error.message.value
+          ),
+            this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
+        },
+        () => {
+          console.log(
+            'update item ' + this.ListItem[index] + ' of approval user to list ListProcessRequestTo successfully!'
+          );
+          index ++;
+          if(index < this.ListItem.length) {
+            this.UpdateStatusFinish(index);
+          }
+          else {
+            this.callbackFunc(this.processId, this.IncomingDocID, false);
+          }
+        }
+      );
+    }
+  }
+
+
+  callbackFunc(id, idDocument, isReturn) {
     if (this.outputFileHandle.length > 0) {
       this.saveItemAttachment(0, id, this.outputFileHandle,'ListProcessRequestTo',null);
     }
@@ -1096,8 +1547,8 @@ export class DocumentDetailComponent implements OnInit {
       this.saveItemAttachment(0, id, this.outputFileReturn,'ListProcessRequestTo',null);
     }
     else {
-      this.CloseRotiniPanel();
-      this.routes.navigate(['Documnets/IncomingDoc/docTo-detail/' + idDocument]);
+       // gui mail
+      this.addItemSendMail(isReturn);
     }
   }
 
@@ -1345,7 +1796,7 @@ export class DocumentDetailComponent implements OnInit {
               else {
                 arr = [];
                 this.CloseRotiniPanel();
-                this.routes.navigate(['/Documnets/IncomingDoc/docTo-detail/' + idItem]);
+                this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + idItem]);
               }
             }
           }
@@ -1403,6 +1854,7 @@ export class DocumentDetailComponent implements OnInit {
           KeyList: "ListDocumentTo_" + this.IncomingDocID,
           ProcessID:isAddComment==true? this.idItemProcess:null,
           UserApproverId:isAddComment==true? this.listUserIdSelect[index]:null,
+          UserRequestId: this.currentUserId,
         }
         if (this.isNotNull(this.pictureCurrent)) {
           Object.assign(dataComment, { userPicture: this.pictureCurrent });
@@ -1419,7 +1871,7 @@ export class DocumentDetailComponent implements OnInit {
             if(isAddComment==false){     
               this.Comments = null;
               if (this.outputFileComment.length > 0) {
-                this.saveItemAttachment(0, this.indexComment, this.outputFileComment, 'ListComments',null);
+                this.saveItemAttachment(0, this.indexComment, this.outputFileComment, 'ListComments', null);
               }
               else {
                 this.CloseRotiniPanel();
@@ -1429,7 +1881,7 @@ export class DocumentDetailComponent implements OnInit {
             }
             else  if(isAddComment==true){  //xin ý kiến
               if (this.outputFileAddComment.length > 0) {
-                this.saveItemAttachment(0, this.indexComment,this.outputFileAddComment, 'ListComments',index);
+                this.saveItemAttachment(0, this.indexComment,this.outputFileAddComment, 'ListComments', index);
               }
               else {
                 this.CloseRotiniPanel();
@@ -1467,6 +1919,7 @@ export class DocumentDetailComponent implements OnInit {
         content = this.listCommentParent[i].children[j].Content;
       }
       if (this.isNotNull(content)) {
+        this.ContentReply = content;
         const dataComment = {
           __metadata: { type: 'SP.Data.ListCommentsListItem' },
           Title: "ListDocumentTo_" + this.IncomingDocID,
@@ -1493,8 +1946,9 @@ export class DocumentDetailComponent implements OnInit {
             this.CloseRotiniPanel();
             this.notificationService.success('Bạn gửi trả lời thành công');
             //update lại trạng thái cho phiếu xin ý kiến
-            if (this.isNotNull(this.listCommentParent[i].ProcessID)) {
+            if (this.isNotNull(this.listCommentParent[i].ProcessID) && this.listCommentParent[i].UserApproverId === this.currentUserId) {              
               this.updateProcess(this.listCommentParent[i].ProcessID);
+              this.AuthorComment = {Title: this.listCommentParent[i].Author, Email: this.listCommentParent[i].AuthorEmail};
             }
             this.getComment();
             // }
@@ -1523,12 +1977,28 @@ export class DocumentDetailComponent implements OnInit {
         },
         error => console.log(error),
         () => {
-          // if (this.outputFile.length > 0) {
-          //   this.saveItemAttachment(0, this.indexComment);
-          // }
-          // else {
-          // this.closeCommentPanel();
-          // alert('Bạn gửi trả lời thành công');
+        // gui mail
+        const dataSendUser = {
+          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+          Title: this.listName,
+          IndexItem: this.IncomingDocID,
+          Step: this.currentStep,
+          KeyList: this.listName +  '_' + this.IncomingDocID,
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentSubject),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentBody),
+          SendMailTo: this.AuthorComment.Email,
+        }
+        this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
+          itemRoomRQ => {
+            console.log(itemRoomRQ['d']);
+          },
+          error => {
+            console.log(error);
+            this.CloseRotiniPanel();
+          },
+          () => {
+            console.log('Save item success and send mail success');
+          });
           this.GetHistory();
           // }
         }
@@ -1541,11 +2011,11 @@ export class DocumentDetailComponent implements OnInit {
 
   listCommentParent = []; listComment = [];listUserIdSelect=[];
   outputFileComment: AttachmentsObject[] = []; AttachmentsComment: AttachmentsObject[] = [];
-  outputFileAddComment:AttachmentsObject[]=[];
+  outputFileAddComment:AttachmentsObject[]=[]; ListCommentInProcess = [];
   Comments; pictureCurrent; indexComment;selectedUserComment;idItemProcess;contentComment;
   getComment(): void {
-    const strComent = `?$select=ID,Chat_Comments,Created,userPicture,ParentID,ProcessID,Author/Title,UserApprover/Id,UserApprover/Title,AttachmentFiles`
-      + `&$expand=Author/Id,UserApprover,AttachmentFiles&$filter=KeyList eq 'ListDocumentTo_` + this.IncomingDocID + `'&$orderby=Created desc`
+    const strComent = `?$select=ID,Chat_Comments,Created,userPicture,ParentID,ProcessID,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title,AttachmentFiles`
+      + `&$expand=Author,UserApprover,AttachmentFiles&$filter=KeyList eq 'ListDocumentTo_` + this.IncomingDocID + `'&$orderby=Created desc`
     this.services.getItem("ListComments", strComent).subscribe(itemValue => {
       this.listComment = [];
       this.listCommentParent = [];
@@ -1575,10 +2045,14 @@ export class DocumentDetailComponent implements OnInit {
         this.listComment.push({
           ID: element.ID,
           Author: element.Author.Title,
+          AuthorEmail: element.Author.Name.split('|')[2],
           Chat_Comments: this.docTo.CheckNull(element.Chat_Comments === '') ? 'Ý kiến' : element.Chat_Comments,
           Created: moment(element.Created).format('DD/MM/YYYY HH:mm:ss'),
           userPicture: picture,
+          // UserRequest: element.UserRequest != null ? element.UserRequest.Title : '',
+          // UserRequestEmail: element.UserRequest != null ? element.UserRequest.Name.split('|')[1] : '',
           UserApprover: element.UserApprover != null ? element.UserApprover.Title : '',
+          UserApproverId: element.UserApprover != null ? element.UserApprover.Id : 0,
           XinYKien: ' xin ý kiến ',
           ParentID: element.ParentID,
           ProcessID: element.ProcessID,
@@ -1644,7 +2118,9 @@ export class DocumentDetailComponent implements OnInit {
       error => {console.log("Load process error: " + error)},
       () => {
         this.listCommentParent.sort(this.compare);
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        }  
       })
     }
     )
@@ -1703,6 +2179,7 @@ export class DocumentDetailComponent implements OnInit {
         TaskTypeName: 'Xử lý chính',
         Content: this.contentComment,
         Compendium: this.itemDoc.compendium,
+        IndexStep: this.currentStep
       }
       this.services.AddItemToList('ListProcessRequestTo', dataProcess).subscribe(
         items => {
@@ -1720,7 +2197,7 @@ export class DocumentDetailComponent implements OnInit {
             __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
             Title: this.listName,
             IndexItem: this.IncomingDocID,
-            Step: 1,
+            Step: this.currentStep,
             KeyList: this.listName +  '_' + this.IncomingDocID,
             SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentSubject),
             BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentBody),
@@ -1735,7 +2212,7 @@ export class DocumentDetailComponent implements OnInit {
               this.CloseRotiniPanel();
             },
             () => {
-              console.log('Save item success');
+              console.log('Save item success and send mail success');
             });
         }
       )
@@ -1744,60 +2221,53 @@ export class DocumentDetailComponent implements OnInit {
     }
   }
 
-  addItemSendMail() {
+  addItemSendMail(isReturn) {
     try {
-      // send mail user created
-      const dataSendUser = {
-        __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-        Title: this.listName,
-        IndexItem: this.IncomingDocID,
-        Step: 1,
-        KeyList: this.listName +  '_' + this.IncomingDocID,
-        SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailSubject),
-        BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailBody),
-        SendMailTo: this.currentUserEmail,
-      }
-      this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
-        itemRoomRQ => {
-          console.log(itemRoomRQ['d']);
-        },
-        error => {
-          console.log(error);
-          this.CloseRotiniPanel();
-        },
-        () => {
-          console.log('Save item success');
-
-          const dataSendApprover = {
-            __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-            Title: this.listName,
-            IndexItem: this.IncomingDocID,
-            Step: 1,
-            KeyList: this.listName +  '_' + this.IncomingDocID,
-            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
-            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody),
-            SendMailTo: this.selectedApprover.split('|')[1]
-          }
-          this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
-            itemCarRQ => {
-              console.log(itemCarRQ['d']);
-            },
-            error => {
-              console.log(error);
-              this.CloseRotiniPanel();
-            },
-            () => {
-              console.log('Add email success');
-              if(this.selectedCombiner.length > 0) {
-                this.SendMailCombiner(0);
-              }
-              if(this.selectedKnower.length > 0) {
-                this.SendMailKnower(0);
-              }
-            }
-          )
+      if(!isReturn) {
+      // send mail user approver
+        // const dataSendUser = {
+        //   __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+        //   Title: this.listName,
+        //   IndexItem: this.IncomingDocID,
+        //   Step: this.currentStep,
+        //   KeyList: this.listName +  '_' + this.IncomingDocID,
+        //   SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ApprovedEmailSubject),
+        //   BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ApprovedEmailBody),
+        //   SendMailTo: this.currentUserEmail,
+        // }
+        const dataSendApprover = {
+          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+          Title: this.listName,
+          IndexItem: this.IncomingDocID,
+          Step: this.currentStep,
+          KeyList: this.listName +  '_' + this.IncomingDocID,
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody),
+          SendMailTo: this.selectedApprover.split('|')[1]
         }
-      )
+        this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
+          itemRoomRQ => {
+            console.log(itemRoomRQ['d']);
+          },
+          error => {
+            console.log(error);
+            this.CloseRotiniPanel();
+          },
+          () => {          
+            console.log('Add email success approver');
+            if(this.selectedCombiner.length > 0) {
+              this.SendMailCombiner(0);
+            } else if(this.selectedKnower.length > 0) {
+              this.SendMailKnower(0);
+            } else {                  
+              this.CloseRotiniPanel();
+              this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+            }
+          }
+        )
+      } else {
+
+      }
     } catch (error) {
       console.log('addItemSendMail error: ' + error.message);
     }
@@ -1809,7 +2279,7 @@ export class DocumentDetailComponent implements OnInit {
       __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
       Title: this.listName,
       IndexItem: this.IncomingDocID,
-      Step: 1,
+      Step: this.currentStep,
       KeyList: this.listName +  '_' + this.IncomingDocID,
       SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
       BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
@@ -1824,9 +2294,15 @@ export class DocumentDetailComponent implements OnInit {
         this.CloseRotiniPanel();
       },
       () => {
+        console.log('Add email success combiner');
         index ++;
         if(index < this.selectedCombiner.length) {
           this.SendMailCombiner(index);
+        } else if(this.selectedKnower.length > 0) {
+          this.SendMailKnower(0);
+        } else {                  
+          this.CloseRotiniPanel();
+          this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
         }
       }
     );
@@ -1838,7 +2314,7 @@ export class DocumentDetailComponent implements OnInit {
       __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
       Title: this.listName,
       IndexItem: this.IncomingDocID,
-      Step: 1,
+      Step: this.currentStep,
       KeyList: this.listName +  '_' + this.IncomingDocID,
       SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
       BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
@@ -1853,12 +2329,20 @@ export class DocumentDetailComponent implements OnInit {
         this.CloseRotiniPanel();
       },
       () => {
+        console.log('Add email success knower');
         index ++;
         if(index < this.selectedKnower.length) {
           this.SendMailKnower(index);
+        } else {                  
+          this.CloseRotiniPanel();
+          this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
         }
       }
     );
+  }
+
+  SendMailComment() {
+
   }
 
   Replace_Field_Mail(FieldMail, ContentMail) {
@@ -1883,26 +2367,32 @@ export class DocumentDetailComponent implements OnInit {
             case 'Author':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.currentUserName);
               break;
+            case 'CommentReply':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.ContentReply));
+              break;
+            case 'authorComment':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.AuthorComment) === '' ? '' : this.AuthorComment.Title);
+              break;
             case 'ContentComment':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.contentComment);
               break;
             case 'userComment':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.selectedUserComment.split('|')[2]);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.selectedUserComment) === '' ? '' : this.selectedUserComment.split('|')[2]);
               break;
             case 'userStep':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.UserAppoverName);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.selectedApprover) === '' ? '' : this.selectedApprover.split('|')[2]);
               break;
             case 'UserApprover':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.UserAppoverName);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}",this.docTo.CheckNull(this.selectedApprover) === '' ? '' : this.selectedApprover.split('|')[2]);
               break;
             case 'ItemUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documnets/IncomingDoc/docTo-detail/' + this.IncomingDocID);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.origin + '/#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID);
               break;
             case 'TaskUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/IncomingDoc/docTo-detail/' + this.IncomingDocID + '/' + (this.IndexStep + 1));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.origin + '/#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID + '/' + (this.IndexStep + 1));
               break;
             case 'HomeUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documnets/IncomingDoc');
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.origin + '/#/Documents/IncomingDoc');
               break;
           }
         }
@@ -1916,6 +2406,25 @@ export class DocumentDetailComponent implements OnInit {
     catch (err) {
       console.log("Replace_Field_Mail error: " + err.message);
     }
+  }
+
+  getStatusName(sts) {
+    let stsName = '';
+    switch(sts) {
+      case 0: 
+        stsName = 'Chờ xử lý';
+        break;
+      case 1: 
+        stsName = 'Đã xử lý';
+        break;
+      case -1: 
+        stsName = 'Bị thu hồi';
+        break;
+      default:
+        stsName = 'Chờ xử lý';
+        break;
+    }
+    return stsName;
   }
 }
 

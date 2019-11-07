@@ -9,9 +9,10 @@
         <div class="form-input" fxLayout="column">
             <div class="caption" fxFlexFill>
                 <span class="d-flex justify-content-between align-items-baseline uppercase portlet_title_tsg_2">
-                    <h3>Thông tin văn bản</h3>
+                    <h3 style="margin: 5px 0;">Thông tin văn bản</h3>
                 </span>
             </div>
+            <div class="spaceWidget" style="height: 15px; display: block; background-color: rgba(255, 255, 255, 0.4);"></div>
             <div fxLayout="column">
                 <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
                     <mat-form-field fxFlex="50">
@@ -23,19 +24,17 @@
                     </mat-form-field>
                     <mat-form-field fxFlex="50">
                         <mat-label>Số đến <span class="required-field">*</span></mat-label>
-                        <input matInput numbersTo type="text" formControlName="numberTo" (change)="ChangeNumberTo()">
+                        <input matInput numbersTo type="text" formControlName="numberTo" (keydown)="false">
                         <mat-error *ngIf="IncomingDocform.get('numberTo').hasError('required')">Nhập số đến của văn bản</mat-error>
                     </mat-form-field>
                 </div>
                 <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
-                    <mat-form-field fxFlex="50">
+                    <!-- <mat-form-field fxFlex="50">
                         <input matInput placeholder="Số phụ" formControlName="numberToSub">
-                    </mat-form-field>
+                    </mat-form-field> -->
                     <mat-form-field fxFlex="50">
                         <input matInput placeholder="Số / Ký hiệu" formControlName="numberOfSymbol">
                     </mat-form-field>
-                </div>
-                <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
                     <mat-form-field fxFlex="50">
                         <mat-label>Nơi gửi <span class="required-field">*</span></mat-label>
                         <mat-select formControlName="source">
@@ -43,26 +42,34 @@
                         </mat-select>
                         <mat-error *ngIf="IncomingDocform.get('source').hasError('required')">Chọn nơi gửi</mat-error>
                     </mat-form-field>
+                </div>
+                <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
                     <mat-form-field fxFlex="50">
-                        <mat-label>Loại văn bản</mat-label>
+                        <mat-label>Loại văn bản <span class="required-field">*</span></mat-label>
                         <mat-select formControlName="docType">
                             <mat-option *ngFor="let item of ListDocType" value={{item.id}}>{{item.title}}</mat-option>
                         </mat-select>
                         <mat-error *ngIf="IncomingDocform.get('docType').hasError('required')">Chọn loại văn bản</mat-error>
                     </mat-form-field>
-                </div>
-                <div fxLayout="row" fxLayout.xs="column" fxFlexFil fxLayoutGap="10px">
                     <mat-form-field fxFlex="50">
                         <mat-label>Ngày ban hành</mat-label>
-                        <input matInput [matDatepicker]="picker" (click)="picker.open()" [matDatepickerFilter]="myFilter" formControlName="promulgatedDate" (keydown)="false">
+                        <input matInput [matDatepicker]="picker" (click)="picker.open()" [matDatepickerFilter]="myFilter2" formControlName="promulgatedDate" (keypress)="validateQty($event)">
                         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                         <mat-datepicker #picker></mat-datepicker>
                     </mat-form-field>
+                </div>
+                <div fxLayout="row" fxLayout.xs="column" fxFlexFil fxLayoutGap="10px">
                     <mat-form-field fxFlex="50">
                         <mat-label>Ngày đến</mat-label>
-                        <input matInput [matDatepicker]="picker2" (click)="picker2.open()" [matDatepickerFilter]="myFilter2" [value]="date.value" formControlName="dateTo" (keydown)="false">
+                        <input matInput [matDatepicker]="picker2" (click)="picker2.open()" [matDatepickerFilter]="myFilter2" [value]="date.value" formControlName="dateTo" (keypress)="validateQty($event)">
                         <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
                         <mat-datepicker #picker2></mat-datepicker>
+                    </mat-form-field>
+                    <mat-form-field fxFlex="50">
+                        <mat-label>Hạn xử lý</mat-label>
+                        <input matInput [matDatepicker]="picker3" (click)="picker3.open()" [matDatepickerFilter]="myFilter" formControlName="deadline" (keypress)="validateQty($event)">
+                        <mat-datepicker-toggle matSuffix [for]="picker3"></mat-datepicker-toggle>
+                        <mat-datepicker #picker3></mat-datepicker>
                     </mat-form-field>
                 </div>
             </div>
@@ -89,7 +96,7 @@
             </div>
             <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
                 <!-- multiple -->
-                <mat-form-field fxFlex="50">
+                <mat-form-field fxFlex="50" style="padding-top: 19px;">
                     <mat-label>Người xử lý <span class="required-field">*</span></mat-label>
                     <mat-select formControlName="userHandle">
                         <mat-option *ngFor="let item of ApproverStep" value="{{item.UserId}}_{{item.UserEmail}}_{{item.UserName}}">{{item.UserName}} - {{item.Role}} - {{item.Department}}</mat-option>
@@ -97,14 +104,6 @@
                     <mat-error *ngIf="IncomingDocform.get('userHandle').hasError('required')">Chọn người xử lý</mat-error>
                 </mat-form-field>
                 <mat-form-field fxFlex="50">
-                    <mat-label>Hạn xử lý</mat-label>
-                    <input matInput [matDatepicker]="picker3" (click)="picker3.open()" [matDatepickerFilter]="myFilter" formControlName="deadline" (keydown)="false">
-                    <mat-datepicker-toggle matSuffix [for]="picker3"></mat-datepicker-toggle>
-                    <mat-datepicker #picker3></mat-datepicker>
-                </mat-form-field>
-            </div>
-            <div fxLayout="row" fxLayout.xs="column" fxFlexFill>
-                <mat-form-field fxFlex="100">
                     <textarea matInput placeholder="Nội dung xử lý" formControlName="note"></textarea>
                 </mat-form-field>
             </div>
@@ -132,9 +131,10 @@
         <div class="form-input" fxLayout="column">
             <div class="caption" fxFlexFill>
                 <span class="d-flex justify-content-between align-items-baseline uppercase portlet_title_tsg_2">
-                    <h3>Thông tin khác</h3>
+                    <h3 style="margin-top: .5rem;">Thông tin khác</h3>
                 </span>
             </div>
+            <div class="spaceWidget" style="height: 15px; display: block; background-color: rgba(255, 255, 255, 0.4);"></div>
             <div fxLayout="column">
                 <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
                     <mat-form-field fxFlex="50">
@@ -162,7 +162,7 @@
 </form>
 <div class="row" style="display:inline" *ngIf="showList">
     <div fxFlexFill fxLayoutAlign="end" class="form-input">
-        <button mat-stroked-button color="primary" style="margin-right: 10px" (click)="addNew = !addNew; showList = !showList" ng-model="addNew">
+        <button mat-stroked-button color="primary" style="margin-right: 10px" (click)="ShowFormAddNew()" ng-model="addNew">
             <mat-icon>note_add</mat-icon>&nbsp; Vào sổ văn bản
         </button>
         <input class="docadd-filter" fxFlex="200px" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
@@ -181,19 +181,19 @@
             </ng-container> -->
             <ng-container matColumnDef="numberTo">
                 <th mat-header-cell *matHeaderCellDef> Số đến </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documnets/IncomingDoc/docTo-detail/{{element.ID}}">{{element.numberTo}}</a></td>
+                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.numberTo}}</a></td>
             </ng-container>
             <ng-container matColumnDef="bookType">
                 <th mat-header-cell *matHeaderCellDef> Loại văn bản </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documnets/IncomingDoc/docTo-detail/{{element.ID}}">{{element.bookType}}</a></td>
+                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.bookType}}</a></td>
             </ng-container>
             <ng-container matColumnDef="compendium">
                 <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documnets/IncomingDoc/docTo-detail/{{element.ID}}">{{element.compendium}}</a></td>
+                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.compendium}}</a></td>
             </ng-container>
             <ng-container matColumnDef="dateTo">
                 <th mat-header-cell *matHeaderCellDef> Ngày nhận </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documnets/IncomingDoc/docTo-detail/{{element.ID}}">{{element.dateTo}}</a></td>
+                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.dateTo}}</a></td>
             </ng-container>
             <ng-container matColumnDef="edit">
                 <th mat-header-cell *matHeaderCellDef style="width: 60px"></th>

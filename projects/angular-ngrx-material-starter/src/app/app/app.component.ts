@@ -43,6 +43,7 @@ export class AppComponent implements OnInit {
     ...this.navigation,
     { link: 'settings', label: 'anms.menu.settings' }
   ];
+  isPermision;
 
   public isVanThu$: Observable<boolean>;
   public isNhanVien$: Observable<boolean>;
@@ -91,7 +92,7 @@ export class AppComponent implements OnInit {
     this.store.dispatch(actionSettingsChangeLanguage({ language }));
   }
 
-  checkPermission() {
+  async checkPermission() {
     this.shareService.getCurrentUser().subscribe(
       itemValue => {
           this.currentUser = {
@@ -108,6 +109,11 @@ export class AppComponent implements OnInit {
           this.shareService.getRoleCurrentUser(this.currentUser.userId).subscribe(
               itemValue => {
                   let itemUserMember = itemValue['value'] as Array<any>;
+                  if(itemUserMember.length > 0) {
+                    this.isPermision = true;
+                  } else {
+                    this.isPermision = undefined;
+                  }
                   itemUserMember.forEach(element => {
                       if(element.RoleCode === "VT") {
                           this.isVanThu$ = observableOf(true);

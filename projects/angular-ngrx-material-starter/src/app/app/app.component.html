@@ -33,11 +33,11 @@
                     <span routerLink="" class="branding d-none d-md-inline"><img [src]="logo" /> TSG</span>
 
                     <span class="d-none d-md-inline spacer" style="margin-left: 10px">
-            <button mat-flat-button color="primary" class="toplinkbarItem" [matMenuTriggerFor]="examples" type="button">QLVB <mat-icon class="material-icons">keyboard_arrow_down</mat-icon></button>
+            <button mat-flat-button color="primary" class="toplinkbarItem" [matMenuTriggerFor]="examples" type="button" *ngIf="isPermision">QLVB <mat-icon class="material-icons">keyboard_arrow_down</mat-icon></button>
             <mat-menu #examples="matMenu">
-                <button type="button" mat-menu-item [routerLink]="'/Documnets/IncomingDoc'">Văn bản đến</button>
-                <button type="button" mat-menu-item [routerLink]="'/Documnets'">Văn bản đi</button>
-                <button type="button" mat-menu-item [routerLink]="'/Documnets/data-list'">Danh mục</button>
+                <button type="button" mat-menu-item [routerLink]="'/Documents/IncomingDoc'">Văn bản đến</button>
+                <button type="button" mat-menu-item [routerLink]="'/Documents'">Văn bản đi</button>
+                <button type="button" mat-menu-item [routerLink]="'/Documents/data-list'">Danh mục</button>
                 <button type="button" mat-menu-item [routerLink]="'/examples/todos'">Todos</button>
                 <button type="button" mat-menu-item [routerLink]="'/examples/stock-market'">Stock</button>
                 <button type="button" mat-menu-item [routerLink]="'/examples/theming'">Theming</button>

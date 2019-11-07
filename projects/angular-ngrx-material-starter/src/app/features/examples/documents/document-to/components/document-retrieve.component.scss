@@ -49,3 +49,28 @@ tr.example-element-row:hover {
 .mat-elevation-z8 {
     margin-top: 10px;
 }
+
+a:hover {
+    cursor: pointer !important;
+}
+
+.mat-elevation-z8 {
+    box-shadow: 0 1px 1px -3px rgba(0, 0, 0, .05), 0 1px 1px 1px rgba(0, 0, 0, .05) !important;
+}
+
+::ng-deep {
+    .cdk-global-overlay-wrapper,
+    .cdk-overlay-container {
+        z-index: 9999!important;
+    }
+    td.mat-cell,
+    td.mat-footer-cell,
+    th.mat-header-cell {
+        padding: 4px !important;
+    }
+    th.mat-header-cell {
+        font-weight: 700;
+        font-size: 14px;
+        color: #212529;
+    }
+}
