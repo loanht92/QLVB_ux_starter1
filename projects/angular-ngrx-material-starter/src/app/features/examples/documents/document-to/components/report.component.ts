@@ -27,7 +27,7 @@ import {
 export class ReportComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'content', 'sts']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;

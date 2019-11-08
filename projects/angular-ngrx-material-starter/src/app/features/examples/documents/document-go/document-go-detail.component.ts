@@ -1752,8 +1752,8 @@ export class DocumentGoDetailComponent implements OnInit {
           IndexItem: this.ItemId,
           Step: this.currentStep,
           KeyList: this.listName +  '_' + this.ItemId,
-          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentSubject),
-          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentBody),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentSubject, ''),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentBody, ''),
           SendMailTo: this.AuthorComment.Email,
         }
         this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -1967,8 +1967,8 @@ export class DocumentGoDetailComponent implements OnInit {
             IndexItem: this.ItemId,
             Step: this.currentStep,
             KeyList: this.listName +  '_' + this.ItemId,
-            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentSubject),
-            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentBody),
+            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentSubject,''),
+            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentBody, ''),
             SendMailTo: this.selectedUserComment.split('|')[1],
           }
           this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -1992,57 +1992,55 @@ export class DocumentGoDetailComponent implements OnInit {
   addItemSendMail() {
     try {
       // send mail user created
-      const dataSendUser = {
-        __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-        Title: this.listName,
-        IndexItem: this.ItemId,
-        Step: 1,
-        KeyList: this.listName +  '_' + this.ItemId,
-        SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailSubject),
-        BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailBody),
-        SendMailTo: this.currentUserEmail,
-      }
-      this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
-        itemRoomRQ => {
-          console.log(itemRoomRQ['d']);
-        },
-        error => {
-          console.log(error);
-          this.closeCommentPanel();
-        },
-        () => {
-          console.log('Save item success');
+      // const dataSendUser = {
+      //   __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+      //   Title: this.listName,
+      //   IndexItem: this.ItemId,
+      //   Step: 1,
+      //   KeyList: this.listName +  '_' + this.ItemId,
+      //   SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailSubject, this.selectedApprover.split('|')[2]),
+      //   BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailBody, this.selectedApprover.split('|')[2]),
+      //   SendMailTo: this.currentUserEmail,
+      // }
+      // this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
+      //   itemRoomRQ => {
+      //     console.log(itemRoomRQ['d']);
+      //   },
+      //   error => {
+      //     console.log(error);
+      //     this.closeCommentPanel();
+      //   },
+      //   () => {
+          // console.log('Save item success');
 
-          const dataSendApprover = {
-            __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-            Title: this.listName,
-            IndexItem: this.ItemId,
-            Step: 1,
-            KeyList: this.listName +  '_' + this.ItemId,
-            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
-            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody),
-            SendMailTo: this.selectedApprover.split('|')[1]
-          }
-          this.resService.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
-            itemCarRQ => {
-              console.log(itemCarRQ['d']);
-            },
-            error => {
-              console.log(error);
-              this.closeCommentPanel();
-            },
-            () => {
-              console.log('Add email success');
-              if(this.selectedCombiner.length > 0) {
-                this.SendMailCombiner(0);
-              }
-              if(this.selectedKnower.length > 0) {
-                this.SendMailKnower(0);
-              }
-            }
-          )
+        const dataSendApprover = {
+          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+          Title: this.listName,
+          IndexItem: this.ItemId,
+          Step: 1,
+          KeyList: this.listName +  '_' + this.ItemId,
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.selectedApprover.split('|')[2]),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody,this.selectedApprover.split('|')[2]),
+          SendMailTo: this.selectedApprover.split('|')[1]
         }
-      )
+        this.resService.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
+          itemCarRQ => {
+            console.log(itemCarRQ['d']);
+          },
+          error => {
+            console.log(error);
+            this.closeCommentPanel();
+          },
+          () => {
+            console.log('Add email success');
+            if(this.selectedCombiner.length > 0) {
+              this.SendMailCombiner(0);
+            }
+            if(this.selectedKnower.length > 0) {
+              this.SendMailKnower(0);
+            }
+          })
+        // })
     } catch (error) {
       console.log('addItemSendMail error: ' + error.message);
     }
@@ -2056,8 +2054,8 @@ export class DocumentGoDetailComponent implements OnInit {
       IndexItem: this.ItemId,
       Step: 1,
       KeyList: this.listName +  '_' + this.ItemId,
-      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
-      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, user.split('|')[2]),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, user.split('|')[2]),
       SendMailTo: user.split('|')[1],
     }
     this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -2085,8 +2083,8 @@ export class DocumentGoDetailComponent implements OnInit {
       IndexItem: this.ItemId,
       Step: 1,
       KeyList: this.listName +  '_' + this.ItemId,
-      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
-      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, user.split('|')[2]),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, user.split('|')[2]),
       SendMailTo: user.split('|')[1],
     }
     this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -2106,7 +2104,7 @@ export class DocumentGoDetailComponent implements OnInit {
     );
   }
 
-  Replace_Field_Mail(FieldMail, ContentMail) {
+  Replace_Field_Mail(FieldMail, ContentMail, UserApprover) {
     try {
       if (this.isNotNull(FieldMail) && this.isNotNull(ContentMail)) {
         let strContent = FieldMail.split(",");
@@ -2114,7 +2112,7 @@ export class DocumentGoDetailComponent implements OnInit {
         for (let i = 0; i < strContent.length; i++) {
           switch (strContent[i]) {
             case 'DocumentType':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docServices.checkNull(this.itemDoc.BookTypeName));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docServices.checkNull(this.itemDoc.DocTypeName));
               break;
             case 'Compendium':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docServices.checkNull(this.itemDoc.Compendium));
@@ -2141,10 +2139,10 @@ export class DocumentGoDetailComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.currentUserName);
               break;
             case 'userStep':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.UserAppoverName);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}",UserApprover);
               break;
             case 'UserApprover':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.UserAppoverName);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", UserApprover);
               break;
             case 'ItemUrl':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0]+ '#/Documents/documentgo-detail/' + this.ItemId);

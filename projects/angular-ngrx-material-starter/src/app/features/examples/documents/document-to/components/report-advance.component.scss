@@ -2,6 +2,10 @@ table {
     width: 100%;
 }
 
+tr.example-element-row:hover {
+    background: rgb(201, 198, 198);
+}
+
 .search-hero {
     display: flex;
     float: right;

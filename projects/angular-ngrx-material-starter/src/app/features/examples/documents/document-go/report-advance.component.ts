@@ -18,6 +18,7 @@ import {
   NotificationService
 } from '../../../../core/core.module';
 import { any } from 'bluebird';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'anms-report-advance',
@@ -70,7 +71,7 @@ export class ReportAdvanceDGComponent implements OnInit {
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private location: PlatformLocation
+              private routes: Router, private location: PlatformLocation
     ) {
       location.onPopState(() => {
         //alert(window.location);
@@ -92,6 +93,11 @@ export class ReportAdvanceDGComponent implements OnInit {
     this.getSecretLevel();
     this.getAllListRequest();
     this.getCurrentUser();
+  }
+
+  ClickItem(row) {
+    console.log(row);
+    this.routes.navigate([row.link]);
   }
 
   validateQty(event) {
