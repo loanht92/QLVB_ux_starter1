@@ -206,6 +206,7 @@ export class DocumentDetailComponent implements OnInit {
     this.route.paramMap.subscribe(parames => {
       this.IncomingDocID = parseInt(parames.get('id'));
       this.IndexStep = parseInt(parames.get('step'));
+      this.currentStep = this.IndexStep;
     });
     this.getCurrentUser();
   }
@@ -476,7 +477,7 @@ export class DocumentDetailComponent implements OnInit {
           }
           // Check để hiển thị button thu hồi
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
-            if(element.UserRequest.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
+            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
               this.isRetrieve = observableOf(true);
               this.currentStep = element.IndexStep;
             }
@@ -1139,6 +1140,46 @@ export class DocumentDetailComponent implements OnInit {
     }
   }
 
+  AddListTicketCombiner() {
+    if (this.docTo.CheckNull(this.content) === '') {
+      this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
+      return ;
+    } else {
+      let item = this.ListItem.find(i => i.indexStep === this.currentStep && i.taskTypeCode === "PH");
+      if(item !== undefined) {
+        this.OpenRotiniPanel();
+        const dataTicket = {
+          __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+          StatusID: 1, StatusName: "Đã xử lý",
+          IsFinished: 0
+        };
+        this.services.updateListById('ListProcessRequestTo', dataTicket, item.ID).subscribe(
+          item => {},
+          error => {
+            this.CloseRotiniPanel();
+            console.log(
+              'error when update item to list ListProcessRequestTo: ' +
+                error.error.error.message.value
+            ),
+              this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
+          },
+          () => {
+            console.log(
+              'update item of combiner to list ListProcessRequestTo successfully!'
+            );
+            if(this.outputFileHandle.length > 0) {
+              this.saveItemAttachment(0, item.ID,this.outputFileHandle,'ListProcessRequestTo', null);
+            } else {
+              this.CloseRotiniPanel();
+              this.notificationService.error('Xử lý văn bản thành công');
+              this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+            }          
+          }
+        );
+      }
+    }
+  }
+
   // Add phiếu xử lý  
   validation() {
     if (this.docTo.CheckNull(this.selectedApprover) === '') {
@@ -1548,13 +1589,13 @@ export class DocumentDetailComponent implements OnInit {
 
   callbackFunc(id, idDocument, isReturn) {
     if (this.outputFileHandle.length > 0) {
-      this.saveItemAttachment(0, id, this.outputFileHandle,'ListProcessRequestTo',null);
+      this.saveItemAttachment(0, id, this.outputFileHandle,'ListProcessRequestTo', null);
     }
     else if (this.outputFile.length > 0) {
-      this.saveItemAttachment(0, id, this.outputFile,'ListDocumentTo',null);
+      this.saveItemAttachment(0, id, this.outputFile,'ListDocumentTo', null);
     }
     else if (this.outputFileReturn.length > 0) {
-      this.saveItemAttachment(0, id, this.outputFileReturn,'ListProcessRequestTo',null);
+      this.saveItemAttachment(0, id, this.outputFileReturn,'ListProcessRequestTo', null);
     }
     else {
        // gui mail
@@ -1768,7 +1809,7 @@ export class DocumentDetailComponent implements OnInit {
     }
   }
 
-  saveItemAttachment(index, idItem, arr, listName,indexUserComment) {
+  saveItemAttachment(index, idItem, arr, listName, indexUserComment) {
     try {
       this.buffer = this.getFileBuffer(arr[index]);
       this.buffer.onload = (e: any) => {
@@ -1805,8 +1846,7 @@ export class DocumentDetailComponent implements OnInit {
               }
               else {
                 arr = [];
-                this.CloseRotiniPanel();
-                this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + idItem]);
+                this.addItemSendMail(false);            
               }
             }
           }
@@ -1816,6 +1856,7 @@ export class DocumentDetailComponent implements OnInit {
       console.log("saveItemAttachment error: " + error);
     }
   } 
+
   getFileBuffer(file) {
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
@@ -2044,10 +2085,10 @@ export class DocumentDetailComponent implements OnInit {
         //   }          
         // }
         if(environment.usingMockData) {
-          picture = '../../../../' + this.assetFolder + '/default-user-image.png';
+          picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';
         } else {
           this.assetFolder = this.assetFolder.replace('../', '');
-          picture = this.assetFolder + '/default-user-image.png';
+          picture = this.assetFolder + '/img/default-user-image.png';
         }
         if (this.isNotNull(element.AttachmentFiles)) {
           this.AttachmentsComment = [];
@@ -2092,7 +2133,7 @@ export class DocumentDetailComponent implements OnInit {
     error => {console.log("Load listcomment error: " + error)},
     () => {
       const strSelect = `?$select=*,UserRequest/Title,UserApprover/Id,UserApprover/Title,AttachmentFiles`
-      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + this.IncomingDocID + `' and TypeCode ne 'XYK' and TaskTypeCode eq 'XLC'&$orderby=Created asc`
+      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + this.IncomingDocID + `' and TypeCode ne 'XYK'&$orderby=Created asc`
       this.services.getItem("ListProcessRequestTo", strSelect).subscribe(itemValue => {
         let itemList = itemValue["value"] as Array<any>;
         itemList.forEach(element => { 
@@ -2191,8 +2232,8 @@ export class DocumentDetailComponent implements OnInit {
         StatusName: "Chờ xin ý kiến",
         TypeCode: 'XYK',
         TypeName: 'Xin ý kiến',
-        TaskTypeCode: 'XLC',
-        TaskTypeName: 'Xử lý chính',
+        TaskTypeCode: 'NĐB',
+        TaskTypeName: 'Nhận để biết',
         Content: this.contentComment,
         Compendium: this.itemDoc.compendium,
         IndexStep: this.currentStep
@@ -2240,49 +2281,41 @@ export class DocumentDetailComponent implements OnInit {
   addItemSendMail(isReturn) {
     try {
       if(!isReturn) {
-      // send mail user approver
-        // const dataSendUser = {
-        //   __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-        //   Title: this.listName,
-        //   IndexItem: this.IncomingDocID,
-        //   Step: this.currentStep,
-        //   KeyList: this.listName +  '_' + this.IncomingDocID,
-        //   SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ApprovedEmailSubject),
-        //   BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ApprovedEmailBody),
-        //   SendMailTo: this.currentUserEmail,
-        // }
-        const dataSendApprover = {
-          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-          Title: this.listName,
-          IndexItem: this.IncomingDocID,
-          Step: this.currentStep,
-          KeyList: this.listName +  '_' + this.IncomingDocID,
-          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.selectedApprover.split('|')[2]),
-          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.selectedApprover.split('|')[2]),
-          SendMailTo: this.selectedApprover.split('|')[1]
-        }
-        this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
-          itemRoomRQ => {
-            console.log(itemRoomRQ['d']);
-          },
-          error => {
-            console.log(error);
-            this.CloseRotiniPanel();
-          },
-          () => {          
-            console.log('Add email success approver');
-            if(this.selectedCombiner.length > 0) {
-              this.SendMailCombiner(0);
-            } else if(this.selectedKnower.length > 0) {
-              this.SendMailKnower(0);
-            } else {                  
-              this.CloseRotiniPanel();
-              this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
-            }
+        if(this.docTo.CheckNull(this.selectedApprover) !== '') {
+          const dataSendApprover = {
+            __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+            Title: this.listName,
+            IndexItem: this.IncomingDocID,
+            Step: this.currentStep,
+            KeyList: this.listName +  '_' + this.IncomingDocID,
+            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.selectedApprover.split('|')[2]),
+            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.selectedApprover.split('|')[2]),
+            SendMailTo: this.selectedApprover.split('|')[1]
           }
-        )
-      } else {
-
+          this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
+            itemRoomRQ => {
+              console.log(itemRoomRQ['d']);
+            },
+            error => {
+              console.log(error);
+              this.CloseRotiniPanel();
+            },
+            () => {          
+              console.log('Add email success approver');
+              if(this.selectedCombiner.length > 0) {
+                this.SendMailCombiner(0);
+              } else if(this.selectedKnower.length > 0) {
+                this.SendMailKnower(0);
+              } else {                  
+                this.CloseRotiniPanel();
+                this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+              }
+            }
+          )
+        } else {
+          this.CloseRotiniPanel();
+          this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+        }
       }
     } catch (error) {
       console.log('addItemSendMail error: ' + error.message);

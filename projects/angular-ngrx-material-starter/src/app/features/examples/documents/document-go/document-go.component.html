@@ -177,13 +177,13 @@
     </div>
 </form>
 <div class="row" style="display:inline" *ngIf="showList">
-    <div fxFlexFill fxLayoutAlign="end" class="PB10">
+    <div fxFlexFill fxLayoutAlign="end" class="PB10 form-input">
         <button mat-stroked-button color="primary" class="btnAdd" style="margin-right: 10px" (click)="addNew = !addNew; showList = !showList" ng-model="addNew">
             <mat-icon>note_add</mat-icon>&nbsp; Thêm mới văn bản trình
         </button>
         <input class="docadd-filter" fxFlex="200px" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
     </div>
-    <div fxFlexFill>
+    <div fxFlexFill class="form-input">
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
             <!-- [dataSource]="dataSource" -->
             <!-- Checkbox Column -->
@@ -251,7 +251,7 @@
             <ng-container matColumnDef="Delete">
                 <th mat-header-cell *matHeaderCellDef style="width: 60px"></th>
                 <td mat-cell *matCellDef="let element" style="width: 60px">
-                    <a (click)="DeleteItem(element.ID)">
+                    <a (click)="ShowConfirm(modalConfirm, element.ID)">
                         <mat-icon class="CP" color="warn">delete</mat-icon>
                     </a>
                 </td>
@@ -264,3 +264,19 @@
         <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
     </div>
 </div>
+
+<ng-template #modalConfirm>
+    <div class="modal-header">
+        <h4 class="modal-title pull-left">Xác nhận</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+            <span aria-hidden="true">&times;</span>
+          </button>
+    </div>
+    <div class="modal-body" fxLayout="column" fxLayoutAlign="center center">
+        <mat-label>Bạn có chắc chắn xóa không?</mat-label>
+    </div>
+    <div class="modal-footer" fxLayoutAlign="center center">
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="DeleteItem()" style="width: 100px"><i class="material-icons">done</i>&nbsp; Có</button>
+        <button mat-stroked-button color="warn" type="button" class="MR5" (click)="bsModalRef.hide()" style="width: 100px"><i class="material-icons">highlight_off</i>&nbsp; Không</button>
+    </div>
+</ng-template>

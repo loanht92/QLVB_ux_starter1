@@ -176,6 +176,7 @@ export class DocumentGoDetailComponent implements OnInit {
     this.route.paramMap.subscribe(parames => {
       this.ItemId = parseInt(parames.get('id'));
       this.IndexStep = parseInt(parames.get('step'));
+      this.currentStep = this.IndexStep;
     })
     this.getCurrentUser();
   }
@@ -569,7 +570,7 @@ export class DocumentGoDetailComponent implements OnInit {
           }
           // Check để hiển thị button thu hồi
           if(this.docServices.CheckNullSetZero(this.IndexStep) === 0) {
-            if(element.UserRequest.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
+            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
               this.isRetrieve = observableOf(true);
               this.currentStep = element.IndexStep;
             }
@@ -1799,10 +1800,10 @@ export class DocumentGoDetailComponent implements OnInit {
         //   }
         // }
         if(environment.usingMockData) {
-          picture = '../../../../' + this.assetFolder + '/default-user-image.png';
+          picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';
         } else {
           this.assetFolder = this.assetFolder.replace('../', '');
-          picture = this.assetFolder + '/default-user-image.png';
+          picture = this.assetFolder + '/img/default-user-image.png';
         }
 
         if (this.isNotNull(element.AttachmentFiles)) {
@@ -1847,7 +1848,7 @@ export class DocumentGoDetailComponent implements OnInit {
     error => {console.log("Load listcomment error: " + error)},
     () => {
       const strSelect = `?$select=*,UserRequest/Title,UserApprover/Id,UserApprover/Title,AttachmentFiles`
-      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=DocumentGoID eq '` + this.ItemId + `' and TypeCode ne 'XYK' and TaskTypeCode eq 'XLC'&$orderby=Created asc`
+      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=DocumentGoID eq '` + this.ItemId + `' and TypeCode ne 'XYK'&$orderby=Created asc`
       let picture;
       if(environment.usingMockData) {
         picture = '../../../../' + this.assetFolder + '/default-user-image.png';
@@ -1944,8 +1945,8 @@ export class DocumentGoDetailComponent implements OnInit {
         StatusName: "Chờ xin ý kiến",
         TypeCode: 'XYK',
         TypeName: 'Xin ý kiến',
-        TaskTypeCode: 'XLC',
-        TaskTypeName: 'Xử lý chính',
+        TaskTypeCode: 'NĐB',
+        TaskTypeName: 'Nhận để biết',
         Content: this.contentComment,
         Compendium: this.itemDoc.Compendium,
       }

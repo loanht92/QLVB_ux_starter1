@@ -31,7 +31,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { environment } from '../../../../../../environments/environment';
-import { filter, pairwise } from 'rxjs/operators';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
 import {PlatformLocation} from '@angular/common';
 import {
@@ -64,6 +64,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentAddComponent implements OnInit {
+  bsModalRef: BsModalRef;
   listTitle = 'ListDocumentTo';
   inDocs$: IncomingDoc[] = [];
   displayedColumns: string[] = [
@@ -109,6 +110,7 @@ export class DocumentAddComponent implements OnInit {
   itemDocEdit;
   urlAttachment = environment.proxyUrl.split('/sites/', 1);
   IdEdit = 0;
+  IdDelete = 0;
   Title = '';
   IsClerical = true;
   EmailStepConfig;
@@ -123,7 +125,7 @@ export class DocumentAddComponent implements OnInit {
     public viewContainerRef: ViewContainerRef,
     private routes: Router,
     private location: PlatformLocation,
-    private app: AppComponent
+    private modalService: BsModalService,
     ) {
     //   location.onPopState(() => {
     //     //alert(window.location);
@@ -352,12 +354,12 @@ export class DocumentAddComponent implements OnInit {
             'Current user name is: ' +
             this.currentUserName
         );
-        this.getAllListDocument();
       }
     );
   }
 
   CheckPermission() {
+    this.OpenRotiniPanel();
     this.docTo.getRoleCurrentUser(this.currentUserId).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       if(item.length < 0) {
@@ -371,6 +373,8 @@ export class DocumentAddComponent implements OnInit {
     },
     () => {
      console.log("Check permission success");
+     this.CloseRotiniPanel();     
+     this.getAllListDocument();
     })
   }
 
@@ -1023,13 +1027,18 @@ export class DocumentAddComponent implements OnInit {
     // this.reset();
   }
 
-  DeleteItem(id){
-    if(id > 0) {
+  ShowConfirm(template, IdDelete) {
+    this.bsModalRef = this.modalService.show(template, { class: 'modal-sm' });
+    this.IdDelete = IdDelete;
+  }
+
+  DeleteItem(){
+    if(this.IdDelete > 0) {
       this.OpenRotiniPanel();
       const data = {
         __metadata: { type: 'SP.Data.ListDocumentToListItem' },
       }
-      this.services.DeleteItemById(this.listTitle, data, id).subscribe(item => {},
+      this.services.DeleteItemById(this.listTitle, data, this.IdDelete).subscribe(item => {},
       error => {
         this.CloseRotiniPanel();
         console.log(
@@ -1038,11 +1047,12 @@ export class DocumentAddComponent implements OnInit {
         this.notificationService.error('Xóa văn bản thất bại');
       },
       () => {
+        this.bsModalRef.hide();
         console.log(
           'Delete item in list DocumentTo successfully!'
         );
         this.notificationService.success('Xóa văn bản thành công');
-        let index = this.inDocs$.findIndex(i => i.ID === id);
+        let index = this.inDocs$.findIndex(i => i.ID === this.IdDelete);
         if(index >= 0) {
           this.inDocs$.splice(index, 1);
         }
@@ -1052,6 +1062,7 @@ export class DocumentAddComponent implements OnInit {
         }
         this.dataSource.paginator = this.paginator;
         this.CloseRotiniPanel();
+        this.IdDelete = 0;
       })
     }
   }

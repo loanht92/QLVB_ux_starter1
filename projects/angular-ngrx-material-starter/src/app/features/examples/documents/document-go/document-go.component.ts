@@ -1,27 +1,18 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild,ViewContainerRef, ViewRef} from '@angular/core';
-import { Store, select } from '@ngrx/store';
-import { filter, debounceTime, take } from 'rxjs/operators';
-import { TranslateService } from '@ngx-translate/core';
 import { Observable, from } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material';
 import { FormControl , FormBuilder, FormGroup, FormGroupDirective, Validators, NgForm} from '@angular/forms';
-import { SelectionModel } from '@angular/cdk/collections';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import * as moment from 'moment';
 import {PlatformLocation} from '@angular/common';
-import { element } from 'protractor';
+
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../core/core.module';
 
-import { State } from '../../../examples/examples.state';
-import {
-  actionFormReset,
-  actionFormUpdate
-} from '../../../examples/form/form.actions';
-import { selectFormState } from '../../../examples/form/form.selectors';
 import { ResApiService } from '../../services/res-api.service'
 import { DocumentGoService } from './document-go.service';
 import { ItemDocumentGo, ListDocType, ItemSeleted, ItemSeletedCode, ItemUser, DocumentGoTicket, AttachmentsObject, UserProfilePropertiesObject } from './../models/document-go';
@@ -37,6 +28,7 @@ import { ComponentPortal } from '@angular/cdk/portal';
 })
 
 export class DocumentGoComponent implements OnInit {
+  bsModalRef: BsModalRef;
   form = this.fb.group({
     Compendium: [
       '',
@@ -115,11 +107,10 @@ export class DocumentGoComponent implements OnInit {
   UserOfCombinate = 0;
   UserOfKnow = 0;
   DocumentToId = '';
+  IdDelete = 0;
 
   constructor(
     private fb: FormBuilder,
-    private store: Store<State>,
-    private translate: TranslateService,
     private notificationService: NotificationService,
     private docServices: DocumentGoService,
     private services: ResApiService,
@@ -128,7 +119,8 @@ export class DocumentGoComponent implements OnInit {
     public overlay: Overlay,
     public viewContainerRef: ViewContainerRef,
     private location: PlatformLocation,
-    private routes: Router
+    private routes: Router,
+    private modalService: BsModalService,
     ) {
       location.onPopState(() => {
         //alert(window.location);
@@ -202,6 +194,7 @@ export class DocumentGoComponent implements OnInit {
   }
 
   CheckPermission() {
+    this.OpenDocumentGoPanel();
     this.docServices.getRoleCurrentUser(this.currentUserId).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       if(item.length < 0) {
@@ -215,6 +208,7 @@ export class DocumentGoComponent implements OnInit {
     },
     () => {
      console.log("Check permission success");
+     this.CloseDocumentGoPanel();
     })
   }
 
@@ -881,13 +875,18 @@ export class DocumentGoComponent implements OnInit {
     );
   }
 
-  DeleteItem(id){
-    if(id > 0) {
+  ShowConfirm(template, IdDelete) {
+    this.bsModalRef = this.modalService.show(template, { class: 'modal-sm' });
+    this.IdDelete = IdDelete;
+  }
+
+  DeleteItem(){
+    if(this.IdDelete > 0) {
       this.OpenDocumentGoPanel();
       const data = {
         __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
       }
-      this.services.DeleteItemById(this.listTitle, data, id).subscribe(item => {},
+      this.services.DeleteItemById(this.listTitle, data, this.IdDelete).subscribe(item => {},
       error => {
         this.CloseDocumentGoPanel();
         console.log(
@@ -896,11 +895,12 @@ export class DocumentGoComponent implements OnInit {
         this.notificationService.error('Xóa văn bản thất bại');
       },
       () => {
+        this.bsModalRef.hide();
         console.log(
           'Delete item in list DocumentTo successfully!'
         );
         this.notificationService.success('Xóa văn bản thành công');
-        let index = this.ListDocumentGo.findIndex(i => i.ID === id);
+        let index = this.ListDocumentGo.findIndex(i => i.ID === this.IdDelete);
         if(index >= 0) {
           this.ListDocumentGo.splice(index, 1);
         }
@@ -910,6 +910,7 @@ export class DocumentGoComponent implements OnInit {
           this.ref.detectChanges();  
         } 
         this.CloseDocumentGoPanel();
+        this.IdDelete = 0;
       })
     }
   }
