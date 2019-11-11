@@ -74,10 +74,11 @@ export class ReportAdvanceComponent implements OnInit {
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
               private routes: Router, private location: PlatformLocation
     ) {
-      location.onPopState(() => {
-        //alert(window.location);
-        // window.location.reload();
-     });
+      this.location.onPopState(() => {
+        console.log('Init: pressed back!');
+        window.location.reload(); 
+        return;
+      });
     }
 
   ngOnInit() {

@@ -185,21 +185,13 @@ export class DocumentDetailComponent implements OnInit {
     private modalService: BsModalService,
     public overlay: Overlay, 
     public viewContainerRef: ViewContainerRef,
-    private app: AppComponent,
     private location: PlatformLocation
   ) {
-    // location.onPopState(() => {
-    //   // window.location.reload();
-    //   //alert(window.location);
-    //   this.routes.events
-    //     .pipe(filter((e: any) => e instanceof RoutesRecognized),
-    //         pairwise()
-    //     ).subscribe((e: any) => {
-    //         let url = e[0].urlAfterRedirects;
-    //         console.log(url); // previous url
-    //         this.ngOnInit();
-    //     });
-    // });
+    this.location.onPopState(() => {
+      console.log('Init: pressed back!');
+      window.location.reload(); 
+      return;
+    });
   }
 
   ngOnInit() {
@@ -258,7 +250,9 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   CloseRotiniPanel() {
-    this.overlayRef.dispose();
+    if(this.overlayRef !== undefined) {
+      this.overlayRef.dispose();
+    }
   }
 
   myFilter = (d: Date): boolean => {
@@ -310,7 +304,6 @@ export class DocumentDetailComponent implements OnInit {
         }
       }
       this.GetItemDetail();
-      this.GetHistory();
       this.getComment();
       this.GetAllUser();
     })
@@ -388,7 +381,10 @@ export class DocumentDetailComponent implements OnInit {
       console.log("Load item detail : " + error);
       this.CloseRotiniPanel();
     },
-    () => {}
+    () => {
+      this.CloseRotiniPanel();
+      this.GetHistory();
+    }
     );
 
     // Load list config by step
@@ -461,6 +457,7 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   GetHistory() {
+    this.OpenRotiniPanel();
     this.docTo
       .getListRequestByDocID(this.IncomingDocID)
       .subscribe((itemValue: any[]) => {
@@ -518,8 +515,7 @@ export class DocumentDetailComponent implements OnInit {
             content: this.docTo.CheckNull(element.Content),
             indexStep: element.IndexStep,
             created: element.IndexStep === 1 ?
-            (this.docTo.CheckNull(element.DateTo) === '' ? moment(element.DateCreated).format('DD/MM/YYYY') : moment(element.DateTo).format('DD/MM/YYYY')) :
-            moment(element.DateCreated).format('DD/MM/YYYY'),
+            (this.docTo.CheckNull(this.itemDoc.dateTo) === '' ? moment(element.DateCreated).format('DD/MM/YYYY') : this.itemDoc.dateTo) : moment(element.DateCreated).format('DD/MM/YYYY'),
             numberTo: element.Title,
             link: '',
             stsClass: element.StatusID === 0? 'Ongoing' : 'Approved',
@@ -536,6 +532,7 @@ export class DocumentDetailComponent implements OnInit {
         this.CloseRotiniPanel();
       },
       () => {
+        this.CloseRotiniPanel();
         this.ArrCurrentRetrieve = [];
         this.ListItem.forEach(element => {
           if(element.indexStep === this.currentStep) {
@@ -689,6 +686,7 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   getCurrentUser(){
+    this.OpenRotiniPanel();
     this.services.getCurrentUser().subscribe(
       itemValue => {
           this.currentUserId = itemValue["Id"];
@@ -735,7 +733,8 @@ export class DocumentDetailComponent implements OnInit {
             console.log("Load department code error: " + error);
             this.CloseRotiniPanel();
           },
-          () => {           
+          () => {   
+            this.CloseRotiniPanel();        
           }
         )
       }
@@ -1836,7 +1835,6 @@ export class DocumentDetailComponent implements OnInit {
                   this.outputFileAddComment = [];
                   this.notificationService.success('Bạn gửi xin ý kiến thành công');
                   this.GetItemDetail();
-                  this.GetHistory();
                   this.bsModalRef.hide();
                 }
                 else{
@@ -2130,7 +2128,10 @@ export class DocumentDetailComponent implements OnInit {
         }
       });
     },
-    error => {console.log("Load listcomment error: " + error)},
+    error => {
+      console.log("Load listcomment error: " + error);
+      this.CloseRotiniPanel();
+    },
     () => {
       const strSelect = `?$select=*,UserRequest/Title,UserApprover/Id,UserApprover/Title,AttachmentFiles`
       + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + this.IncomingDocID + `' and TypeCode ne 'XYK'&$orderby=Created asc`
@@ -2172,12 +2173,16 @@ export class DocumentDetailComponent implements OnInit {
           })
         })
       },
-      error => {console.log("Load process error: " + error)},
+      error => {
+        console.log("Load process error: " + error);
+        this.CloseRotiniPanel();
+      },
       () => {
         this.listCommentParent.sort(this.compare);
         if (!(this.ref as ViewRef).destroyed) {
           this.ref.detectChanges();  
         }  
+        this.CloseRotiniPanel();
       })
     }
     )

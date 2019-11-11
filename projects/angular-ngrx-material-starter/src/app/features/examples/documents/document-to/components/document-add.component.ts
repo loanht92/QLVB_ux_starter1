@@ -139,6 +139,11 @@ export class DocumentAddComponent implements OnInit {
     //       this.ngOnInit();
     //   });
     // });
+      this.location.onPopState(() => {
+        console.log('Init: pressed back!');
+        window.location.reload(); 
+        return;
+      });
     }
 
   ngOnInit() {
@@ -174,6 +179,11 @@ export class DocumentAddComponent implements OnInit {
       signer: ''
       //surname: ['', [Validators.required, Validators.minLength(5)]]
     });
+  }
+
+  ClickItem(row) {
+    console.log(row);
+    this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + row.ID]);
   }
 
   myFilter = (d: Date): boolean => {
@@ -239,7 +249,7 @@ export class DocumentAddComponent implements OnInit {
             isSendMail: 'Có',
             isRetrieve: element.IsRetrieve === 0 ? 'Không' : 'Có',
             signer: element.signer,
-            created: element.Author.Title
+            created: element.Author.Title, 
           });
         });
         this.dataSource = new MatTableDataSource<IncomingDoc>(this.inDocs$);
@@ -636,6 +646,8 @@ export class DocumentAddComponent implements OnInit {
           this.services.updateListById(this.listTitle, data, this.IdEdit).subscribe(
             item => {
               this.DocumentID = this.IdEdit;
+              console.log(item);
+              // this.CurrentItem = item['d'];
             },
             error => {
               this.CloseRotiniPanel();
@@ -651,8 +663,9 @@ export class DocumentAddComponent implements OnInit {
               console.log(
                 'update item of approval user to list ' +
                   this.listTitle +
-                  ' successfully!'
+                  ' successfully!' + data
               );
+              this.CurrentItem = data;
               if (sts === 0) {
                 this.AddHistoryStep();
               } else {
@@ -847,15 +860,13 @@ export class DocumentAddComponent implements OnInit {
         for (let i = 0; i < strContent.length; i++) {
           switch (strContent[i]) {
             case 'NumberTo':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.formatNumberTo(this.currentNumberTo));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.formatNumberTo(this.CurrentItem.NumberTo));
               break;
             case 'Compendium':
-              // ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.IncomingDocform.controls['compendium'].value));
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.CurrentItem.Compendium);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.CurrentItem.Compendium));
               break;
             case 'Content':
-              // ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.IncomingDocform.controls['note'].value));
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.CurrentItem.Note);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.CurrentItem.Note));
               break;
             case 'UserRequest':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.currentUserName);
@@ -873,7 +884,7 @@ export class DocumentAddComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID);
               break;
             case 'TaskUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID + "/1");
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.DocumentID + "/2");
               break;
             case 'HomeUrl':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc');
@@ -1020,7 +1031,7 @@ export class DocumentAddComponent implements OnInit {
     // window.location.href = '/workflows/LeaveofAbsence/detail/'+ id;
     this.CloseRotiniPanel();
     this.notificationService.success('Thêm văn bản đến thành công');
-    this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.CurrentItem.Id]);
+    this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.DocumentID]);
     // this.getAllListDocument();
     // this.addNew = !this.addNew;
     // this.showList = !this.showList;

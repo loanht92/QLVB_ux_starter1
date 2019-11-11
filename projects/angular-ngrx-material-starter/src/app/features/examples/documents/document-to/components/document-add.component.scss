@@ -3,6 +3,10 @@
     overflow: auto;
 }
 
+tr.example-element-row:hover {
+    background: rgb(201, 198, 198);
+}
+
 .portlet_title_tsg_2 {
     color: #F6753C;
     padding-left: 10px;

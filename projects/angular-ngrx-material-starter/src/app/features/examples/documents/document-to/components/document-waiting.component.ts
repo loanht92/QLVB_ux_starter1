@@ -145,7 +145,11 @@ export class DocumentWaitingComponent implements OnInit {
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
               private route: ActivatedRoute,private location: PlatformLocation
               ) {
-                 
+                this.location.onPopState(() => {
+                  console.log('Init: pressed back!');
+                  window.location.reload(); 
+                  return;
+                });
                 }
 
   ngOnInit() {

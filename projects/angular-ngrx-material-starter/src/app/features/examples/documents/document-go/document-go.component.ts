@@ -122,10 +122,11 @@ export class DocumentGoComponent implements OnInit {
     private routes: Router,
     private modalService: BsModalService,
     ) {
-      location.onPopState(() => {
-        //alert(window.location);
-        // window.location.reload();
-     });
+      this.location.onPopState(() => {
+        console.log('Init: pressed back!');
+        window.location.reload(); 
+        return;
+      });
     }
 
   ngOnInit() {

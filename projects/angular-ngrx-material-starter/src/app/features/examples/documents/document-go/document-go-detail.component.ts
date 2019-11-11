@@ -156,20 +156,11 @@ export class DocumentGoDetailComponent implements OnInit {
     private app: AppComponent,
     private location: PlatformLocation
   ) {
-  //   location.onPopState(() => {
-  //     //alert(window.location);
-  //     //window.location.reload();
-  //     this.routes.events
-  //     .pipe(filter((e: any) => e instanceof RoutesRecognized),
-  //         pairwise()
-  //     ).subscribe((e: any) => {
-  //         let url = e[0].urlAfterRedirects;
-  //         console.log(url); // previous url
-  //         //this.routes.navigate([url])
-  //         //this.routes.navigate(url);
-  //         this.ngOnInit();
-  //     });
-  //  });
+    this.location.onPopState(() => {
+      console.log('Init: pressed back!');
+      window.location.reload(); 
+      return;
+    });
   }
 
   ngOnInit() {    

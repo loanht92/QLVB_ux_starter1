@@ -178,27 +178,28 @@
                     <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? selection.toggle(row) : null" [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
                     </mat-checkbox>
                 </td>
-            </ng-container> -->
+            </ng-container> 
+            <a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}"> -->
             <ng-container matColumnDef="numberTo">
                 <th mat-header-cell *matHeaderCellDef> Số đến </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.numberTo}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.numberTo}}</td>
             </ng-container>
             <ng-container matColumnDef="bookType">
                 <th mat-header-cell *matHeaderCellDef> Loại văn bản </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.bookType}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.bookType}}</td>
             </ng-container>
             <ng-container matColumnDef="compendium">
                 <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.compendium}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.compendium}}</td>
             </ng-container>
             <ng-container matColumnDef="dateTo">
                 <th mat-header-cell *matHeaderCellDef> Ngày nhận </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="/Documents/IncomingDoc/docTo-detail/{{element.ID}}">{{element.dateTo}}</a></td>
+                <td mat-cell *matCellDef="let element">{{element.dateTo}}</td>
             </ng-container>
             <ng-container matColumnDef="edit">
                 <th mat-header-cell *matHeaderCellDef style="width: 60px"></th>
                 <td mat-cell *matCellDef="let element" style="width: 60px">
-                    <a (click)="EditItem(element.ID)">
+                    <a (click)="$event.stopPropagation();EditItem(element.ID)">
                         <mat-icon color="primary">edit</mat-icon>
                     </a>
                 </td>
@@ -206,13 +207,13 @@
             <ng-container matColumnDef="delete">
                 <th mat-header-cell *matHeaderCellDef style="width: 60px"></th>
                 <td mat-cell *matCellDef="let element" style="width: 60px">
-                    <a (click)="ShowConfirm(modalConfirm, element.ID)">
+                    <a (click)="$event.stopPropagation();ShowConfirm(modalConfirm, element.ID)">
                         <mat-icon color="warn">delete</mat-icon>
                     </a>
                 </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)">
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(row)" class="example-element-row">
             </tr>
         </table>
         <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>

@@ -58,7 +58,14 @@ export class DocumentGoRetrieveComponent implements OnInit {
               private route: ActivatedRoute,
               private ref: ChangeDetectorRef,
               private routes: Router,
-              private modalService: BsModalService,) { }
+              private location: PlatformLocation,
+              private modalService: BsModalService,) { 
+                this.location.onPopState(() => {
+                  console.log('Init: pressed back!');
+                  window.location.reload(); 
+                  return;
+                });
+              }
 
   ngOnInit() {
     this.getCurrentUser();

@@ -38,10 +38,11 @@ export class DocumentGoWaitingComponent implements OnInit {
     private routes: Router,
     private location: PlatformLocation
     ) {
-      location.onPopState(() => {
-        //alert(window.location);
-        //window.location.reload();
-     });
+      this.location.onPopState(() => {
+        console.log('Init: pressed back!');
+        window.location.reload(); 
+        return;
+      });
     }
 
   displayedColumns: string[] = ['ID', 'DocTypeName',  'DateCreated', 'UserCreateName', 'UserOfHandle', 'Deadline', 'Compendium'];

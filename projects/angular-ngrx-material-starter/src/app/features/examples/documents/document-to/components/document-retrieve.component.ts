@@ -55,18 +55,11 @@ export class DocumentRetrieveComponent implements OnInit {
               private route: ActivatedRoute, private modalService: BsModalService,
               private location: PlatformLocation, private routes: Router
     ) {
-      location.onPopState(() => {
-        //alert(window.location);
-        //window.location.reload();
-        this.routes.events
-      .pipe(filter((e: any) => e instanceof RoutesRecognized),
-          pairwise()
-      ).subscribe((e: any) => {
-          let url = e[0].urlAfterRedirects;
-          console.log(url);
-          this.ngOnInit();
+      this.location.onPopState(() => {
+        console.log('Init: pressed back!');
+        window.location.reload(); 
+        return;
       });
-    });
     }
 
   ngOnInit() {
