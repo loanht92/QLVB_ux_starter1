@@ -429,7 +429,7 @@ export class DocumentDetailComponent implements OnInit {
     let strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     this.docTo.getListRequestTo(strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
-      if(item.length < 0) {
+      if(item.length <= 0) {
         this.notificationService.info("Bạn không có quyền truy cập");
         this.routes.navigate(['/']);
       } else {
@@ -457,7 +457,7 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   GetHistory() {
-    this.OpenRotiniPanel();
+    // this.OpenRotiniPanel();
     this.docTo
       .getListRequestByDocID(this.IncomingDocID)
       .subscribe((itemValue: any[]) => {
@@ -488,7 +488,7 @@ export class DocumentDetailComponent implements OnInit {
             ID: element.ID,
             documentID: element.NoteBookID,
             compendium: element.Compendium,
-            userRequest: element.IndexStep === 1 ?
+            userRequest: (element.IndexStep === 1 && element.TypeCode === "CXL")?
               this.docTo.CheckNull(element.Source) :
               (element.UserRequest !== undefined ? element.UserRequest.Title : ''),
             userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : 0,
@@ -514,7 +514,7 @@ export class DocumentDetailComponent implements OnInit {
             typeCode: this.GetTypeCode(element.TypeCode),
             content: this.docTo.CheckNull(element.Content),
             indexStep: element.IndexStep,
-            created: element.IndexStep === 1 ?
+            created: (element.IndexStep === 1 && element.TypeCode === "CXL") ?
             (this.docTo.CheckNull(this.itemDoc.dateTo) === '' ? moment(element.DateCreated).format('DD/MM/YYYY') : this.itemDoc.dateTo) : moment(element.DateCreated).format('DD/MM/YYYY'),
             numberTo: element.Title,
             link: '',
@@ -532,7 +532,7 @@ export class DocumentDetailComponent implements OnInit {
         this.CloseRotiniPanel();
       },
       () => {
-        this.CloseRotiniPanel();
+        // this.CloseRotiniPanel();
         this.ArrCurrentRetrieve = [];
         this.ListItem.forEach(element => {
           if(element.indexStep === this.currentStep) {
@@ -2134,7 +2134,7 @@ export class DocumentDetailComponent implements OnInit {
     },
     () => {
       const strSelect = `?$select=*,UserRequest/Title,UserApprover/Id,UserApprover/Title,AttachmentFiles`
-      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + this.IncomingDocID + `' and TypeCode ne 'XYK'&$orderby=Created asc`
+      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + this.IncomingDocID + `' and TypeCode ne 'XYK' and TaskTypeCode eq 'XLC' &$orderby=Created asc`
       this.services.getItem("ListProcessRequestTo", strSelect).subscribe(itemValue => {
         let itemList = itemValue["value"] as Array<any>;
         itemList.forEach(element => { 
@@ -2230,7 +2230,7 @@ export class DocumentDetailComponent implements OnInit {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
         Title: this.itemDoc.numberTo,
         DateCreated: new Date(),
-        NoteBookID: this.itemDoc.ID,
+        NoteBookID: this.IncomingDocID,
         UserRequestId: this.currentUserId,
         UserApproverId: this.listUserIdSelect[index],
         StatusID: 0,
@@ -2241,7 +2241,7 @@ export class DocumentDetailComponent implements OnInit {
         TaskTypeName: 'Nhận để biết',
         Content: this.contentComment,
         Compendium: this.itemDoc.compendium,
-        IndexStep: this.currentStep
+        IndexStep: this.currentStep,
       }
       this.services.AddItemToList('ListProcessRequestTo', dataProcess).subscribe(
         items => {

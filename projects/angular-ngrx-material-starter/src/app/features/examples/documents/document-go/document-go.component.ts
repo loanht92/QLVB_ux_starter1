@@ -198,7 +198,7 @@ export class DocumentGoComponent implements OnInit {
     this.OpenDocumentGoPanel();
     this.docServices.getRoleCurrentUser(this.currentUserId).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
-      if(item.length < 0) {
+      if(item.length <= 0) {
         this.notificationService.info("Bạn không có quyền truy cập");
         this.routes.navigate(['/']);
       }
