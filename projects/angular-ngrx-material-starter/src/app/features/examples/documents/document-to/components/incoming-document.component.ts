@@ -7,11 +7,16 @@ import {AppComponent} from '../../../../../app/app.component';
 import { PlatformLocation } from '@angular/common';
 import { filter, pairwise } from 'rxjs/operators';
 import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
+import {
+  routeAnimations,
+  selectIsAuthenticated
+} from '../../../../../core/core.module';
 
 @Component({
   selector: 'anms-document',
   templateUrl: './incoming-document.component.html',
   styleUrls: ['./incoming-document.component.scss'],
+  animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IncomingDocumentComponent implements OnInit {

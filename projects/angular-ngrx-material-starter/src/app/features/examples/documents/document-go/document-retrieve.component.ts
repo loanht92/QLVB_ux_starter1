@@ -123,6 +123,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
             DocTypeName: this.docServices.checkNull(element.DocTypeName),
             NumberSymbol:this.docServices.checkNull(element.Title),
             Compendium: this.docServices.checkNull(element.Compendium),
+            AuthorId: element.Author == undefined ? '' : element.Author.Id,
             UserCreateName: element.Author == undefined ? '' : element.Author.Title,
             DateCreated: this.formatDateTime(element.DateCreated),
             UserOfHandleName: element.UserApprover == undefined ? '' : element.UserApprover.Title,

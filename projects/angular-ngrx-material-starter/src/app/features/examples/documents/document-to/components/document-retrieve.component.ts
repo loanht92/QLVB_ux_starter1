@@ -115,6 +115,7 @@ export class DocumentRetrieveComponent implements OnInit {
             compendium: element.Compendium, 
             userRequest: element.UserRequest !== undefined ? element.UserRequest.Title : '',
             userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
+            userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
             userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
             deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
             status: 'Chờ xử lý',

@@ -171,6 +171,7 @@ export class DocumentGoWaitingComponent implements OnInit {
               DocTypeName: this.CheckNull(element.DocTypeName),
               NumberSymbol:this.CheckNull(element.Title),
               Compendium: this.CheckNull(element.Compendium),
+              AuthorId:  element.Author == undefined ? '' : element.Author.Id,
               UserCreateName: element.Author == undefined ? '' : element.Author.Title,
               DateCreated: this.formatDateTime(element.DateCreated),
               UserOfHandleName: element.UserApprover == undefined ? '' : element.UserApprover.Title,

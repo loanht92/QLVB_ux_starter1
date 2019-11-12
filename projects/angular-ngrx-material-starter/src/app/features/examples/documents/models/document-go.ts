@@ -8,6 +8,7 @@ export interface ItemDocumentGo {
   Compendium: string;
   Deadline: string;
   DateCreated: string;
+  AuthorId: number;
   UserCreateName: string;
   UserOfHandleName: string;
   UserOfKnowName: string;

@@ -1,4 +1,17 @@
-.mat-tab-link {
-    min-width: 120px !important;
-    padding: 0 15px !important;
+@import '../../../../../styles-variables';
+nav {
+    .mat-tab-link {
+        min-width: 120px !important;
+        padding: 0 15px !important;
+    }
+    .mat-tab-label-active {
+        opacity: 1 !important;
+        background-color: transparent;
+        font-weight: 700;
+    }
+    @media (max-width: map-get($grid-breakpoints, md)) {
+        .mat-tab-link {
+            min-width: 0;
+        }
+    }
 }

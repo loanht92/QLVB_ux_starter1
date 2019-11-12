@@ -4,11 +4,17 @@ import { Observable, of as observableOf  } from 'rxjs';
 import {SharedService} from '../../../../shared/shared-service/shared.service'
 import { State } from '../../examples.state';
 import {AppComponent} from '../../../../app/app.component';
+import {
+  routeAnimations,
+  selectIsAuthenticated
+} from '../../../../core/core.module';
+
 
 @Component({
   selector: 'anms-document',
   templateUrl: './document.component.html',
   styleUrls: ['./document.component.scss'],
+  animations: [routeAnimations],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentComponent implements OnInit {

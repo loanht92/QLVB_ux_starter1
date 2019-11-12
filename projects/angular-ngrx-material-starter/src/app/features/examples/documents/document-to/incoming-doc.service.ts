@@ -215,6 +215,7 @@ export interface IncomingTicket {
   documentID: number;
   userRequest: string;
   userRequestId: number;
+  userApproverId: number;
   userApprover: string;
   deadline: string;
   status: string;

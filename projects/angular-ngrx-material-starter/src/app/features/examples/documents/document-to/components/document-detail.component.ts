@@ -93,6 +93,9 @@ export class UserChoice {
 export class DocumentDetailComponent implements OnInit {
   bsModalRef: BsModalRef;
   itemDoc;
+  isCheckPermission;
+  IsDeadline;
+  deadlineDoc;
   isExecution: Observable<boolean>;
   isCombine: Observable<boolean>;
   isFinish: Observable<boolean>;
@@ -331,6 +334,11 @@ export class DocumentDetailComponent implements OnInit {
           });
         }
         this.UserAppoverName = itemList[0].ListUserApprover;
+        if(this.docTo.CheckNull(itemList[0].Deadline) === '' && itemList[0].IsRetrieve === 1) {
+          this.IsDeadline = true;
+        } else if(this.docTo.CheckNull(itemList[0].Deadline) !== '') {
+          this.deadlineDoc = itemList[0].Deadline;
+        }
         this.itemDoc = {
           ID: itemList[0].ID,
           bookType: itemList[0].BookTypeName,
@@ -360,6 +368,7 @@ export class DocumentDetailComponent implements OnInit {
               : moment(itemList[0].Deadline).format('DD/MM/YYYY'),
           numberOfCopies: this.docTo.SetEmpty(itemList[0].NumOfCopies),
           methodReceipt: itemList[0].MethodReceipt,
+          authorId: itemList[0].Author.Id,
           userHandle:
             itemList[0].UserOfHandle !== undefined
               ? itemList[0].UserOfHandle.Title
@@ -382,6 +391,11 @@ export class DocumentDetailComponent implements OnInit {
       this.CloseRotiniPanel();
     },
     () => {
+      if(this.isCheckPermission === false && this.itemDoc.authorId !== this.currentUserId) {
+        this.CloseRotiniPanel();
+        this.notificationService.info("Bạn không có quyền truy cập");
+        this.routes.navigate(['/']);
+      }
       this.CloseRotiniPanel();
       this.GetHistory();
     }
@@ -430,16 +444,18 @@ export class DocumentDetailComponent implements OnInit {
     this.docTo.getListRequestTo(strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       if(item.length <= 0) {
-        this.notificationService.info("Bạn không có quyền truy cập");
-        this.routes.navigate(['/']);
+        // this.notificationService.info("Bạn không có quyền truy cập");
+        // this.routes.navigate(['/']);
+        this.isCheckPermission = false;
       } else {
+        this.isCheckPermission = true;
         if(this.IndexStep > 0) {
           let _item = item.find(i => i.IndexStep === this.IndexStep);
           if(_item !== undefined) {
             this.currentRoleTask = _item.TaskTypeCode;
-            // if(_item.StatusID === 1 || _item.TaskTypeCode !== 'XLC') {
-            //   this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
-            // }
+            if(_item.StatusID === 1) {
+              this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+            }
           } else {
             this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
           }
@@ -1189,10 +1205,20 @@ export class DocumentDetailComponent implements OnInit {
       this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
       return false;
     }
-    // else if (this.docTo.CheckNull(this.deadline) === '') {
-    //   this.notificationService.warn("Bạn chưa nhập Hạn xử lý! Vui lòng kiểm tra lại");
-    //   return false;
-    // } 
+    else if (this.IsDeadline) {
+      if(this.docTo.CheckNull(this.deadlineDoc) === '') {
+        this.notificationService.warn("Bạn phải nhập Hạn xử lý của văn bản vì đây là văn bản yêu cầu trả lời");
+        return false;
+      }
+    } else if(this.docTo.CheckNull(this.deadlineDoc) !== '' && this.docTo.CheckNull(this.deadline) !== '') {
+      let diff = moment(this.deadline).diff(moment(this.deadlineDoc), 'day');
+      if(diff > 0) {
+        this.notificationService.warn('Hạn xử lý phải nhỏ hơn hạn của văn bản! Vui lòng kiểm tra lại');
+        return false;
+      } else {
+        return true;
+      }
+    }
     else {
       return true;
     }

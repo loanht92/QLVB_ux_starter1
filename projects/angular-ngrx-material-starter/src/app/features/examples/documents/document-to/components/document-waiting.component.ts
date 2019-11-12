@@ -172,29 +172,37 @@ export class DocumentWaitingComponent implements OnInit {
      //chờ xử lý
      if(this.styleId === 1) {
        strSelect = `' and TypeCode ne 'XYK' and StatusID eq '0'`;
+       this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đang xử lý
     else  if(this.styleId === 2) {
+      // strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
+      // this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
       strSelect = `' and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
+      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã xử lý
     else  if(this.styleId === 3) {
-      strSelect = `' and TypeCode ne 'XYK' and IsFinished eq '1'`;
+      strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Thu hồi
     if(this.styleId === -1) {
-      strSelect = `' and TypeCode ne 'XYK' and StatusID eq '-1'`;
+      strSelect = `') and TypeCode ne 'XYK' and StatusID eq '-1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Chờ xin ý kiến
     else  if(this.styleId === 4) {
-      strSelect = `' and TypeCode eq 'XYK' and StatusID eq '0'`;
+      strSelect = `') and TypeCode eq 'XYK' and StatusID eq '0'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
       //Đã cho ý kiến
     else  if(this.styleId === 5) {
-      strSelect = `' and TypeCode eq 'XYK' and StatusID eq '1'`;
+      strSelect = `') and TypeCode eq 'XYK' and StatusID eq '1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
 
-    this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
+    //this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + strSelect;
     this.docTo.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>;     
       this.inDocs$ = []; 
@@ -207,6 +215,7 @@ export class DocumentWaitingComponent implements OnInit {
             compendium: element.Compendium, 
             userRequest: element.UserRequest !== undefined ? element.UserRequest.Title : '',
             userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
+            userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
             userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
             deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
             status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
@@ -233,7 +242,7 @@ export class DocumentWaitingComponent implements OnInit {
       if(this.styleId === 2) {
         let listItem1 = [];
         let listItem2 = [];
-        listItem1 = this.inDocs$.filter(i => i.statusID === 0);
+        listItem1 = this.inDocs$.filter(i => i.statusID === 0 && i.userApproverId === this.currentUserId);
         this.inDocs$.forEach(element => {
           if(listItem1.findIndex(e => e.ID === element.ID) < 0 && listItem2.findIndex(e => e.ID === element.ID) < 0) {
             listItem2.push(element);

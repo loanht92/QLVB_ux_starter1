@@ -78,6 +78,7 @@ export class DocumentGoDetailComponent implements OnInit {
   @Input() comments: Comment[];
   bsModalRef: BsModalRef;
   itemDoc: ItemDocumentGo;
+  isCheckPermission;
   isDisplay: boolean = false;  
   ItemId;
   IndexStep = 0;
@@ -104,7 +105,7 @@ export class DocumentGoDetailComponent implements OnInit {
   displayTime = 'none';
   displayedColumns: string[] = ['stt', 'created', 'userRequest', 'userApprover', 'deadline', 'status', 'taskType', 'type']; //'select'
   ListItem = [];
-  currentUserId = '';
+  currentUserId;
   currentUserName = '';
   currentUserEmail = '';
   ReasonReturn;
@@ -230,12 +231,10 @@ export class DocumentGoDetailComponent implements OnInit {
                     this.IsGD = true;
                   }
                 });  
-
                 this.CheckPermission();
                 this.GetTotalStep();
                 this.GetAllUser();
                 this.getListEmailConfig();
-
               } else {
                 this.notificationService.info("Bạn không có quyền truy cập");
                 this.routes.navigate(['/']);
@@ -261,13 +260,15 @@ export class DocumentGoDetailComponent implements OnInit {
     this.docServices.getListRequestTo(strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       if(item.length < 0) {
-        this.notificationService.info("Bạn không có quyền truy cập");
-        this.routes.navigate(['/']);
+        // this.notificationService.info("Bạn không có quyền truy cập");
+        // this.routes.navigate(['/']);
+        this.isCheckPermission = false;
       } else {
+        this.isCheckPermission = true;
         if(this.IndexStep > 0) {
           let _item = item.find(i => i.IndexStep === this.IndexStep);
           if(_item !== undefined) {
-            if(_item.StatusID === 1 || _item.TaskTypeCode !== 'XLC') {
+            if(_item.StatusID === 1) {
               this.routes.navigate(['/Documents/documentgo-detail/' + this.ItemId]);
             }
           } else {
@@ -510,6 +511,7 @@ export class DocumentGoDetailComponent implements OnInit {
           DocTypeName: this.docServices.checkNull(itemList[0].DocTypeName),
           NumberSymbol: this.docServices.checkNull(itemList[0].NumberSymbol),
           Compendium: this.docServices.checkNull(itemList[0].Compendium),
+          AuthorId: itemList[0].Author == undefined ? 0 : itemList[0].Author.Id,
           UserCreateName: itemList[0].Author == undefined ? '' : itemList[0].Author.Title,
           DateCreated: this.docServices.formatDateTime(itemList[0].DateCreated),
           UserOfHandleName: itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Title,
@@ -531,8 +533,16 @@ export class DocumentGoDetailComponent implements OnInit {
           link: ''
         };
       },
-      error => {},
+      error => {
+        console.log("Load item detail error: " + error);
+        this.closeCommentPanel();
+      },
       () => {
+        if(!this.isCheckPermission && this.itemDoc.AuthorId !== this.currentUserId) {
+          this.closeCommentPanel();
+          this.notificationService.info("Bạn không có quyền truy cập");
+          this.routes.navigate(['/']);
+        }
         if (!(this.ref as ViewRef).destroyed) {
           this.ref.detectChanges();  
         }
@@ -541,6 +551,7 @@ export class DocumentGoDetailComponent implements OnInit {
       })
     } catch(err) {
       console.log("Load item detail error: " + err.message);
+      this.closeCommentPanel();
     }
   }
 
