@@ -137,7 +137,7 @@
                         </mat-form-field>
                     </div>
                     <div class="row">
-                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements" style="padding-top: 15px;">
+                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Phương thức gửi" formControlName="MethodSend">
                                 <mat-option *ngFor="let item of ListMethodSend" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
@@ -201,49 +201,49 @@
             <!-- ID Column -->
             <ng-container matColumnDef="ID">
                 <th mat-header-cell *matHeaderCellDef> No. </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="../documentgo-detail/{{element.ID}}">{{element.ID}}</a> </td>
+                <td mat-cell *matCellDef="let element">{{element.ID}}</td>
             </ng-container>
             <!-- DocTypeName Column -->
             <ng-container matColumnDef="DocTypeName">
                 <th mat-header-cell *matHeaderCellDef> Loại văn bản </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="../documentgo-detail/{{element.ID}}"> {{element.DocTypeName}}</a> </td>
+                <td mat-cell *matCellDef="let element">{{element.DocTypeName}}</td>
             </ng-container>
 
             <!-- Compendium Column -->
             <ng-container matColumnDef="Compendium">
                 <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="../documentgo-detail/{{element.ID}}"> {{element.Compendium}}</a> </td>
+                <td mat-cell *matCellDef="let element">{{element.Compendium}}</td>
             </ng-container>
 
             <!-- UserCreateName Column -->
             <ng-container matColumnDef="UserCreateName">
                 <th mat-header-cell *matHeaderCellDef> Người tạo </th>
-                <td mat-cell *matCellDef="let element"> <a routerLink="../documentgo-detail/{{element.ID}}">{{element.UserCreateName}}</a> </td>
+                <td mat-cell *matCellDef="let element">{{element.UserCreateName}}</td>
             </ng-container>
             <!-- DateCreated Column -->
             <ng-container matColumnDef="DateCreated">
                 <th mat-header-cell *matHeaderCellDef> Ngày tạo </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="../documentgo-detail/{{element.ID}}">{{element.DateCreated}}</a> </td>
+                <td mat-cell *matCellDef="let element">{{element.DateCreated}}</td>
             </ng-container>
             <!-- UserOfHandle Column -->
             <ng-container matColumnDef="UserOfHandle">
                 <th mat-header-cell *matHeaderCellDef> Người xử lý </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="../documentgo-detail/{{element.ID}}"> {{element.UserOfHandle}} </a></td>
+                <td mat-cell *matCellDef="let element">{{element.UserOfHandle}}</td>
             </ng-container>
             <!-- Deadline Column -->
             <ng-container matColumnDef="Deadline">
                 <th mat-header-cell *matHeaderCellDef> Hạn xử lý </th>
-                <td mat-cell *matCellDef="let element"><a routerLink="../documentgo-detail/{{element.ID}}">{{element.Deadline}}</a> </td>
+                <td mat-cell *matCellDef="let element">{{element.Deadline}}</td>
             </ng-container>
             <!-- StatusName Column -->
             <ng-container matColumnDef="StatusName">
                 <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
-                <td mat-cell *matCellDef="let element"> <a routerLink="../documentgo-detail/{{element.ID}}">{{element.StatusName}}</a> </td>
+                <td mat-cell *matCellDef="let element">{{element.StatusName}}</td>
             </ng-container>
             <ng-container matColumnDef="Edit">
                 <th mat-header-cell *matHeaderCellDef style="width: 60px"></th>
                 <td mat-cell *matCellDef="let element" style="width: 60px">
-                    <a (click)="EditItem(element.ID)">
+                    <a (click)="$event.stopPropagation();EditItem(element.ID)">
                         <mat-icon class="CP" color="primary">edit</mat-icon>
                     </a>
                 </td>
@@ -251,13 +251,13 @@
             <ng-container matColumnDef="Delete">
                 <th mat-header-cell *matHeaderCellDef style="width: 60px"></th>
                 <td mat-cell *matCellDef="let element" style="width: 60px">
-                    <a (click)="ShowConfirm(modalConfirm, element.ID)">
+                    <a (click)="$event.stopPropagation();ShowConfirm(modalConfirm, element.ID)">
                         <mat-icon class="CP" color="warn">delete</mat-icon>
                     </a>
                 </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;">
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(row)" class="example-element-row">
                 <!-- (click)="selection.toggle(row)" -->
             </tr>
         </table>

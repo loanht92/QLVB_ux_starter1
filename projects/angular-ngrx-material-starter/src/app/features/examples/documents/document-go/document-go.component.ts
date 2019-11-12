@@ -148,6 +148,11 @@ export class DocumentGoComponent implements OnInit {
     this.getListEmailConfig();
   }
 
+  ClickItem(row) {
+    console.log(row);
+    this.routes.navigate(['/Documents/documentgo-detail/' + row.ID]);
+  }
+
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
@@ -563,7 +568,11 @@ export class DocumentGoComponent implements OnInit {
               this.FinishDocumentTo();
             } 
             else {
-              this.saveItemAttachment(0, this.DocumentID);
+              if(this.outputFile.length > 0) {
+                this.saveItemAttachment(0, this.DocumentID);
+              } else {
+                this.callbackfunc();
+              }
             }
           });
         } else {
@@ -590,7 +599,11 @@ export class DocumentGoComponent implements OnInit {
               if (isChuyenXL === 0) {
                 this.FinishDocumentTo();
               } else {
-                this.saveItemAttachment(0, this.DocumentID);
+                if(this.outputFile.length > 0) {
+                  this.saveItemAttachment(0, this.DocumentID);
+                } else {
+                  this.callbackfunc();
+                }
               }
             }
           );
@@ -946,9 +959,9 @@ export class DocumentGoComponent implements OnInit {
           AuthorId: itemList[0].UserCreate == undefined ? '' : itemList[0].UserCreate.Id,
           UserCreateName: itemList[0].Author == undefined ? '' : itemList[0].Author.Title,
           DateCreated: this.docServices.formatDateTime(itemList[0].DateCreated),
-          UserOfHandleName: itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Id + '|' + itemList[0].UserOfHandle.Name.split('|')[2],
-          UserOfKnowName: itemList[0].UserOfKnow == undefined ? '' : itemList[0].UserOfKnow.Id,
-          UserOfCombinateName: itemList[0].UserOfCombinate == undefined ? '' : itemList[0].UserOfCombinate.Id,
+          UserOfHandleName: itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Id + '|' + itemList[0].UserOfHandle.Name.split('|')[2] + '|' + itemList[0].UserOfHandle.Title,
+          UserOfKnowName: itemList[0].UserOfKnow == undefined ? '' : itemList[0].UserOfKnow.Id + '|' + itemList[0].UserOfKnow.Name.split('|')[2] + '|' + itemList[0].UserOfKnow.Title,
+          UserOfCombinateName: itemList[0].UserOfCombinate == undefined ? '' : itemList[0].UserOfCombinate.Id + '|' + itemList[0].UserOfCombinate.Name.split('|')[2] + '|' + itemList[0].UserOfCombinate.Title,
           Deadline: itemList[0].Deadline,
           link:'',
           StatusName: this.docServices.checkNull(itemList[0].StatusName),
@@ -960,7 +973,7 @@ export class DocumentGoComponent implements OnInit {
           UrgentLevelName: this.docServices.checkNull(itemList[0].UrgentLevelID),
           MethodSendName: this.docServices.checkNull(itemList[0].MethodSendID),
           DateIssued: itemList[0].DateIssued,
-          SignerName: itemList[0].Signer == undefined ? '' : itemList[0].Signer.Id+'|'+itemList[0].Signer.Name.split('|')[2],
+          SignerName: itemList[0].Signer == undefined ? '' : itemList[0].Signer.Id+'|'+ itemList[0].Signer.Name.split('|')[2],
           NumOfPaper: itemList[0].NumOfPaper,
           Note: itemList[0].Note,
         };
@@ -971,8 +984,8 @@ export class DocumentGoComponent implements OnInit {
           RecipientsIn: this.itemDoc.RecipientsInName==''?null:Number(this.itemDoc.RecipientsInName)+'',
           RecipientsOut: this.itemDoc.RecipientsOutName==''?null:Number(this.itemDoc.RecipientsOutName)+'',
           UserOfHandle: this.itemDoc.UserOfHandleName,
-          UserOfCombinate: null,
-          UserOfKnow: null,
+          UserOfCombinate: this.itemDoc.UserOfCombinateName,
+          UserOfKnow: this.itemDoc.UserOfKnowName,
           SecretLevel: this.itemDoc.SecretLevelName==''?null:Number(this.itemDoc.SecretLevelName)+'',
           UrgentLevel: this.itemDoc.UrgentLevelName==''?null:Number(this.itemDoc.UrgentLevelName)+'',
           MethodSend: this.itemDoc.MethodSendName==''?null:Number(this.itemDoc.MethodSendName)+'',
@@ -1134,7 +1147,7 @@ export class DocumentGoComponent implements OnInit {
               console.log('Add email success');
               console.log('Add email success');
               if(this.docServices.checkNull(this.SelectUserCombiner) !== '') {
-                this.SelectUserCombiner(0);
+                this.SendMailCombiner(0);
               } else if(this.docServices.checkNull(this.SelectUserKnower) !== '') {
                 this.SendMailKnower(0);
               } else {

@@ -96,12 +96,12 @@ export class DocumentDetailComponent implements OnInit {
   isCheckPermission;
   IsDeadline;
   deadlineDoc;
-  isExecution: Observable<boolean>;
-  isCombine: Observable<boolean>;
-  isFinish: Observable<boolean>;
-  isReturn: Observable<boolean>;
-  isRetrieve: Observable<boolean>;
-  isAddDocGo: Observable<boolean>;
+  isExecution;
+  isCombine;
+  isFinish;
+  isReturn;
+  isRetrieve;
+  isAddDocGo;
   ArrayItemId = []; IncomingDocID;
   ArrCurrentRetrieve = [];
   ArrayIdRetrieve = [];
@@ -278,32 +278,32 @@ export class DocumentDetailComponent implements OnInit {
     () => {
       if(this.IndexStep >= this.totalStep) {
         if(this.currentRoleTask === "XLC") {
-          this.isExecution = observableOf(false);
-          this.isFinish = observableOf(true);
+          this.isExecution = false;
+          this.isFinish = true;
         } else if(this.currentRoleTask === "PH") {
-          this.isExecution = observableOf(false);
-          this.isFinish = observableOf(false);
+          this.isExecution = false;
+          this.isFinish = false;
         } else {
-          this.isExecution = observableOf(false);
-          this.isFinish = observableOf(false);
+          this.isExecution = false;
+          this.isFinish = false;
         }       
       } else if(this.IndexStep > 0){    
         if(this.currentRoleTask === "XLC") {
-          this.isExecution = observableOf(true);
-          this.isAddDocGo = observableOf(true);
+          this.isExecution = true;
+          this.isAddDocGo = true;
           if(this.IsTP || this.IsGD) {
-            this.isFinish = observableOf(true);
+            this.isFinish = true;
           } else if(this.IsNV){
-            this.isFinish = observableOf(false);
+            this.isFinish = false;
           }
         } else if(this.currentRoleTask === "PH") {
-          this.isExecution = observableOf(false);
-          this.isFinish = observableOf(false);
-          this.isCombine = observableOf(true);
+          this.isExecution = false;
+          this.isFinish = false;
+          this.isCombine = true;
         } else {
-          this.isExecution = observableOf(false);
-          this.isFinish = observableOf(false);
-          this.isCombine = observableOf(false);
+          this.isExecution = false;
+          this.isFinish = false;
+          this.isCombine = false;
         }
       }
       this.GetItemDetail();
@@ -483,21 +483,21 @@ export class DocumentDetailComponent implements OnInit {
           if(element.IndexStep === this.IndexStep) {
             // if(element.TypeCode === "TL") {
             if(this.IndexStep <= 1) {
-              this.isReturn = observableOf(false);
+              this.isReturn = false;
             } else {
-              this.isReturn = observableOf(true);
+              this.isReturn = true;
             }
           }
           // Check để hiển thị button thu hồi
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
             if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
-              this.isRetrieve = observableOf(true);
+              this.isRetrieve = true;
               this.currentStep = element.IndexStep;
             }
           }
 
           if(element.IsFinished === 1) {
-            this.isRetrieve = observableOf(false);
+            this.isRetrieve = false;
           }
           this.ListItem.push({
             STT: this.ListItem.length + 1,
@@ -1001,7 +1001,7 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   callbackRetrieve() {
-    let itemUpdate = this.ListItem.find(item => item.indexStep === (this.currentStep - 1) && item.taskTypeCode === "XLC");
+    let itemUpdate = this.ListItem.find(item => item.indexStep === (this.currentStep - 1) && item.taskTypeCode !== "XLC");
     if(itemUpdate !== undefined) {
       const data = {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
@@ -1040,7 +1040,7 @@ export class DocumentDetailComponent implements OnInit {
           this.bsModalRef.hide();
           this.CloseRotiniPanel();
           this.notificationService.success('Thu hồi văn bản thành công');
-          this.isRetrieve = observableOf(false);
+          this.isRetrieve = false;
         })
     } else {
       this.bsModalRef.hide();
