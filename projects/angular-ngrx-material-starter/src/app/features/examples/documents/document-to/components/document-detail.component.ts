@@ -313,7 +313,7 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   GetItemDetail() {  
-    this.OpenRotiniPanel();       
+    //this.OpenRotiniPanel();       
     // Load thong tin van ban
     this.docTo.getListDocByID(this.IncomingDocID).subscribe(items => {
       console.log('items: ' + items);
@@ -334,7 +334,7 @@ export class DocumentDetailComponent implements OnInit {
           });
         }
         this.UserAppoverName = itemList[0].ListUserApprover;
-        if(this.docTo.CheckNull(itemList[0].Deadline) === '' && itemList[0].IsRetrieve === 1) {
+        if(this.docTo.CheckNull(itemList[0].Deadline) === '' && itemList[0].IsRetrieve === 1 && this.IndexStep === 2) {
           this.IsDeadline = true;
         } else if(this.docTo.CheckNull(itemList[0].Deadline) !== '') {
           this.deadlineDoc = itemList[0].Deadline;
@@ -534,7 +534,7 @@ export class DocumentDetailComponent implements OnInit {
             (this.docTo.CheckNull(this.itemDoc.dateTo) === '' ? moment(element.DateCreated).format('DD/MM/YYYY') : this.itemDoc.dateTo) : moment(element.DateCreated).format('DD/MM/YYYY'),
             numberTo: element.Title,
             link: '',
-            stsClass: element.StatusID === 0? 'Ongoing' : 'Approved',
+            stsClass: this.getStatusColor(element.StatusID),
             stsTypeCode: element.TypeCode,
             stsTaskCode: element.TaskTypeCode
           });
@@ -1058,97 +1058,122 @@ export class DocumentDetailComponent implements OnInit {
       }
       this.bsModalRef.hide();
       this.OpenRotiniPanel();
-      let item  = this.ListItem.find(i => i.indexStep === this.IndexStep);
-      let approverId;
-      if(item !== undefined) {
-        approverId = item.userRequestId;
-      }
-      let request, approver;
-      request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
-      approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(approverId));
-
-      const data = {
+      let item  = this.ListItem.find(i => i.indexStep === this.IndexStep && i.userApproverId === this.currentUserId && i.stsTypeCode === 'CXL');
+      const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
-        Title: this.itemDoc.numberTo,
-        DateCreated: new Date(),
-        NoteBookID: this.IncomingDocID,
-        UserRequestId: this.currentUserId,
-        UserApproverId: approverId,
-        Deadline: this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline,
-        StatusID: 0,
-        StatusName: 'Chờ xử lý',
-        Source: request === undefined ? '' : request.DeName,
-        Destination: approver === undefined ? '' : approver.DeName,
-        RoleUserRequest :request === undefined ? '' : request.RoleName,
-        RoleUserApprover: approver === undefined ? '' : approver.RoleName,
-        TaskTypeCode: 'XLC',
-        TaskTypeName: 'Xử lý chính',
-        TypeCode: 'TL',
-        TypeName: 'Trả lại',
-        Content: this.ReasonReturn,
-        IndexStep: this.IndexStep - 1,
-        Compendium: this.itemDoc.compendium,
-        IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1)
+        StatusID: 1, StatusName: "Đã xử lý",
+        IsFinished: 0
       };
-      this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
-        item => {this.processId = item['d'].Id},
+      this.services.updateListById('ListProcessRequestTo', dataTicket, item.ID).subscribe(
+        item => {},
         error => {
           this.CloseRotiniPanel();
           console.log(
-            'error when add item to list ListProcessRequestTo: ' +
+            'error when update item to list ListProcessRequestTo: ' +
               error.error.error.message.value
           ),
-            this.notificationService.error('Thêm phiếu xử lý thất bại');
+            this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
         },
         () => {
           console.log(
-            'Add item of approval user to list ListProcessRequestTo successfully!'
+            'update item return' + item.ID + ' of approval user to list ListProcessRequestTo successfully!'
           );
-          // update user approver
-          if(item !== undefined) {
-            this.UserAppoverName += ';' + item.userRequestId + '_' + item.userRequest;
-          }
-         
-          const data = {
-            __metadata: { type: 'SP.Data.ListDocumentToListItem' },
-            ListUserApprover: this.UserAppoverName
-          };
-          this.services.updateListById('ListDocumentTo', data, this.IncomingDocID).subscribe(
-            item => {},
-            error => {
-              this.CloseRotiniPanel();
-              console.log(
-                'error when update item to list ListDocumentTo: ' +
-                  error.error.error.message.value
-              );
-            },
-            () => {
-              console.log(
-                'Update user approver name successfully!'
-              );
-            }
-          )
+          if(item.taskTypeCode === "XLC") {
+            // tra lai phieu cho ng xu ly chinh
+            let approverId;
+            approverId = item.userRequestId;            
+            let request, approver;
+            request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+            approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(approverId));
 
-          if(this.historyId > 0) {
-            const dataTicket = {
-              __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' },
-              StatusID: -1, StatusName: "Đã trả lại",
+            const data = {
+              __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+              Title: this.itemDoc.numberTo,
+              DateCreated: new Date(),
+              NoteBookID: this.IncomingDocID,
+              UserRequestId: this.currentUserId,
+              UserApproverId: approverId,
+              Deadline: this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline,
+              StatusID: 0,
+              StatusName: 'Chờ xử lý',
+              Source: request === undefined ? '' : request.DeName,
+              Destination: approver === undefined ? '' : approver.DeName,
+              RoleUserRequest :request === undefined ? '' : request.RoleName,
+              RoleUserApprover: approver === undefined ? '' : approver.RoleName,
+              TaskTypeCode: 'XLC',
+              TaskTypeName: 'Xử lý chính',
+              TypeCode: 'TL',
+              TypeName: 'Trả lại',
+              Content: this.ReasonReturn,
+              IndexStep: this.IndexStep - 1,
+              Compendium: this.itemDoc.compendium,
+              IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1)
             };
-            this.services.updateListById('ListHistoryRequestTo', dataTicket, this.historyId).subscribe(
-              item => {},
+            this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
+              item => {this.processId = item['d'].Id},
               error => {
                 this.CloseRotiniPanel();
                 console.log(
-                  'error when update item to list ListHistoryRequestTo: ' +
+                  'error when add item to list ListProcessRequestTo: ' +
                     error.error.error.message.value
-                );
+                ),
+                  this.notificationService.error('Thêm phiếu xử lý thất bại');
               },
-              () => {}
+              () => {
+                console.log(
+                  'Add item of approval user to list ListProcessRequestTo successfully!'
+                );
+                // update user approver name
+                if(item !== undefined) {
+                  this.UserAppoverName += ';' + item.userRequestId + '_' + item.userRequest;
+                }
+              
+                const data = {
+                  __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+                  ListUserApprover: this.UserAppoverName
+                };
+                this.services.updateListById('ListDocumentTo', data, this.IncomingDocID).subscribe(
+                  item => {},
+                  error => {
+                    this.CloseRotiniPanel();
+                    console.log(
+                      'error when update item to list ListDocumentTo: ' +
+                        error.error.error.message.value
+                    );
+                  },
+                  () => {
+                    console.log(
+                      'Update user approver name successfully!'
+                    );
+                  }
+                )
+                //Update list history
+                if(this.historyId > 0) {
+                  const dataTicket = {
+                    __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' },
+                    StatusID: -1, StatusName: "Đã trả lại",
+                  };
+                  this.services.updateListById('ListHistoryRequestTo', dataTicket, this.historyId).subscribe(
+                    item => {},
+                    error => {
+                      this.CloseRotiniPanel();
+                      console.log(
+                        'error when update item to list ListHistoryRequestTo: ' +
+                          error.error.error.message.value
+                      );
+                    },
+                    () => {
+                      this.callbackFunc(this.processId, this.IncomingDocID, true);
+                    }
+                  );
+                }
+              }
             );
+          } else {
+            this.callbackFunc(this.processId, this.IncomingDocID, true);
           }
-          this.UpdateStatus(1, 0, 0);
         }
-      );
+      )
     } catch (err) {
       console.log("try catch AddTicketReturn error: " + err.message);
       this.CloseRotiniPanel();
@@ -1286,13 +1311,14 @@ export class DocumentDetailComponent implements OnInit {
           () => {
             console.log(
               'Add item of approval user to list ListHistoryRequestTo successfully!'
-            );
+            );            
 
             // update user approver
             this.UserAppoverName += ';' + this.selectedApprover.split('|')[0] + '_' + this.selectedApprover.split('|')[2];
             const data = {
               __metadata: { type: 'SP.Data.ListDocumentToListItem' },
-              ListUserApprover: this.UserAppoverName
+              ListUserApprover: this.UserAppoverName,
+              Deadline: this.IsDeadline === true ? moment(this.deadlineDoc).toDate() : this.itemDoc.deadline
             };
             this.services.updateListById('ListDocumentTo', data, this.IncomingDocID).subscribe(
               item => {},
@@ -2347,6 +2373,9 @@ export class DocumentDetailComponent implements OnInit {
           this.CloseRotiniPanel();
           this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
         }
+      } else {
+        this.CloseRotiniPanel();
+        this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
       }
     } catch (error) {
       console.log('addItemSendMail error: ' + error.message);
@@ -2502,6 +2531,25 @@ export class DocumentDetailComponent implements OnInit {
         break;
       default:
         stsName = 'Chờ xử lý';
+        break;
+    }
+    return stsName;
+  }
+
+  getStatusColor(sts) {
+    let stsName = '';
+    switch(sts) {
+      case 0: 
+        stsName = 'Ongoing';
+        break;
+      case 1: 
+        stsName = 'Approved';
+        break;
+      case -1: 
+        stsName = 'Retrieve';
+        break;
+      default:
+        stsName = 'Ongoing';
         break;
     }
     return stsName;
