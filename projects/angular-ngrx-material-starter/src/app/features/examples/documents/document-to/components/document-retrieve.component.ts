@@ -4,7 +4,7 @@ import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import * as moment from 'moment';
-import {PlatformLocation} from '@angular/common';
+import {PlatformLocation, getLocaleExtraDayPeriodRules} from '@angular/common';
 import { filter, pairwise } from 'rxjs/operators';
 import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
 import {IncomingDocService, IncomingTicket} from '../incoming-doc.service';
@@ -22,6 +22,7 @@ export class ItemRetrieve {
   UserName: string;
   TimeRetrieve: string;
   Reason: string;
+  IndexStep: number
 }
 
 @Component({
@@ -76,12 +77,15 @@ export class DocumentRetrieveComponent implements OnInit {
       let item = itemValue["value"] as Array<any>; 
       this.ListItem = [];
       item.forEach(element => {
-        this.ListItem.push({
-          Department: element.Source,
-          UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
-          TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
-          Reason: element.Content
-        })
+        if(this.ListItem.findIndex(i => i.IndexStep === element.IndexStep) < 0) {
+          this.ListItem.push({
+            Department: element.Source,
+            UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
+            TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
+            Reason: element.Content,
+            IndexStep: element.IndexStep
+          })
+        }
       })
     },
     error => { 
@@ -130,7 +134,7 @@ export class DocumentRetrieveComponent implements OnInit {
             numberTo: element.Title,
             link: '',
             stsClass: '',
-            flag: element.Flag === 0 ? '' : 'outlined_flag'
+            flag: element.Flag === 0 ? '' : 'flag'
           })
         } 
         else if(element.IsFinished === 1) {
@@ -178,18 +182,21 @@ export class DocumentRetrieveComponent implements OnInit {
   getInforRetrieve(template, docId) {
     this.OpenRotiniPanel();
     let strSelect = '';
-    strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
+    strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL' or TypeCode eq 'XYK') and StatusID eq '-1'`;  
     this.strFilter = `&$filter=NoteBookID eq ` + docId + strSelect;
     this.docTo.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       this.ListItem = [];
       item.forEach(element => {
-        this.ListItem.push({
-          Department: element.Source,
-          UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
-          TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
-          Reason: element.Content
-        })
+        if(this.ListItem.findIndex(i => i.IndexStep === element.IndexStep) < 0) {
+          this.ListItem.push({
+            Department: element.Source,
+            UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
+            TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
+            Reason: element.Content,
+            IndexStep: element.IndexStep
+          })
+        }
       })
     },
     error => { 

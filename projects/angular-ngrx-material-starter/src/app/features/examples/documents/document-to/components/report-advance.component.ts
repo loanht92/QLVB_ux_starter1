@@ -318,7 +318,7 @@ export class ReportAdvanceComponent implements OnInit {
             created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
             link: element.StatusID === -1 ? '' : '/Documents/IncomingDoc/docTo-detail/' + element.ID,
-            flag: element.Flag === 0 ? '' : 'outlined_flag'
+            flag: element.Flag === 0 ? '' : 'flag'
           })
         })   
         

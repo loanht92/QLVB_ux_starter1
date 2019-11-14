@@ -180,8 +180,8 @@ export class DocumentWaitingComponent implements OnInit {
     else  if(this.styleId === 2) {
       // strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
       // this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
-      strSelect = `' and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
-      this.strFilter = `&$filter=UserRequest/Id eq '` + this.currentUserId + strSelect;
+      strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã xử lý
     else  if(this.styleId === 3) {
@@ -195,13 +195,13 @@ export class DocumentWaitingComponent implements OnInit {
     }
     //Chờ xin ý kiến
     else  if(this.styleId === 4) {
-      strSelect = `') and TypeCode eq 'XYK' and StatusID eq '0'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
+      strSelect = `' and TypeCode eq 'XYK' and StatusID eq '0'`;
+      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
       //Đã cho ý kiến
     else  if(this.styleId === 5) {
-      strSelect = `') and TypeCode eq 'XYK' and StatusID eq '1'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
+      strSelect = `' and TypeCode eq 'XYK' and StatusID eq '1'`;
+      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
 
     //this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + strSelect;
@@ -209,51 +209,57 @@ export class DocumentWaitingComponent implements OnInit {
       let item = itemValue["value"] as Array<any>;     
       this.inDocs$ = []; 
       item.forEach(element => {
-        if(this.inDocs$.findIndex(e => e.documentID === element.NoteBookID) < 0) {
-          this.inDocs$.push({
-            STT: this.inDocs$.length + 1,
-            ID: element.ID,
-            documentID: element.NoteBookID, 
-            compendium: element.Compendium, 
-            userRequest: element.IndexStep === 1 ? this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
-            userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
-            userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
-            userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
-            deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
-            status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
-            statusID: element.StatusID,
-            source: '',
-            destination: '',
-            taskType: this.docTo.CheckNull(element.TaskTypeName),
-            typeCode: '',
-            content: this.docTo.CheckNull(element.Content),
-            indexStep: element.IndexStep,
-            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
-            numberTo: element.Title,
-            link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
-            stsClass: '',
-            flag: element.Flag === 0 ? '' : 'outlined_flag'
-          })
-        } 
-        else if(element.IsFinished === 1) {
-          let index = this.inDocs$.findIndex(e => e.documentID === element.NoteBookID);
-          if(index >= 0) {
-            this.inDocs$.splice(index, 1);
-          }
-        }
+        //if(this.inDocs$.findIndex(e => e.documentID === element.NoteBookID) < 0) {
+        this.inDocs$.push({
+          STT: this.inDocs$.length + 1,
+          ID: element.ID,
+          documentID: element.NoteBookID, 
+          compendium: element.Compendium, 
+          userRequest: element.IndexStep === 1 ? this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
+          userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
+          userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
+          userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
+          deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+          status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
+          statusID: element.StatusID,
+          source: '',
+          destination: '',
+          taskType: this.docTo.CheckNull(element.TaskTypeName),
+          typeCode: '',
+          content: this.docTo.CheckNull(element.Content),
+          indexStep: element.IndexStep,
+          created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+          numberTo: element.Title,
+          link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
+          stsClass: '',
+          flag: element.Flag === 0 ? '' : 'flag'
+        })
+        //} 
+        // if(element.IsFinished === 1) {
+        //   let index = this.inDocs$.findIndex(e => e.documentID === element.NoteBookID);
+        //   if(index >= 0) {
+        //     this.inDocs$.splice(index, 1);
+        //   }
+        // }
       })
       if(this.styleId === 2) {
         let listItem1 = [];
         let listItem2 = [];
-        listItem1 = this.inDocs$.filter(i => i.statusID === 0 && i.userApproverId === this.currentUserId && i.indexStep > 1);
+        listItem1 = this.inDocs$.filter(i => i.statusID === 0 && i.userApproverId === this.currentUserId);
         this.inDocs$.forEach(element => {
-          if(listItem1.findIndex(e => e.ID === element.ID) < 0 && listItem2.findIndex(e => e.ID === element.ID) < 0) {
+          if(listItem1.findIndex(e => e.documentID === element.documentID) < 0 && listItem2.findIndex(e => e.ID === element.ID || e.documentID === element.documentID) < 0) {
             listItem2.push(element);
           }
         })
         this.dataSource = new MatTableDataSource<IncomingTicket>(listItem2);
       } else {
-        this.dataSource = new MatTableDataSource<IncomingTicket>(this.inDocs$);
+        let listItem1 = [];
+        this.inDocs$.forEach(element => {
+          if(listItem1.findIndex(e => e.documentID === element.documentID) < 0) {
+            listItem1.push(element);
+          }
+        })
+        this.dataSource = new MatTableDataSource<IncomingTicket>(listItem1);
       }
       
       if (!(this.ref as ViewRef).destroyed) {

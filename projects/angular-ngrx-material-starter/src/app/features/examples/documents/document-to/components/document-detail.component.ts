@@ -151,6 +151,7 @@ export class DocumentDetailComponent implements OnInit {
   ReasonRetrieve;
   AuthorComment;
   Retieved = false;
+  IsFinishItem = false;
   displayedColumns: string[] = [
     'stt',
     'created',
@@ -380,7 +381,8 @@ export class DocumentDetailComponent implements OnInit {
           isSendMail: 'Có',
           isRetrieve: itemList[0].IsRetrieve === 0 ? 'Không' : 'Có',
           signer: itemList[0].Signer,
-          created: itemList[0].Author.Id
+          authorName: itemList[0].Author.Title,
+          authorEmail: itemList[0].Author.Name.split('|')[2]
         };
       }
       if (!(this.ref as ViewRef).destroyed) {
@@ -553,7 +555,7 @@ export class DocumentDetailComponent implements OnInit {
         // this.CloseRotiniPanel();
         this.ArrCurrentRetrieve = [];
         this.ListItem.forEach(element => {
-          if(element.indexStep === this.currentStep) {
+          if(element.indexStep === this.currentStep + 1) {
             this.ArrCurrentRetrieve.push({
               Id: element.ID,
               UserId: element.userApproverId,
@@ -1208,6 +1210,7 @@ export class DocumentDetailComponent implements OnInit {
               this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
           },
           () => {
+            this.bsModalRef.hide();
             console.log(
               'update item of combiner to list ListProcessRequestTo successfully!'
             );
@@ -1215,7 +1218,7 @@ export class DocumentDetailComponent implements OnInit {
               this.saveItemAttachment(0, item.ID,this.outputFileHandle,'ListProcessRequestTo', null);
             } else {
               this.CloseRotiniPanel();
-              this.notificationService.error('Xử lý văn bản thành công');
+              this.notificationService.success('Xử lý văn bản thành công');
               this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
             }          
           }
@@ -1637,6 +1640,7 @@ export class DocumentDetailComponent implements OnInit {
             this.UpdateStatusFinish(index);
           }
           else {
+            this.IsFinishItem = true;
             this.callbackFunc(this.processId, this.IncomingDocID, false);
           }
         }
@@ -2122,7 +2126,7 @@ export class DocumentDetailComponent implements OnInit {
   outputFileAddComment:AttachmentsObject[]=[]; ListCommentInProcess = [];
   Comments; pictureCurrent; indexComment;selectedUserComment;idItemProcess;contentComment;
   getComment(): void {
-    const strComent = `?$select=ID,Chat_Comments,Created,userPicture,ParentID,ProcessID,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title,AttachmentFiles`
+    const strComent = `?$select=*,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title,AttachmentFiles`
       + `&$expand=Author,UserApprover,AttachmentFiles&$filter=KeyList eq 'ListDocumentTo_` + this.IncomingDocID + `'&$orderby=Created asc`
     this.services.getItem("ListComments", strComent).subscribe(itemValue => {
       this.listComment = [];
@@ -2301,6 +2305,7 @@ export class DocumentDetailComponent implements OnInit {
         Content: this.contentComment,
         Compendium: this.itemDoc.compendium,
         IndexStep: this.currentStep,
+        Deadline: this.itemDoc.deadline
       }
       this.services.AddItemToList('ListProcessRequestTo', dataProcess).subscribe(
         items => {
@@ -2376,7 +2381,31 @@ export class DocumentDetailComponent implements OnInit {
               }
             }
           )
-        } else {
+        } else if(this.IsFinishItem) {
+          const dataSendApprover = {
+            __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+            Title: this.listName,
+            IndexItem: this.IncomingDocID,
+            Step: this.currentStep,
+            KeyList: this.listName +  '_' + this.IncomingDocID,
+            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.itemDoc.authorName),
+            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.itemDoc.authorName),
+            SendMailTo: this.itemDoc.authorEmail
+          }
+          this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
+            itemRoomRQ => {
+              console.log(itemRoomRQ['d']);
+            },
+            error => {
+              console.log(error);
+              this.CloseRotiniPanel();
+            },
+            () => {    
+              this.CloseRotiniPanel();
+              this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);      
+            })
+        }
+        else {
           this.CloseRotiniPanel();
           this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
         }
