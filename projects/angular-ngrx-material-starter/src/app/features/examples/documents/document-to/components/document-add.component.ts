@@ -703,7 +703,8 @@ export class DocumentAddComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: dataForm.note,
       IndexStep: 2,
-      Compendium: dataForm.compendium
+      Compendium: dataForm.compendium,
+      Flag: this.CurrentItem.SecretLevelID > 1 || this.CurrentItem.UrgentLevelID > 1 ? 1 : 0
     };
 
     let sourceT = this.docTo.FindItemById(this.ListSource, dataForm.source);
@@ -727,7 +728,8 @@ export class DocumentAddComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: dataForm.note,
       IndexStep: 1,
-      Compendium: dataForm.compendium
+      Compendium: dataForm.compendium,
+      Flag: this.CurrentItem.SecretLevelID > 1 || this.CurrentItem.UrgentLevelID > 1 ? 1 : 0
     };
 
     this.services.AddItemToList('ListProcessRequestTo', data2).subscribe(

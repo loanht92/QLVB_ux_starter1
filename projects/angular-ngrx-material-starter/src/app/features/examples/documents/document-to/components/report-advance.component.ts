@@ -1,10 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, Injectable } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ViewRef } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
-import {FlatTreeControl} from '@angular/cdk/tree';
-import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
 import * as moment from 'moment';
@@ -21,6 +20,13 @@ import {
 import { any } from 'bluebird';
 import { Router } from '@angular/router';
 
+export class ItemRetrieve {
+  Department: string;
+  UserName: string;
+  TimeRetrieve: string;
+  Reason: string;
+}
+
 @Component({
   selector: 'anms-report-advance',
   templateUrl: './report-advance.component.html',
@@ -30,7 +36,7 @@ import { Router } from '@angular/router';
 export class ReportAdvanceComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover', 'content'
+  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts', 'flag']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -49,6 +55,11 @@ export class ReportAdvanceComponent implements OnInit {
   showList = false;
   ListIdDoc = [];
   isFrist = false;
+  displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
+  dataSource2 = new MatTableDataSource<ItemRetrieve>();
+  ListItem: ItemRetrieve[] = [];
+  bsModalRef;
+
   ListBookType = [
     {id: 0, title: 'Chưa vào sổ'},
     {id: 1, title: 'Văn bản đến'},
@@ -72,7 +83,8 @@ export class ReportAdvanceComponent implements OnInit {
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private routes: Router, private location: PlatformLocation
+              private routes: Router, private location: PlatformLocation,
+              private modalService: BsModalService,
     ) {
       this.location.onPopState(() => {
         console.log('Init: pressed back!');
@@ -99,7 +111,41 @@ export class ReportAdvanceComponent implements OnInit {
 
   ClickItem(row) {
     console.log(row);
-    this.routes.navigate([row.link]);
+    if(row.link !== '') {
+      this.routes.navigate([row.link]);
+    }
+    else {
+      let docId = row.documentID;
+      this.OpenRotiniPanel();
+      let strSelect = '';
+      strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
+      this.strFilter = `&$filter=NoteBookID eq ` + docId + strSelect;
+      this.docTo.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
+        let item = itemValue["value"] as Array<any>; 
+        this.ListItem = [];
+        item.forEach(element => {
+          this.ListItem.push({
+            Department: element.Source,
+            UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
+            TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
+            Reason: element.Content
+          })
+        })
+      },
+      error => { 
+        console.log("error: " + error);
+        this.CloseRotiniPanel();
+      },
+      () => {
+        this.dataSource2 = new MatTableDataSource<ItemRetrieve>(this.ListItem);
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
+        this.dataSource2.paginator = this.paginator;
+        this.bsModalRef = this.modalService.show('modalTemp', {class: 'modal-lg'});
+        this.CloseRotiniPanel();
+      })
+    }
   }
 
   validateQty(event) {
@@ -258,6 +304,7 @@ export class ReportAdvanceComponent implements OnInit {
           this.inDocs$.push({
             STT: this.inDocs$.length + 1,
             ID: element.ID,
+            documentID: element.NoteBookID,
             numberTo: this.docTo.formatNumberTo(element.NumberTo), 
             numberSub: element.NumberToSub,
             numberSymbol: element.NumberOfSymbol, 
@@ -270,12 +317,15 @@ export class ReportAdvanceComponent implements OnInit {
             note: this.docTo.CheckNull(element.Note),
             created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documents/IncomingDoc/docTo-detail/' + element.ID
+            link: element.StatusID === -1 ? '' : '/Documents/IncomingDoc/docTo-detail/' + element.ID,
+            flag: element.Flag === 0 ? '' : 'outlined_flag'
           })
         })   
         
         this.dataSource = new MatTableDataSource<IncomingTicket>(this.inDocs$);
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        }  
         this.isFrist = false;
         this.CloseRotiniPanel();     
       },

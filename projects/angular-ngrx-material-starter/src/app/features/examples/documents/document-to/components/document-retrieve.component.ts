@@ -33,7 +33,7 @@ export class ItemRetrieve {
 export class DocumentRetrieveComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$: IncomingTicket[]= [];
-  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium', 'flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<IncomingTicket>();
   displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
   dataSource2 = new MatTableDataSource<ItemRetrieve>();
@@ -129,7 +129,8 @@ export class DocumentRetrieveComponent implements OnInit {
             created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             numberTo: element.Title,
             link: '',
-            stsClass: ''
+            stsClass: '',
+            flag: element.Flag === 0 ? '' : 'outlined_flag'
           })
         } 
         else if(element.IsFinished === 1) {

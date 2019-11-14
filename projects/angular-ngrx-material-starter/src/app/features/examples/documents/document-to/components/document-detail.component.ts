@@ -359,6 +359,8 @@ export class DocumentDetailComponent implements OnInit {
           compendium: itemList[0].Compendium,
           secretLevel: itemList[0].SecretLevelName,
           urgentLevel: itemList[0].UrgentLevelName,
+          secretLevelId: itemList[0].SecretLevelID,
+          urgentLevelId: itemList[0].UrgentLevelID,
           deadline: this.docTo.CheckNull(itemList[0].Deadline) === ''
           ? null
           : itemList[0].Deadline,
@@ -490,9 +492,9 @@ export class DocumentDetailComponent implements OnInit {
           }
           // Check để hiển thị button thu hồi
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
-            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC") {
+            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.StatusID === 1) {
               this.isRetrieve = true;
-              this.currentStep = element.IndexStep;
+              this.currentStep = element.IndexStep === 1 ? 2 : element.IndexStep;
             }
           }
 
@@ -907,7 +909,7 @@ export class DocumentDetailComponent implements OnInit {
         if(this.selection.selected[i].TaskTypeCode === "XLC") {
           this.Retieved = true;
           this.ListItem.forEach(element => {
-            if(element.indexStep > this.currentStep) {
+            if(element.indexStep >= this.currentStep) {
               if(this.ArrayIdRetrieve.indexOf(element.ID) < 0) {
                 this.ArrayIdRetrieve.push(element.ID);
               }
@@ -1023,7 +1025,8 @@ export class DocumentDetailComponent implements OnInit {
         TypeName: 'Phiếu thu hồi',
         Content: this.docTo.CheckNull(this.ReasonRetrieve),
         IndexStep: this.currentStep - 1,
-        Compendium: this.itemDoc.compendium
+        Compendium: this.itemDoc.compendium,
+        Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
       };   
 
       this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
@@ -1107,7 +1110,8 @@ export class DocumentDetailComponent implements OnInit {
               Content: this.ReasonReturn,
               IndexStep: this.IndexStep - 1,
               Compendium: this.itemDoc.compendium,
-              IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1)
+              IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
+              Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
             };
             this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
               item => {this.processId = item['d'].Id},
@@ -1295,7 +1299,8 @@ export class DocumentDetailComponent implements OnInit {
           TypeName: 'Chuyển xử lý',
           Content: this.content,
           IndexStep: this.IndexStep + 1,
-          Compendium: this.itemDoc.compendium
+          Compendium: this.itemDoc.compendium,
+          Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
         };
       
         this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
@@ -1387,7 +1392,8 @@ export class DocumentDetailComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: this.content,
       IndexStep: this.IndexStep + 1,
-      Compendium: this.itemDoc.compendium
+      Compendium: this.itemDoc.compendium,
+      Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
     };
     this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
       item => {},
@@ -1445,7 +1451,8 @@ export class DocumentDetailComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: this.content,
       IndexStep: this.IndexStep + 1,
-      Compendium: this.itemDoc.compendium
+      Compendium: this.itemDoc.compendium,
+      Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
     };
     this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
       item => {},

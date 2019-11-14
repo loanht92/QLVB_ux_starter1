@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, Injectable } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ViewRef } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
@@ -125,12 +125,14 @@ export class ReportComponent implements OnInit {
             note: this.docTo.CheckNull(element.Note),
             created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documents/IncomingDoc/docTo-detail/' + element.ID
+            link: element.StatusID !== -1 ? '/Documents/IncomingDoc/docTo-detail/' + element.ID : ''
           })
         })   
         
         this.dataSource = new MatTableDataSource<IncomingTicket>(this.inDocs$);
-        this.ref.detectChanges();
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        }  
         this.CloseRotiniPanel();     
       },
       error => { 

@@ -124,7 +124,7 @@ export class DocumentWaitingComponent implements OnInit {
 
   listTitle = "ListProcessRequestTo";
   inDocs$: IncomingTicket[]= [];
-  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium', 'taskType']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium', 'taskType', 'flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -181,7 +181,7 @@ export class DocumentWaitingComponent implements OnInit {
       // strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
       // this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
       strSelect = `' and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
-      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
+      this.strFilter = `&$filter=UserRequest/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã xử lý
     else  if(this.styleId === 3) {
@@ -231,7 +231,8 @@ export class DocumentWaitingComponent implements OnInit {
             created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             numberTo: element.Title,
             link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
-            stsClass: ''
+            stsClass: '',
+            flag: element.Flag === 0 ? '' : 'outlined_flag'
           })
         } 
         else if(element.IsFinished === 1) {
@@ -244,7 +245,7 @@ export class DocumentWaitingComponent implements OnInit {
       if(this.styleId === 2) {
         let listItem1 = [];
         let listItem2 = [];
-        listItem1 = this.inDocs$.filter(i => i.statusID === 0 && i.userApproverId === this.currentUserId);
+        listItem1 = this.inDocs$.filter(i => i.statusID === 0 && i.userApproverId === this.currentUserId && i.indexStep > 1);
         this.inDocs$.forEach(element => {
           if(listItem1.findIndex(e => e.ID === element.ID) < 0 && listItem2.findIndex(e => e.ID === element.ID) < 0) {
             listItem2.push(element);

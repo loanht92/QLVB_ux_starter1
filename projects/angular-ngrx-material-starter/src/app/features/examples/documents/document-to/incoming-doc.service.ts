@@ -230,6 +230,7 @@ export interface IncomingTicket {
   numberTo: string;
   link: string;
   stsClass: string;
+  flag: string;
 }
 
 export interface ItemSeleted {
