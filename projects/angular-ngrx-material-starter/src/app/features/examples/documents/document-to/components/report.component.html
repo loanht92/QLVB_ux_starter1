@@ -47,7 +47,7 @@
     </div>
     <div style="margin-top: 20px"></div>
     <div fxFlexFill fxLayoutAlign="end" class="form-input">
-        <input class="docadd-filter" fxFlex="300px" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
+        <input class="docadd-filter" fxFlex="300px" style="border-width: 2px !important;" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
     </div>
     <div fxFlexFill class="form-input">
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">

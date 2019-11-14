@@ -136,6 +136,7 @@ export class DocumentWaitingComponent implements OnInit {
   strFilter = '';
   overlayRef;
   styleId = 1;
+  IsComment;
   @HostListener('window:popstate', ['$event']) onPopState(event) {
     console.log('Back button pressed');
   }
@@ -167,6 +168,7 @@ export class DocumentWaitingComponent implements OnInit {
 
   getAllListRequest() {
     let strSelect = '';
+    this.IsComment = true;
     // {-1:Thu hồi, 1:chờ xử lý, 2:Đang xử lý, 3:Đã xử lý, 4:Chờ xin ý kiến, 5:Đã cho ý kiến}
     // and (TypeCode eq 'CXL' or TypeCode eq 'TL') and 
      //chờ xử lý

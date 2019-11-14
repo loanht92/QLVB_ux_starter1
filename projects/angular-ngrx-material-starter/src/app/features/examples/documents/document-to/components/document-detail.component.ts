@@ -541,7 +541,7 @@ export class DocumentDetailComponent implements OnInit {
         });
         this.dataSource = new MatTableDataSource<IncomingTicket>(this.ListItem);     
         this.dataSource.paginator = this.paginator;
-        this.ArrayItemId = this.ListItem.filter(e => e.indexStep === this.IndexStep);
+        this.ArrayItemId = this.ListItem.filter(e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK");
       },
       error => {
         console.log("Load history item: " + error);
