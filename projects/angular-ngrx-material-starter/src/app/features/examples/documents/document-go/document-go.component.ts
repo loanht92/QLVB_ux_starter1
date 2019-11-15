@@ -506,6 +506,7 @@ export class DocumentGoComponent implements OnInit {
         // console.log('DocTypeID:'+this.form.get('DocType').value);
         //  console.log('UserOfHandle:'+ this.form.get('UserOfHandle').value);
         // console.log('UserOfHandle:'+ dataForm.UserOfHandle);
+        this.splitDataUserApprover(dataForm.UserOfHandle);
         let UserCreate = (dataForm.UserCreate == null || dataForm.UserCreate == 0) ? null : dataForm.UserCreate.split("|")[0];
         let UserOfHandle = (dataForm.UserOfHandle == null || dataForm.UserOfHandle == 0) ? null : dataForm.UserOfHandle.split("|")[0];
         this.userApproverId = UserOfHandle;
@@ -1170,7 +1171,7 @@ export class DocumentGoComponent implements OnInit {
       Step: 1,
       KeyList: this.listTitle +  '_' + this.DocumentID,
       SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.SelectUserCombiner.split('|')[2]),
-      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.SelectUserCombiner.split('|')[2]),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.SelectUserCombiner.split('|')[2]),
       SendMailTo: this.SelectUserCombiner.split('|')[1],
     }
     this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -1199,7 +1200,7 @@ export class DocumentGoComponent implements OnInit {
       Step: 1,
       KeyList: this.listTitle +  '_' + this.DocumentID,
       SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.SelectUserKnower.split('|')[2]),
-      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.SelectUserKnower.split('|')[2]),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.SelectUserKnower.split('|')[2]),
       SendMailTo: this.SelectUserKnower.split('|')[1],
     }
     this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(

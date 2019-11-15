@@ -93,7 +93,7 @@ export class IncomingDocService {
   }
 
   urlDocumentToMax =
-    "/_api/web/lists/getbytitle('ListDocumentTo')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id&$expand=UserOfHandle,Author&$top=1&$orderby=ID desc";
+    "/_api/web/lists/getbytitle('ListDocumentTo')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Name&$expand=UserOfHandle,Author&$top=1&$orderby=ID desc";
   getDocumentToMax(): Observable<any> {
     return this.http.get(
       `${this.restUrl}${this.urlDocumentToMax}`
@@ -101,7 +101,7 @@ export class IncomingDocService {
   }
 
   urlDocumentTo =
-    "/_api/web/lists/getbytitle('ListDocumentTo')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,AttachmentFiles&$expand=UserOfHandle,Author,AttachmentFiles&$orderby=ID desc";
+    "/_api/web/lists/getbytitle('ListDocumentTo')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,Author/Name,AttachmentFiles&$expand=UserOfHandle,Author,AttachmentFiles&$orderby=ID desc";
   getListDocumentTo(userId): Observable<any> {
     return this.http.get(
       `${this.restUrl}${this.urlDocumentTo}&$filter=Author/Id eq ` +
@@ -119,18 +119,18 @@ export class IncomingDocService {
 
   getAllDocumentReport(listName, strFilter): Observable<any>  {
     return this.http.get(
-      `${this.restUrl}` + `/_api/web/lists/getbytitle('` + listName + `')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title&$expand=UserOfHandle,Author&$orderby=ID desc` + strFilter
+      `${this.restUrl}` + `/_api/web/lists/getbytitle('` + listName + `')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,Author/Name&$expand=UserOfHandle,Author&$orderby=ID desc` + strFilter
     );
   }
 
   urlRequestTo =
-    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id,UserRetrieve/Id,UserRetrieve/Title&$orderby=ID desc&$expand=UserApprover,UserRequest,UserRetrieve";
+    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserRequest/Name,UserApprover/Title,UserApprover/Id,UserApprover/Name,UserRetrieve/Id,UserRetrieve/Title&$orderby=ID desc&$expand=UserApprover,UserRequest,UserRetrieve";
   getListRequestTo(strFilter): Observable<any> {
     return this.http.get(`${this.restUrl}${this.urlRequestTo}` + strFilter);
   }
 
   urlRequest =
-    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$orderby=ID asc&$expand=UserApprover,UserRequest";
+    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserRequest/Name,UserApprover/Title,UserApprover/Id,UserApprover/Name&$orderby=ID asc&$expand=UserApprover,UserRequest";
   getListRequestByDocID(docId): Observable<any> {
     return this.http.get(
       `${this.restUrl}${this.urlRequest}` +
@@ -160,7 +160,7 @@ export class IncomingDocService {
 
   getHistoryStep(noteBookID, strFilter) {
     return this.http.get(
-      `${this.restUrl}` + `/_api/web/lists/getbytitle('ListHistoryRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$expand=UserRequest,UserApprover&$filter=NoteBookID eq '` + noteBookID + `'` + strFilter
+      `${this.restUrl}` + `/_api/web/lists/getbytitle('ListHistoryRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id,UserApprover/Name&$expand=UserRequest,UserApprover&$filter=NoteBookID eq '` + noteBookID + `'` + strFilter
     );
   }
 
