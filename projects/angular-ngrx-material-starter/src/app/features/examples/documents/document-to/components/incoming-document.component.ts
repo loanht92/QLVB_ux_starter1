@@ -20,11 +20,11 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IncomingDocumentComponent implements OnInit {
-  isAuthenticated$: Observable<boolean>;
+  public isAuthenticated$: boolean = false;
   currentUser;
 
   examples = [
-    { link: 'documentto', label: 'Tiếp nhận văn bản', display: true },
+    //{ link: 'documentto', label: 'Tiếp nhận văn bản', display: true },
     { link: 'docTo-list/1', label: 'Chờ xử lý' },
     { link: 'docTo-list-approving/2', label: 'Đang xử lý' },
     { link: 'docTo-list-approved/3', label: 'Đã xử lý' },
@@ -50,11 +50,11 @@ export class IncomingDocumentComponent implements OnInit {
           this.ngOnInit();
       });
     });
-    this.isAuthenticated$ = app.isVanThu$;
   }
 
   ngOnInit(): void {
     this.getUserSharepoint();
+    this.isAuthenticated$ = false
   }
 
   async getUserSharepoint() {
@@ -72,18 +72,18 @@ export class IncomingDocumentComponent implements OnInit {
       () => {
           console.log("Load user infor: " + this.currentUser);
           this.shareService.getRoleCurrentUser(this.currentUser.userId).subscribe(
-              itemValue => {
-                  let itemUserMember = itemValue['value'] as Array<any>;
-                  itemUserMember.forEach(element => {
-                      if(element.RoleCode === "NV") {
-                        this.isAuthenticated$ = observableOf(true);
-                      }
-                  })
-              },
-              error => console.log("Get role user error: " + error),
-              () => {
-                  console.log("Get role user success");           
-              })
+            itemValue => {
+                let itemUserMember = itemValue['value'] as Array<any>;
+                itemUserMember.forEach(element => {
+                    if(element.RoleCode === "NV") {
+                      this.isAuthenticated$ = true;
+                    }
+                })
+            },
+            error => console.log("Get role user error: " + error),
+            () => {
+                console.log("Get role user success");           
+            })
       });
   }
 }

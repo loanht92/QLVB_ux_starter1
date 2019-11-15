@@ -31,7 +31,7 @@ import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
-import { AppComponent } from '../../../../../app/app.component';
+import { IncomingDocumentComponent } from './incoming-document.component';
 import { Observable, of as observableOf, from} from 'rxjs';
 
 export interface PeriodicElement {
@@ -190,7 +190,8 @@ export class DocumentDetailComponent implements OnInit {
     private modalService: BsModalService,
     public overlay: Overlay, 
     public viewContainerRef: ViewContainerRef,
-    private location: PlatformLocation
+    private location: PlatformLocation,
+    private incoming: IncomingDocumentComponent
   ) {
     this.location.onPopState(() => {
       console.log('Init: pressed back!');
@@ -206,6 +207,7 @@ export class DocumentDetailComponent implements OnInit {
       this.currentStep = this.IndexStep;
     });
     this.getCurrentUser();
+    this.incoming.isAuthenticated$ = false;
   }
 
    /** Whether the number of selected elements matches the total number of rows. */
@@ -507,6 +509,7 @@ export class DocumentDetailComponent implements OnInit {
                 ? ''
                 : moment(element.Deadline).format('DD/MM/YYYY'),
             status: this.getStatusName(element.StatusID),
+            statusId: element.StatusID,
             source: this.docTo.CheckNull(element.Source),
             destination: this.docTo.CheckNull(element.Destination),
             roleRequest: this.docTo.CheckNull(element.RoleUserRequest),
@@ -728,6 +731,7 @@ export class DocumentDetailComponent implements OnInit {
                 }
                 else if (element.RoleCode === "VT") {
                   this.IsVT = true;
+                  this.incoming.isAuthenticated$ = true;
                 }
                 else if (element.RoleCode === "NV") {
                   this.currentDepartment = element.DepartmentCode;
@@ -1097,13 +1101,14 @@ export class DocumentDetailComponent implements OnInit {
   // Trả lại
   AddTicketReturn() {
     try {
-      if (this.docTo.CheckNull(this.ReasonReturn) === '') {
+      if (this.docTo.CheckNull(this.content) === '') {
         this.notificationService.warn("Bạn chưa nhập Lý do trả lại! Vui lòng kiểm tra lại");
         return;
       }
       this.bsModalRef.hide();
       this.OpenRotiniPanel();
-      let item  = this.ListItem.find(i => i.indexStep === this.IndexStep && i.userApproverId === this.currentUserId && i.stsTypeCode === 'CXL');
+      let item  = this.ListItem.find(i => i.indexStep === this.IndexStep && i.userApproverId === this.currentUserId && i.stsTypeCode === 'CXL' && i.statusId === 0);
+      console.log('return request ' + item);
       const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
         StatusID: 1, StatusName: "Đã xử lý",
@@ -1149,7 +1154,7 @@ export class DocumentDetailComponent implements OnInit {
               TaskTypeName: 'Xử lý chính',
               TypeCode: 'TL',
               TypeName: 'Trả lại',
-              Content: this.ReasonReturn,
+              Content: this.content,
               IndexStep: this.IndexStep - 1,
               Compendium: this.itemDoc.compendium,
               IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),

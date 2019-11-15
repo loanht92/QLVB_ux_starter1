@@ -3,18 +3,16 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
-import {FlatTreeControl} from '@angular/cdk/tree';
-import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
 import {BehaviorSubject} from 'rxjs';
 import * as moment from 'moment';
 import {PlatformLocation} from '@angular/common';
-import { filter, pairwise } from 'rxjs/operators';
 import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
 import {IncomingDoc, ItemSeleted, IncomingDocService, IncomingTicket} from '../incoming-doc.service';
 import {RotiniPanel} from './document-add.component';
 import {ResApiService} from '../../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { IncomingDocumentComponent } from './incoming-document.component';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
@@ -144,7 +142,8 @@ export class DocumentWaitingComponent implements OnInit {
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService, private routes: Router,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private route: ActivatedRoute,private location: PlatformLocation
+              private route: ActivatedRoute, private location: PlatformLocation,
+              private incoming: IncomingDocumentComponent
               ) {
                 this.location.onPopState(() => {
                   console.log('Init: pressed back!');
@@ -159,6 +158,7 @@ export class DocumentWaitingComponent implements OnInit {
       this.styleId = parseInt(parames.get('id'));
     });
     this.getCurrentUser();
+    this.incoming.isAuthenticated$ = false;
   }
 
   ClickItem(row) {
@@ -291,6 +291,22 @@ export class DocumentWaitingComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
+        this.services.getDepartmnetOfUser(this.currentUserId).subscribe(
+          itemValue => {
+            let item = itemValue['value'] as Array<any>;
+            if(item.length > 0) {
+              item.forEach(element => {
+                if (element.RoleCode === "VT") {
+                  this.incoming.isAuthenticated$ = true;
+                }
+              });
+            }
+          },
+          error => { 
+            console.log("Load department code error: " + error);
+            this.CloseRotiniPanel();
+          },
+        )
         this.getAllListRequest();
       }
       );

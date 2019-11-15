@@ -7,7 +7,7 @@ import { FormControl , FormBuilder, FormGroup, FormGroupDirective, Validators, N
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import * as moment from 'moment';
 import {PlatformLocation} from '@angular/common';
-
+import {IncomingDocService} from '../document-to/incoming-doc.service'
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
@@ -104,6 +104,7 @@ export class DocumentGoComponent implements OnInit {
   ItemAttachments: AttachmentsObject[] = [];
   urlAttachment;
   EmailConfig;
+  EmailConfigDT;
   UserOfCombinate = 0;
   UserOfKnow = 0;
   DocumentToId = '';
@@ -114,6 +115,7 @@ export class DocumentGoComponent implements OnInit {
     private notificationService: NotificationService,
     private docServices: DocumentGoService,
     private services: ResApiService,
+    private docToServices: IncomingDocService,
     private route: ActivatedRoute,
     private ref: ChangeDetectorRef,
     public overlay: Overlay,
@@ -232,23 +234,32 @@ export class DocumentGoComponent implements OnInit {
   }
 
   getListEmailConfig() {
-    const str = `?$select=*&$filter=Title eq 'DG'&$top=1`;
+    //&$top=1
+    const str = `?$select=*&$filter=Title eq 'DG' or Title eq 'DT'`;
     this.EmailConfig = null;
     this.services.getItem('ListEmailConfig', str).subscribe((itemValue: any[]) => {
       let item = itemValue['value'] as Array<any>;
       if (item.length > 0) {
-          item.forEach(element => {
-          this.EmailConfig = {
-            FieldMail: element.FieldMail,
-            NewEmailSubject: element.NewRequestSubject,
-            NewEmailBody: element.NewRequestBody,
-            ApprovedEmailSubject: element.ApprovedRequestSubject,
-            ApprovedEmailBody: element.ApprovedRequestBody,
-            AssignEmailSubject: element.AssignRequestSubject,
-            AssignEmailBody: element.AssignRequestBody,
-            FinishEmailSubject: element.FinishRequestSubject,
-            FinishEmailBody: element.FinishRequestBody,
-          }
+        item.forEach(element => {
+          if(element.Title === "DG") {
+            this.EmailConfig = {
+              FieldMail: element.FieldMail,
+              NewEmailSubject: element.NewRequestSubject,
+              NewEmailBody: element.NewRequestBody,
+              ApprovedEmailSubject: element.ApprovedRequestSubject,
+              ApprovedEmailBody: element.ApprovedRequestBody,
+              AssignEmailSubject: element.AssignRequestSubject,
+              AssignEmailBody: element.AssignRequestBody,
+              FinishEmailSubject: element.FinishRequestSubject,
+              FinishEmailBody: element.FinishRequestBody,
+            }
+          } else if(element.Title === 'DT') {
+            this.EmailConfigDT = {
+              FieldMail: element.FieldMail,
+              FinishEmailSubject: element.FinishRequestSubject,
+              FinishEmailBody: element.FinishRequestBody,
+            }
+          }        
       })
       }
     });
@@ -637,6 +648,7 @@ export class DocumentGoComponent implements OnInit {
             );
           },
           () => {
+            this.sendMailFinishDocumentTo(idDocTo);
             let arrItem = arrIdProcessTo.split(',');
             this.UpdateDocToFinish(arrItem, 0);
             if(idHisTo > 0) {
@@ -697,6 +709,93 @@ export class DocumentGoComponent implements OnInit {
           }
         }
       );
+    }
+  }
+
+  sendMailFinishDocumentTo(docID) {
+    this.docToServices.getListDocByID(docID).subscribe(items => {
+      console.log('items: ' + items);
+      this.ItemAttachments=[];
+      let itemList = items['value'] as Array<any>;
+      if(itemList.length > 0) {
+        //gui mail tra lai
+        let email;
+        let userApprover;
+        let author;
+        email = itemList[0].Author.Name.split('|')[2];
+        author = itemList[0].Author.Title;
+        const dataSendUser = {
+          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+          Title: "ListDocumentTo",
+          IndexItem: docID,
+          Step: 0,
+          KeyList: "ListDocumentTo" +  '_' + docID,
+          SubjectMail: this.ReplateDocumentTo(this.EmailConfigDT.FieldMail, this.EmailConfigDT.FinishEmailSubject, itemList[0].NumberTo, itemList[0].Compendium, author, this.currentUserName, docID),
+          BodyMail: this.ReplateDocumentTo(this.EmailConfigDT.FieldMail, this.EmailConfigDT.FinishEmailBody, itemList[0].NumberTo, itemList[0].Compendium, author, this.currentUserName, docID),
+          SendMailTo: email,
+        }
+        this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
+          itemRoomRQ => {
+            console.log(itemRoomRQ['d']);
+          },
+          error => {
+            console.log(error);
+            this.CloseDocumentGoPanel();
+          },
+          () => {
+            console.log("Send mail return success.")
+          }
+        );
+      }
+    },
+    error => {
+      console.log(error);
+      this.CloseDocumentGoPanel();
+    },
+    () => {
+      console.log("Load item document to success.");
+    })   
+  }
+
+  ReplateDocumentTo(FieldMail, ContentMail, numberTo, compendium, author, UserApprover, docID) {
+    try {
+      if (this.isNotNull(FieldMail) && this.isNotNull(ContentMail)) {
+        let strContent = FieldMail.split(",");
+        console.log("ContentMail before: " + ContentMail);
+        for (let i = 0; i < strContent.length; i++) {
+          switch (strContent[i]) {
+            case 'NumberTo':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", numberTo);
+              break;
+            case 'Compendium':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", compendium);
+              break;
+            case 'Content':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", 'Hoàn thành');
+              break;
+            case 'Author':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", author);
+              break;
+            case 'UserApprover':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", UserApprover);
+              break;
+            case 'ItemUrl':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + docID);
+              break;
+            case 'HomeUrl':
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc');
+              break;
+          }
+        }
+        console.log("ContentMail after: " + ContentMail);
+        return ContentMail;
+      }
+      else {
+        console.log("Field or Body email is null or undefined ")
+      }
+    }
+    catch (err) {
+      console.log("Replace_Field_Mail error: " + err.message);
     }
   }
 
