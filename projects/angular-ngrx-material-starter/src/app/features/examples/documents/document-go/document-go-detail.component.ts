@@ -1068,7 +1068,7 @@ export class DocumentGoDetailComponent implements OnInit {
         DocumentGoID: this.ItemId,
         UserRequestId: this.currentUserId,
         UserApproverId: approverId,
-        // Deadline: this.deadline,
+        Deadline: this.deadline1,
         StatusID: 0,
         StatusName: 'Chờ xử lý',
         Source: request === undefined ? '' : request.DeName,
@@ -1082,7 +1082,8 @@ export class DocumentGoDetailComponent implements OnInit {
         Content: this.ReasonReturn,
         IndexStep: this.IndexStep - 1,
         Compendium: this.itemDoc.Compendium,
-        IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1)
+        IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
+        DocTypeName: this.itemDoc.DocTypeName
       };
       this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
         item => {
@@ -1263,6 +1264,12 @@ export class DocumentGoDetailComponent implements OnInit {
               __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
               ListUserApprover: this.UserAppoverName
             };
+            if (this.IndexStep === this.totalStep - 1) {
+              Object.assign( data , {
+                NumberGo: this.docServices.CheckNullSetZero(this.numberGo),
+                NumberSymbol: this.numberOfSymbol
+              });
+            }
             this.resService
               .updateListById('ListDocumentGo', data, this.ItemId)
               .subscribe(
@@ -1279,26 +1286,26 @@ export class DocumentGoDetailComponent implements OnInit {
                 }
               );
 
-            if (this.IndexStep === this.totalStep - 1) {
-              const dataTicket = {
-                __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
-                NumberGo: this.docServices.CheckNullSetZero(this.numberGo),
-                NumberSymbol: this.numberOfSymbol
-              };
-              this.resService
-                .updateListById(this.listName, dataTicket, this.ItemId)
-                .subscribe(
-                  item => {},
-                  error => {
-                    this.closeCommentPanel();
-                    console.log(
-                      'error when update item to list ListDocumentGo: ' +
-                        error.error.error.message.value
-                    );
-                  },
-                  () => {}
-                );
-            }
+            // if (this.IndexStep === this.totalStep - 1) {
+            //   const dataTicket = {
+            //     __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
+            //     NumberGo: this.docServices.CheckNullSetZero(this.numberGo),
+            //     NumberSymbol: this.numberOfSymbol
+            //   };
+            //   this.resService
+            //     .updateListById(this.listName, dataTicket, this.ItemId)
+            //     .subscribe(
+            //       item => {},
+            //       error => {
+            //         this.closeCommentPanel();
+            //         console.log(
+            //           'error when update item to list ListDocumentGo: ' +
+            //             error.error.error.message.value
+            //         );
+            //       },
+            //       () => {}
+            //     );
+            // }
             if (this.historyId > 0) {
               const dataTicket = {
                 __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' },
