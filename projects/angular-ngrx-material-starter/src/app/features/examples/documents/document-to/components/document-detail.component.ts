@@ -202,8 +202,8 @@ export class DocumentDetailComponent implements OnInit {
 
   ngOnInit() {
     this.route.paramMap.subscribe(parames => {
-      this.IncomingDocID = parseInt(parames.get('id'));
-      this.IndexStep = parseInt(parames.get('step'));
+      this.IncomingDocID = this.docTo.CheckNullSetZero(parames.get('id'));
+      this.IndexStep = this.docTo.CheckNullSetZero(parames.get('step'));
       this.currentStep = this.IndexStep;
     });
     this.getCurrentUser();
