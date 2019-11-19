@@ -27,11 +27,11 @@
                             </mat-select>
                         </mat-form-field>
                     </div>
-                    <div class="row DN">
+                    <!-- <div class="row DN">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <input matInput placeholder="Số đi" formControlName="NumberGo">
                         </mat-form-field>
-                    </div>
+                    </div> -->
                     <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Sổ văn bản" formControlName="BookType" disabled>
@@ -110,14 +110,19 @@
 
                     </div>
                     <div class="row">
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                        <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Người ký" formControlName="Signer">
                                 <mat-option *ngFor="let item of ListUserSigner" value="{{item.UserId}}|{{item.UserEmail}}">{{item.UserName}}</mat-option>
                             </mat-select>
-                        </mat-form-field>
+                        </mat-form-field> -->
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Độ mật" formControlName="SecretLevel">
                                 <mat-option *ngFor="let item of ListSecret" value={{item.ID}}>{{item.Title}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                            <mat-select placeholder="Độ khẩn" formControlName="UrgentLevel">
+                                <mat-option *ngFor="let item of ListUrgent" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
                         <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
@@ -127,9 +132,9 @@
                         </mat-form-field> -->
                     </div>
                     <div class="row">
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <mat-select placeholder="Độ khẩn" formControlName="UrgentLevel">
-                                <mat-option *ngFor="let item of ListUrgent" value={{item.ID}}>{{item.Title}}</mat-option>
+                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements">
+                            <mat-select placeholder="Phương thức gửi" formControlName="MethodSend">
+                                <mat-option *ngFor="let item of ListMethodSend" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
@@ -137,11 +142,7 @@
                         </mat-form-field>
                     </div>
                     <div class="row">
-                        <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements">
-                            <mat-select placeholder="Phương thức gửi" formControlName="MethodSend">
-                                <mat-option *ngFor="let item of ListMethodSend" value={{item.ID}}>{{item.Title}}</mat-option>
-                            </mat-select>
-                        </mat-form-field>
+
                         <mat-form-field fxFlex="50" class="col" [ngClass]="routeAnimationsElements">
                             <textarea matInput placeholder="Nội dung xử lý" formControlName="Note" minlength="0" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" rows="1"></textarea>
                         </mat-form-field>

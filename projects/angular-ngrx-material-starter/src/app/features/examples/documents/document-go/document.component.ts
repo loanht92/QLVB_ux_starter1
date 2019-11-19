@@ -1,14 +1,13 @@
 import { Store, select } from '@ngrx/store';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Observable, of as observableOf  } from 'rxjs';
-import {SharedService} from '../../../../shared/shared-service/shared.service'
+import { Observable, of as observableOf } from 'rxjs';
+import { SharedService } from '../../../../shared/shared-service/shared.service';
 import { State } from '../../examples.state';
-import {AppComponent} from '../../../../app/app.component';
+import { AppComponent } from '../../../../app/app.component';
 import {
   routeAnimations,
   selectIsAuthenticated
 } from '../../../../core/core.module';
-
 
 @Component({
   selector: 'anms-document',
@@ -29,10 +28,14 @@ export class DocumentComponent implements OnInit {
     { link: 'docGo-retrieve', label: 'Thu hồi' },
     { link: 'documentgo-waiting-comment/4', label: 'Chờ xin ý kiến' },
     { link: 'documentgo-comment/5', label: 'Đã cho ý kiến' },
-    { link: 'reportDocGo', label: 'Báo cáo, thống kê'},
-    { link: 'reportAdvanceDocGo', label: 'Tra cứu văn bản'}
+    { link: 'reportDocGo', label: 'Báo cáo, thống kê' },
+    { link: 'reportAdvanceDocGo', label: 'Tra cứu văn bản' }
   ];
-  constructor(private store: Store<State>, private shareService: SharedService, private app: AppComponent) {
+  constructor(
+    private store: Store<State>,
+    private shareService: SharedService,
+    private app: AppComponent
+  ) {
     this.isAuthenticated$ = app.isNhanVien$;
   }
 
@@ -43,31 +46,33 @@ export class DocumentComponent implements OnInit {
   async getUserSharepoint() {
     this.shareService.getCurrentUser().subscribe(
       itemValue => {
-          this.currentUser = {
-              userId: itemValue["Id"],
-              userName: itemValue["Title"],
-              userEmail: itemValue["Email"],
-              userLogin: itemValue["LoginName"],
-              isSiteAdmin: itemValue["IsSiteAdmin"],
-          }
+        this.currentUser = {
+          userId: itemValue['Id'],
+          userName: itemValue['Title'],
+          userEmail: itemValue['Email'],
+          userLogin: itemValue['LoginName'],
+          isSiteAdmin: itemValue['IsSiteAdmin']
+        };
       },
-      error => console.log("error: " + error),
+      error => console.log('error: ' + error),
       () => {
-          console.log("Load user infor: " + this.currentUser);
-          this.shareService.getRoleCurrentUser(this.currentUser.userId).subscribe(
-              itemValue => {
-                  let itemUserMember = itemValue['value'] as Array<any>;
-                  itemUserMember.forEach(element => {
-                      if(element.RoleCode === "NV") {
-                        this.isAuthenticated$ = observableOf(true);
-                      }
-                  })
-              },
-              error => console.log("Get role user error: " + error),
-              () => {
-                  console.log("Get role user success");           
-              })
-      });
+        console.log('Load user infor: ' + this.currentUser);
+        this.shareService.getRoleCurrentUser(this.currentUser.userId).subscribe(
+          itemValue => {
+            let itemUserMember = itemValue['value'] as Array<any>;
+            itemUserMember.forEach(element => {
+              if (element.RoleCode === 'NV') {
+                this.isAuthenticated$ = observableOf(true);
+                console.log(this.isAuthenticated$);
+              }
+            });
+          },
+          error => console.log('Get role user error: ' + error),
+          () => {
+            console.log('Get role user success');
+          }
+        );
+      }
+    );
   }
 }
-

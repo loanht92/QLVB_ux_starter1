@@ -6,7 +6,8 @@
 
 <nav class="nav-responsive d-sm-none d-flex justify-content-center">
     <mat-select [placeholder]="'Trình văn bản'" [value]="'documentgo'">
-        <mat-option *ngFor="let e of documents" [value]="e" [routerLink]="e.link" [disabled]="e.display && !(isAuthenticated$ | async)">
+        <mat-option *ngFor="let e of documents" [value]="e" [routerLink]="e.link">
+            <!-- [disabled]="e.display && !(isAuthenticated$ | async)" -->
             {{e.label | translate}}
         </mat-option>
     </mat-select>
