@@ -1,5 +1,5 @@
 import { Store, select } from '@ngrx/store';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewRef} from '@angular/core';
 import { Observable, of as observableOf } from 'rxjs';
 import { SharedService } from '../../../../shared/shared-service/shared.service';
 import { State } from '../../examples.state';
@@ -34,7 +34,8 @@ export class DocumentComponent implements OnInit {
   constructor(
     private store: Store<State>,
     private shareService: SharedService,
-    private app: AppComponent
+    private app: AppComponent,
+    private ref: ChangeDetectorRef,
   ) {
   }
 
@@ -43,7 +44,7 @@ export class DocumentComponent implements OnInit {
     this.isAuthenticated$ = false;
   }
 
-  async getUserSharepoint() {
+  getUserSharepoint() {
     this.shareService.getCurrentUser().subscribe(
       itemValue => {
         this.currentUser = {
@@ -63,7 +64,9 @@ export class DocumentComponent implements OnInit {
             itemUserMember.forEach(element => {
               if (element.RoleCode === 'NV' || element.RoleCode === 'TP' || element.RoleCode === 'GĐ') {
                 this.isAuthenticated$ = true;
-                console.log(this.isAuthenticated$);
+                if (!(this.ref as ViewRef).destroyed) {
+                  this.ref.detectChanges();  
+                } 
               }
             });
           },

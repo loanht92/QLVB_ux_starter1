@@ -1,5 +1,5 @@
 <nav mat-tab-nav-bar class="d-none d-sm-flex">
-    <a mat-tab-link [routerLink]="documentgo/0" routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive" *ngIf="isAuthenticated$">
+    <a mat-tab-link [routerLink]="'documentgo/0'" routerLinkActive #rla1="routerLinkActive" [active]="rla1.isActive" *ngIf="isAuthenticated$">
         Trình văn bản
     </a>
     <a mat-tab-link *ngFor="let e of documents" [routerLink]="e.link" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
@@ -9,7 +9,7 @@
 
 <nav class="nav-responsive d-sm-none d-flex justify-content-center">
     <mat-select [placeholder]="'Trình văn bản'" [value]="'documentgo/0'">
-        <mat-option [routerLink]="documentgo/0" *ngIf="isAuthenticated$">
+        <mat-option [routerLink]="'documentgo/0'" *ngIf="isAuthenticated$">
             Trình văn bản
         </mat-option>
         <mat-option *ngFor="let e of documents" [value]="e" [routerLink]="e.link">

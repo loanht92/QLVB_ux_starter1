@@ -1,5 +1,5 @@
 import { Store, select } from '@ngrx/store';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewRef } from '@angular/core';
 import { Observable, of as observableOf } from 'rxjs';
 import {SharedService} from '../../../../../shared/shared-service/shared.service';
 import { State } from '../../../examples.state';
@@ -36,7 +36,7 @@ export class IncomingDocumentComponent implements OnInit {
   ];
 
   constructor(private store: Store<State>, private shareService: SharedService, private app: AppComponent,
-    private location: PlatformLocation, private routes: Router) 
+    private location: PlatformLocation, private routes: Router, private ref: ChangeDetectorRef) 
     {
       location.onPopState(() => {
         //alert(window.location);
@@ -77,6 +77,9 @@ export class IncomingDocumentComponent implements OnInit {
                 itemUserMember.forEach(element => {
                     if(element.RoleCode === "VT") {
                       this.isAuthenticated$ = true;
+                      if (!(this.ref as ViewRef).destroyed) {
+                        this.ref.detectChanges();  
+                      } 
                     }
                 })
             },
