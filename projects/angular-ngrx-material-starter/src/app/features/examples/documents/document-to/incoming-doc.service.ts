@@ -211,7 +211,6 @@ export interface IncomingDoc {
 export interface IncomingTicket {
   STT: number;
   ID: number;
-  numberOfSymbol: string;
   compendium: string;
   documentID: number;
   userRequest: string;
