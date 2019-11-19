@@ -30,7 +30,8 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { ResApiService } from '../../services/res-api.service';
 import { DocumentGoService } from './document-go.service';
 import { DocumentGoPanel } from './document-go.component';
-import {DocumentComponent} from '../document-go/document.component';
+import { DocumentComponent } from '../document-go/document.component';
+import { SharedService } from '../../../../shared/shared-service/shared.service';
 import {
   ItemDocumentGo,
   DocumentGoTicket,
@@ -121,8 +122,8 @@ export class DocumentGoDetailComponent implements OnInit {
   displayFile = '';
   buffer;
   content;
-  deadline;//ngày hết hạn xử lý
-  deadline1;//ngày hết hạn xử lý mà không fomat trong phần hiển thị thông tin văn bản
+  deadline; //ngày hết hạn xử lý
+  deadline1; //ngày hết hạn xử lý mà không fomat trong phần hiển thị thông tin văn bản
   strFilter = '';
   indexComment;
   Comments = null;
@@ -190,10 +191,11 @@ export class DocumentGoDetailComponent implements OnInit {
   ReasonRetrieve;
   AuthorComment;
   ContentReply;
-
+  NumberGoMax = 0;
   constructor(
     private docServices: DocumentGoService,
     private resService: ResApiService,
+    private shareService: SharedService,
     private route: ActivatedRoute,
     private readonly notificationService: NotificationService,
     private ref: ChangeDetectorRef,
@@ -288,7 +290,7 @@ export class DocumentGoDetailComponent implements OnInit {
                 } else if (element.RoleCode === 'GĐ') {
                   this.IsGD = true;
                   this.documentGo.isAuthenticated$ = true;
-                } else if(element.RoleCode === "NV") {
+                } else if (element.RoleCode === 'NV') {
                   this.documentGo.isAuthenticated$ = true;
                 }
               });
@@ -504,11 +506,11 @@ export class DocumentGoDetailComponent implements OnInit {
             if (this.IndexStep === this.totalStep - 1) {
               this.isDisplay = true;
             }
-            if (this.IsGD === true || this.IsTP === true) {
-              this.isFinish = observableOf(true);
-            } else {
-              this.isFinish = observableOf(false);
-            }
+            // if (this.IsGD === true || this.IsTP === true) {
+            //   this.isFinish = observableOf(true);
+            // } else {
+            //   this.isFinish = observableOf(false);
+            // }
             this.isExecution = observableOf(true);
           }
         }
@@ -549,32 +551,57 @@ export class DocumentGoDetailComponent implements OnInit {
       }
     );
   }
+  //Lấy số văn bản đi
+  getNumberGo() {
+    let strFilter = `?$select=NumberGo&$filter=NumberGo ne 'null'&$orderby=NumberGo desc`;
+    this.shareService.getItemList('ListDocumentGo', strFilter).subscribe(
+      itemValue => {
+        let item = itemValue['value'] as Array<any>;
+        if (item.length === 0) {
+          this.currentNumberGo = 0;
+        } else {
+          this.currentNumberGo = item[0].NumberGo;
+        }
+      },
+      error => {
+        console.log('Load numberGo max error');
+        this.closeCommentPanel();
+      },
+      () => {
+        this.numberGo = this.docServices.formatNumberGo(
+          this.currentNumberGo + 1
+        );
+        this.numberOfSymbol = this.numberGo + '/Văn bản đi';
+      }
+    );
+  }
 
   GetItemDetail() {
     try {
+      this.getNumberGo();
       this.ItemAttachments = [];
-      this.docServices.getDocumentToMax().subscribe(
-        (itemValue: any[]) => {
-          let item = itemValue['value'] as Array<any>;
-          if (item.length === 0) {
-            this.currentNumberGo = 0;
-          } else {
-            item.forEach(element => {
-              this.currentNumberGo = element.NumberGo;
-            });
-          }
-        },
-        error => {
-          console.log('Load numberTo max error');
-          this.closeCommentPanel();
-        },
-        () => {
-          this.numberGo = this.docServices.formatNumberGo(
-            this.currentNumberGo + 1
-          );
-          this.numberOfSymbol = this.numberGo + '/Văn bản đi';
-        }
-      );
+      // this.docServices.getDocumentToMax().subscribe(
+      //   (itemValue: any[]) => {
+      //     let item = itemValue['value'] as Array<any>;
+      //     if (item.length === 0) {
+      //       this.currentNumberGo = 0;
+      //     } else {
+      //       item.forEach(element => {
+      //         this.currentNumberGo = element.NumberGo;
+      //       });
+      //     }
+      //   },
+      //   error => {
+      //     console.log('Load numberTo max error');
+      //     this.closeCommentPanel();
+      //   },
+      //   () => {
+      //     this.numberGo = this.docServices.formatNumberGo(
+      //       this.currentNumberGo + 1
+      //     );
+      //     this.numberOfSymbol = this.numberGo + '/Văn bản đi';
+      //   }
+      // );
 
       this.docServices.getListDocByID(this.ItemId).subscribe(
         items => {
@@ -588,9 +615,10 @@ export class DocumentGoDetailComponent implements OnInit {
               });
             });
           }
-          this.deadline1 =this.docServices.checkNull(itemList[0].Deadline) === ''
-                ? null
-                : itemList[0].Deadline; 
+          this.deadline1 =
+            this.docServices.checkNull(itemList[0].Deadline) === ''
+              ? null
+              : itemList[0].Deadline;
           this.UserAppoverName = itemList[0].ListUserApprover;
           this.itemDoc = {
             ID: itemList[0].ID,
@@ -621,7 +649,7 @@ export class DocumentGoDetailComponent implements OnInit {
               itemList[0].UserOfCombinate == undefined
                 ? ''
                 : itemList[0].UserOfCombinate.Title,
-               
+
             Deadline: this.docServices.formatDateTime(itemList[0].Deadline),
             StatusName: this.docServices.checkNull(itemList[0].StatusName),
             BookTypeName: itemList[0].BookTypeName,
@@ -1205,7 +1233,8 @@ export class DocumentGoDetailComponent implements OnInit {
           TypeName: 'Chuyển xử lý',
           Content: this.content,
           IndexStep: this.IndexStep + 1,
-          Compendium: this.itemDoc.Compendium
+          Compendium: this.itemDoc.Compendium,
+          DocTypeName: this.itemDoc.DocTypeName
         };
 
         this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
@@ -2305,7 +2334,7 @@ export class DocumentGoDetailComponent implements OnInit {
         Content: this.contentComment,
         Compendium: this.itemDoc.Compendium,
         DocTypeName: this.itemDoc.DocTypeName,
-        Deadline:this.deadline1
+        Deadline: this.deadline1
       };
       this.resService
         .AddItemToList('ListProcessRequestGo', dataProcess)

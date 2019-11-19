@@ -1479,6 +1479,8 @@ export class DocumentGoComponent implements OnInit {
                   //lưu và gửi đi mới có mail
                   if (this.ChuyenXL == 0) {
                     this.addItemSendMail();
+                  } else {
+                    this.callbackfunc();
                   }
                 }
               }
@@ -1720,7 +1722,7 @@ export class DocumentGoComponent implements OnInit {
                 window.location.href.split('#/')[0] +
                   '#/Documents/documentgo-detail/' +
                   this.DocumentID +
-                  '/1'
+                  '/2'
               );
               break;
             case 'HomeUrl':
