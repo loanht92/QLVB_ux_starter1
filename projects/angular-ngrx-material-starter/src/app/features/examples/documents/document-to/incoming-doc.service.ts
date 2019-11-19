@@ -205,12 +205,13 @@ export interface IncomingDoc {
   isSendMail: string;
   isRetrieve: string;
   signer: string;
-  created: number;
+  created: string;
 }
 
 export interface IncomingTicket {
   STT: number;
   ID: number;
+  numberOfSymbol: string;
   compendium: string;
   documentID: number;
   userRequest: string;

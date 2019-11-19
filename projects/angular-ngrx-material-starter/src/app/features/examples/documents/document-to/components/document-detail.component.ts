@@ -398,13 +398,18 @@ export class DocumentDetailComponent implements OnInit {
       this.CloseRotiniPanel();
     },
     () => {
-      if(this.isCheckPermission === false && this.itemDoc.authorId !== this.currentUserId) {
+      if(this.docTo.CheckNull(this.itemDoc) !== '') {
+        if(this.isCheckPermission === false && this.itemDoc.authorId !== this.currentUserId) {
+          this.CloseRotiniPanel();
+          this.notificationService.info("Bạn không có quyền truy cập");
+          this.routes.navigate(['/']);
+        }
         this.CloseRotiniPanel();
+        this.GetHistory();
+      } else {
         this.notificationService.info("Bạn không có quyền truy cập");
         this.routes.navigate(['/']);
       }
-      this.CloseRotiniPanel();
-      this.GetHistory();
     }
     );
   }
@@ -1240,6 +1245,8 @@ export class DocumentDetailComponent implements OnInit {
                       this.callbackFunc(this.processId, this.IncomingDocID, true);
                     }
                   );
+                } else {
+                  this.callbackFunc(this.processId, this.IncomingDocID, true);
                 }
               }
             );

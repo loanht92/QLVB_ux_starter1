@@ -169,7 +169,7 @@
                 </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(row)" class="example-element-row">
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(row, modalTemp)" class="example-element-row">
             </tr>
         </table>
         <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>

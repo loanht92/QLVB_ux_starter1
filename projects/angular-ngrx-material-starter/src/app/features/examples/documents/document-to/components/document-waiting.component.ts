@@ -213,9 +213,10 @@ export class DocumentWaitingComponent implements OnInit {
         this.inDocs$.push({
           STT: this.inDocs$.length + 1,
           ID: element.ID,
+          numberOfSymbol: '',
           documentID: element.NoteBookID, 
           compendium: element.Compendium, 
-          userRequest: element.IndexStep === 1 ? this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
+          userRequest: (element.IndexStep === 1 && this.docTo.CheckNull(element.IndexReturn) === '')? this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
           userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
           userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
           userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
