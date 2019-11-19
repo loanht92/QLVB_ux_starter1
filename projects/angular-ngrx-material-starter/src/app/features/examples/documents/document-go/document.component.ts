@@ -17,11 +17,11 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentComponent implements OnInit {
-  isAuthenticated$: Observable<boolean>;
+  public isAuthenticated$: boolean = false;
   currentUser;
 
   documents = [
-    { link: 'documentgo/0', label: 'Văn bản trình', display: true },
+    // { link: 'documentgo/0', label: 'Văn bản trình', display: true },
     { link: 'documentgo-waiting-process/1', label: 'Chờ xử lý' },
     { link: 'documentgo-processing/2', label: 'Đang xử lý' },
     { link: 'documentgo-processed/3', label: 'Đã xử lý' },
@@ -36,11 +36,11 @@ export class DocumentComponent implements OnInit {
     private shareService: SharedService,
     private app: AppComponent
   ) {
-    this.isAuthenticated$ = app.isNhanVien$;
   }
 
   ngOnInit(): void {
     this.getUserSharepoint();
+    this.isAuthenticated$ = false;
   }
 
   async getUserSharepoint() {
@@ -61,8 +61,8 @@ export class DocumentComponent implements OnInit {
           itemValue => {
             let itemUserMember = itemValue['value'] as Array<any>;
             itemUserMember.forEach(element => {
-              if (element.RoleCode === 'NV') {
-                this.isAuthenticated$ = observableOf(true);
+              if (element.RoleCode === 'NV' || element.RoleCode === 'TP' || element.RoleCode === 'GĐ') {
+                this.isAuthenticated$ = true;
                 console.log(this.isAuthenticated$);
               }
             });

@@ -4,12 +4,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material';
 import { FormControl } from '@angular/forms';
-import { SelectionModel } from '@angular/cdk/collections';
 import * as moment from 'moment';
 import {PlatformLocation} from '@angular/common';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { DocumentGoPanel } from './document-go.component';
+import {DocumentComponent} from '../document-go/document.component';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { ResApiService } from '../../services/res-api.service';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
@@ -32,11 +33,13 @@ export class DocumentGoWaitingComponent implements OnInit {
     public overlay: Overlay,
     private notificationService: NotificationService,
     private docServices: DocumentGoService,
-    private resServices: SharedService,
+    private shareServices: SharedService,
+    private resServices: ResApiService,
     private route: ActivatedRoute,
     private ref: ChangeDetectorRef,
     private routes: Router,
-    private location: PlatformLocation
+    private location: PlatformLocation,
+    private documentGo: DocumentComponent
     ) {
       this.location.onPopState(() => {
         console.log('Init: pressed back!');
@@ -73,7 +76,9 @@ export class DocumentGoWaitingComponent implements OnInit {
      // this.getListDocumentGo_Wait();
     });
     this.getCurrentUser();
+    this.documentGo.isAuthenticated$ = false;
   }
+
   isNotNull(str) {
     return (str !== null && str !== "" && str !== undefined);
   }
@@ -102,7 +107,7 @@ export class DocumentGoWaitingComponent implements OnInit {
 
    //Lấy người dùng hiện tại
    getCurrentUser() {
-    this.resServices.getCurrentUser().subscribe(
+    this.shareServices.getCurrentUser().subscribe(
       itemValue => {
         this.currentUserId = itemValue["Id"];
         this.currentUserName = itemValue["Title"];
@@ -111,10 +116,31 @@ export class DocumentGoWaitingComponent implements OnInit {
       },
       error => {
         console.log("error: " + error);
-        
+        this.closeCommentPanel
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName);
+        this.resServices.getDepartmnetOfUser(this.currentUserId).subscribe(
+          itemValue => {
+            let itemUserMember = itemValue['value'] as Array<any>;
+            if (itemUserMember.length > 0) {
+              itemUserMember.forEach(element => {
+                if (element.RoleCode === 'TP' || element.RoleCode === 'GĐ' || element.RoleCode === 'NV') {
+                  this.documentGo.isAuthenticated$ = true;
+                }
+              });
+            } else {
+              this.notificationService.info('Bạn không có quyền truy cập');
+              this.routes.navigate(['/']);
+            }
+          },
+          error => {
+            console.log('Load department code error: ' + error);
+            this.closeCommentPanel();
+          },
+          () => {
+
+          });
         this.getListDocumentGo_Wait();
       }
     );
@@ -161,7 +187,7 @@ export class DocumentGoWaitingComponent implements OnInit {
      console.log('strSelect='+strSelect);
     try {
       this.ListDocumentGo = [];
-      this.resServices.getItemList('ListProcessRequestGo',strFilter).subscribe(itemValue => {
+      this.shareServices.getItemList('ListProcessRequestGo',strFilter).subscribe(itemValue => {
         let item = itemValue["value"] as Array<any>;
         item.forEach(element => {
           if(this.ListDocumentGo.findIndex(e => e.ID === element.DocumentGoID) < 0) {

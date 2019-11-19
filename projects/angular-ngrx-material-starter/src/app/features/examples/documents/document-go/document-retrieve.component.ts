@@ -14,6 +14,7 @@ import {ResApiService} from '../../services/res-api.service';
 import { ItemDocumentGo, ListDocType, ItemSeleted, ItemSeletedCode, ItemUser } from './../models/document-go';
 import { SharedService } from '../../../../shared/shared-service/shared.service'
 import { DocumentGoService } from './document-go.service';
+import {DocumentComponent} from '../document-go/document.component';
 
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
@@ -54,10 +55,12 @@ export class DocumentGoRetrieveComponent implements OnInit {
   constructor(public viewContainerRef: ViewContainerRef,
               public overlay: Overlay,
               private docServices: DocumentGoService,
-              private resServices: SharedService,
-              private route: ActivatedRoute,
+              private resServices: ResApiService,
+              private shareServices: SharedService,
+              private routes : Router,
+              private notificationService: NotificationService,
               private ref: ChangeDetectorRef,
-              private routes: Router,
+              private documentGo: DocumentComponent,
               private location: PlatformLocation,
               private modalService: BsModalService,) { 
                 this.location.onPopState(() => {
@@ -69,6 +72,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
 
   ngOnInit() {
     this.getCurrentUser();
+    this.documentGo.isAuthenticated$ = false;
   }
 
   applyFilter(filterValue: string) {
@@ -171,7 +175,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
 
   getCurrentUser(){
     this.openCommentPanel();
-    this.resServices.getCurrentUser().subscribe(
+    this.shareServices.getCurrentUser().subscribe(
       itemValue => {
           this.currentUserId = itemValue["Id"];
           this.currentUserName = itemValue["Title"];
@@ -182,6 +186,26 @@ export class DocumentGoRetrieveComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
+        this.resServices.getDepartmnetOfUser(this.currentUserId).subscribe(
+          itemValue => {
+            let itemUserMember = itemValue['value'] as Array<any>;
+            if (itemUserMember.length > 0) {
+              itemUserMember.forEach(element => {
+                if (element.RoleCode === 'TP' || element.RoleCode === 'GĐ' || element.RoleCode === 'NV') {
+                  this.documentGo.isAuthenticated$ = true;
+                }
+              });
+            } else {
+              this.notificationService.info('Bạn không có quyền truy cập');
+              this.routes.navigate(['/']);
+            }
+          },
+          error => {
+            console.log('Load department code error: ' + error);
+            this.closeCommentPanel();
+          },
+          () => {
+          });
         this.getAllListRequest();
       }
       );

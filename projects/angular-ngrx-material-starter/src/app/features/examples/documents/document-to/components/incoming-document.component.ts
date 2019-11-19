@@ -75,7 +75,7 @@ export class IncomingDocumentComponent implements OnInit {
             itemValue => {
                 let itemUserMember = itemValue['value'] as Array<any>;
                 itemUserMember.forEach(element => {
-                    if(element.RoleCode === "NV") {
+                    if(element.RoleCode === "VT") {
                       this.isAuthenticated$ = true;
                     }
                 })

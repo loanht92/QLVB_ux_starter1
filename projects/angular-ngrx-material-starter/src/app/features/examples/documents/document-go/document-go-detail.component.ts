@@ -30,6 +30,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { ResApiService } from '../../services/res-api.service';
 import { DocumentGoService } from './document-go.service';
 import { DocumentGoPanel } from './document-go.component';
+import {DocumentComponent} from '../document-go/document.component';
 import {
   ItemDocumentGo,
   DocumentGoTicket,
@@ -45,7 +46,6 @@ import {
   MAT_DIALOG_DATA
 } from '@angular/material/dialog';
 import { CommentComponent } from './comment.component';
-import { AppComponent } from '../../../../app/app.component';
 import { Observable, of as observableOf, from } from 'rxjs';
 
 export interface Comment {
@@ -202,7 +202,7 @@ export class DocumentGoDetailComponent implements OnInit {
     private modalService: BsModalService,
     private dialog: MatDialog,
     private routes: Router,
-    private app: AppComponent,
+    private documentGo: DocumentComponent,
     private location: PlatformLocation
   ) {
     this.location.onPopState(() => {
@@ -219,6 +219,7 @@ export class DocumentGoDetailComponent implements OnInit {
       this.currentStep = this.IndexStep;
     });
     this.getCurrentUser();
+    this.documentGo.isAuthenticated$ = false;
   }
 
   /** Whether the number of selected elements matches the total number of rows. */
@@ -283,8 +284,12 @@ export class DocumentGoDetailComponent implements OnInit {
               itemUserMember.forEach(element => {
                 if (element.RoleCode === 'TP') {
                   this.IsTP = true;
+                  this.documentGo.isAuthenticated$ = true;
                 } else if (element.RoleCode === 'GĐ') {
                   this.IsGD = true;
+                  this.documentGo.isAuthenticated$ = true;
+                } else if(element.RoleCode === "NV") {
+                  this.documentGo.isAuthenticated$ = true;
                 }
               });
               this.CheckPermission();
