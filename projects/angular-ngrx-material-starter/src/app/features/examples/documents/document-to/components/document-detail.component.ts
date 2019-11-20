@@ -204,10 +204,12 @@ export class DocumentDetailComponent implements OnInit {
     this.route.paramMap.subscribe(parames => {
       this.IncomingDocID = this.docTo.CheckNullSetZero(parames.get('id'));
       this.IndexStep = this.docTo.CheckNullSetZero(parames.get('step'));
-      this.currentStep = this.IndexStep;
+      if(this.IndexStep > 0) {
+        this.currentStep = this.IndexStep;
+      }
     });
     this.getCurrentUser();
-    this.incoming.isAuthenticated$ = false;
+    //this.incoming.isAuthenticated$ = false;
   }
 
    /** Whether the number of selected elements matches the total number of rows. */
@@ -460,7 +462,7 @@ export class DocumentDetailComponent implements OnInit {
         let retrieveValid = false;
         let indexValid = 0;
         let retrieveInValid = false;
-        let indexInvald = 0;
+        // let indexInvald = 0;
         item.forEach(element => {
           if(element.IndexStep === this.IndexStep) {
             // if(element.TypeCode === "TL") {
@@ -472,14 +474,22 @@ export class DocumentDetailComponent implements OnInit {
           }
           // Check để hiển thị button thu hồi
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
+            if(element.UserApprover.Id === this.currentUserId) {
+              if(indexValid < element.IndexStep) {
+                indexValid = element.IndexStep;
+              }
+            }
             if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.TypeCode === "CXL" && element.StatusID === 1) {
               retrieveValid = true;
-              indexValid = element.IndexStep;
+              if(indexValid < element.IndexStep) {
+                indexValid = element.IndexStep;
+              }
             }
-            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.TypeCode === "CXL" && element.StatusID === 0) {
+            if(element.UserApprover.Id === this.currentUserId && element.TypeCode === "CXL" && element.StatusID === 0) {
               retrieveInValid = true;
-              retrieveInValid = element.IndexStep;
             }
+          } else {
+            indexValid = this.IndexStep;
           }
 
           if(element.IsFinished === 1) {
@@ -538,7 +548,7 @@ export class DocumentDetailComponent implements OnInit {
           this.currentStep = indexValid;
         } else {
           this.isRetrieve = undefined;
-          this.currentStep = indexInvald;
+          this.currentStep = indexValid;
         }
       },
       error => {
@@ -733,7 +743,7 @@ export class DocumentDetailComponent implements OnInit {
                 }
                 else if (element.RoleCode === "VT") {
                   this.IsVT = true;
-                  this.incoming.isAuthenticated$ = true;
+                  //this.incoming.isAuthenticated$ = true;
                 }
                 else if (element.RoleCode === "NV") {
                   this.currentDepartment = element.DepartmentCode;

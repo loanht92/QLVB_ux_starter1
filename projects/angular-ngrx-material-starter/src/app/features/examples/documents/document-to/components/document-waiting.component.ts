@@ -158,7 +158,7 @@ export class DocumentWaitingComponent implements OnInit {
       this.styleId = parseInt(parames.get('id'));
     });
     this.getCurrentUser();
-    this.incoming.isAuthenticated$ = false;
+    //this.incoming.isAuthenticated$ = false;
   }
 
   ClickItem(row) {
@@ -297,7 +297,7 @@ export class DocumentWaitingComponent implements OnInit {
             if(item.length > 0) {
               item.forEach(element => {
                 if (element.RoleCode === "VT") {
-                  this.incoming.isAuthenticated$ = true;
+                  //this.incoming.isAuthenticated$ = true;
                 }
               });
             }

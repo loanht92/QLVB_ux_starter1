@@ -72,7 +72,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
 
   ngOnInit() {
     this.getCurrentUser();
-    this.documentGo.isAuthenticated$ = false;
+    //this.documentGo.isAuthenticated$ = false;
   }
 
   applyFilter(filterValue: string) {
@@ -194,7 +194,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
             if (itemUserMember.length > 0) {
               itemUserMember.forEach(element => {
                 if (element.RoleCode === 'TP' || element.RoleCode === 'GĐ' || element.RoleCode === 'NV') {
-                  this.documentGo.isAuthenticated$ = true;
+                  //this.documentGo.isAuthenticated$ = true;
                 }
               });
             } else {
