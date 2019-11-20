@@ -1439,7 +1439,8 @@ export class DocumentGoDetailComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: this.content,
       IndexStep: this.IndexStep + 1,
-      Compendium: this.itemDoc.Compendium
+      Compendium: this.itemDoc.Compendium,
+      DocTypeName: this.itemDoc.DocTypeName
     };
     this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
@@ -1509,7 +1510,8 @@ export class DocumentGoDetailComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: this.content,
       IndexStep: this.IndexStep + 1,
-      Compendium: this.itemDoc.Compendium
+      Compendium: this.itemDoc.Compendium,
+      DocTypeName: this.itemDoc.DocTypeName
     };
     this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
