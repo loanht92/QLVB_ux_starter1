@@ -178,11 +178,11 @@ export class DocumentGoDetailComponent implements OnInit {
   dataSource2 = new MatTableDataSource<UserOfDepartment>();
   isPermision;
   currentStep = 0;
-  isRetrieve: Observable<boolean>;
-  isReturn: Observable<boolean>;
-  isCombine: Observable<boolean>;
-  isExecution: Observable<boolean>;
-  isFinish: Observable<boolean>;
+  isRetrieve: boolean;
+  isReturn: boolean;
+  isCombine: boolean;
+  isExecution: boolean;
+  isFinish: boolean;
   ArrCurrentRetrieve = [];
   ArrayIdRetrieve = [];
   dataSource3 = new MatTableDataSource<UserRetieve>();
@@ -192,6 +192,8 @@ export class DocumentGoDetailComponent implements OnInit {
   AuthorComment;
   ContentReply;
   NumberGoMax = 0;
+  currentRoleTask = '';
+
   constructor(
     private docServices: DocumentGoService,
     private resService: ResApiService,
@@ -216,8 +218,8 @@ export class DocumentGoDetailComponent implements OnInit {
 
   ngOnInit() {
     this.route.paramMap.subscribe(parames => {
-      this.ItemId = parseInt(parames.get('id'));
-      this.IndexStep = parseInt(parames.get('step'));
+      this.ItemId = this.docServices.CheckNullSetZero(parames.get('id'));
+      this.IndexStep = this.docServices.CheckNullSetZero(parames.get('step'));
       this.currentStep = this.IndexStep;
     });
     this.getCurrentUser();
@@ -295,8 +297,6 @@ export class DocumentGoDetailComponent implements OnInit {
                 }
               });
               this.CheckPermission();
-              this.GetTotalStep();
-              this.GetAllUser();
               this.getListEmailConfig();
             } else {
               this.notificationService.info('Bạn không có quyền truy cập');
@@ -331,29 +331,22 @@ export class DocumentGoDetailComponent implements OnInit {
       (itemValue: any[]) => {
         let item = itemValue['value'] as Array<any>;
         if (item.length < 0) {
-          // this.notificationService.info("Bạn không có quyền truy cập");
-          // this.routes.navigate(['/']);
           this.isCheckPermission = false;
         } else {
           this.isCheckPermission = true;
           if (this.IndexStep > 0) {
-            let _item = item.find(i => i.IndexStep === this.IndexStep);
-            if (_item !== undefined) {
-              if (_item.StatusID === 1) {
-                this.routes.navigate([
-                  '/Documents/documentgo-detail/' + this.ItemId
-                ]);
-              }
-            } else {
-              this.routes.navigate([
-                '/Documents/documentgo-detail/' + this.ItemId
-              ]);
+            this.currentRoleTask = item[0].TaskTypeCode;
+            if(item[0].StatusID === 1) {
+              this.routes.navigate(['Documents/documentgo-detail/' + this.ItemId]);
             }
           }
         }
       },
       error => {
         this.closeCommentPanel();
+      },
+      () => {
+        this.GetTotalStep();
       }
     );
   }
@@ -496,26 +489,39 @@ export class DocumentGoDetailComponent implements OnInit {
         this.closeCommentPanel();
       },
       () => {
-        if (this.IndexStep > 0) {
-          this.isExecution = observableOf(true);
-          this.isReturn = observableOf(true);
-          if (this.IndexStep >= this.totalStep) {
-            this.isExecution = observableOf(false);
-            this.isFinish = observableOf(true);
+        if(this.IndexStep <= 1) {
+          this.isReturn = false;
+        } else {
+          this.isReturn = true;
+        }
+        if(this.IndexStep >= this.totalStep) {
+          if(this.currentRoleTask === "XLC") {
+            this.isExecution = false;
+            this.isFinish = true;
           } else {
-            if (this.IndexStep === this.totalStep - 1) {
-              this.isDisplay = true;
-            }
-            // if (this.IsGD === true || this.IsTP === true) {
-            //   this.isFinish = observableOf(true);
-            // } else {
-            //   this.isFinish = observableOf(false);
-            // }
-            this.isExecution = observableOf(true);
+            this.isExecution = false;
+            this.isFinish = false;
+          }       
+        } else if (this.IndexStep > 0) {
+          if (this.IndexStep === this.totalStep - 1) {
+            this.isDisplay = true;
+          }
+          if(this.currentRoleTask === "XLC") {
+            this.isExecution = true;
+          } else if(this.currentRoleTask === "PH") {
+            this.isExecution = false;
+            this.isFinish = false;
+            this.isCombine = true;
+          } else {
+            this.isExecution = false;
+            this.isFinish = false;
+            this.isCombine = false;
           }
         }
         this.getUserPofile(this.currentUserEmail);
         this.GetItemDetail();
+        this.GetAllUser();
+        this.getComment();
       }
     );
   }
@@ -586,29 +592,6 @@ export class DocumentGoDetailComponent implements OnInit {
     try {
       this.getNumberGo();
       this.ItemAttachments = [];
-      // this.docServices.getDocumentToMax().subscribe(
-      //   (itemValue: any[]) => {
-      //     let item = itemValue['value'] as Array<any>;
-      //     if (item.length === 0) {
-      //       this.currentNumberGo = 0;
-      //     } else {
-      //       item.forEach(element => {
-      //         this.currentNumberGo = element.NumberGo;
-      //       });
-      //     }
-      //   },
-      //   error => {
-      //     console.log('Load numberTo max error');
-      //     this.closeCommentPanel();
-      //   },
-      //   () => {
-      //     this.numberGo = this.docServices.formatNumberGo(
-      //       this.currentNumberGo + 1
-      //     );
-      //     this.numberOfSymbol = this.numberGo + '/Văn bản đi';
-      //   }
-      // );
-
       this.docServices.getListDocByID(this.ItemId).subscribe(
         items => {
           console.log('items: ' + items);
@@ -691,8 +674,7 @@ export class DocumentGoDetailComponent implements OnInit {
           if (!(this.ref as ViewRef).destroyed) {
             this.ref.detectChanges();
           }
-          this.closeCommentPanel();
-          this.getComment();
+          this.closeCommentPanel();   
         }
       );
     } catch (err) {
@@ -713,9 +695,9 @@ export class DocumentGoDetailComponent implements OnInit {
             if (element.IndexStep === this.IndexStep) {
               // if(element.TypeCode === "TL") {
               if (this.IndexStep <= 1) {
-                this.isReturn = observableOf(false);
+                this.isReturn = false;
               } else {
-                this.isReturn = observableOf(true);
+                this.isReturn = true;
               }
             }
             // Check để hiển thị button thu hồi
@@ -724,13 +706,13 @@ export class DocumentGoDetailComponent implements OnInit {
                 element.UserApprover.Id === this.currentUserId &&
                 element.TaskTypeCode === 'XLC'
               ) {
-                this.isRetrieve = observableOf(true);
+                this.isRetrieve = true;
                 this.currentStep = element.IndexStep;
               }
             }
 
             if (element.IsFinished === 1) {
-              this.isRetrieve = observableOf(false);
+              this.isRetrieve = false;
             }
             if (element.IndexStep === 1) {
               return;
@@ -1033,7 +1015,7 @@ export class DocumentGoDetailComponent implements OnInit {
           this.bsModalRef.hide();
           this.closeCommentPanel();
           this.notificationService.success('Thu hồi văn bản thành công');
-          this.isRetrieve = observableOf(false);
+          this.isRetrieve = false;
         }
       );
     } else {
@@ -2223,23 +2205,13 @@ export class DocumentGoDetailComponent implements OnInit {
         let itemList = itemValue['value'] as Array<any>;
         itemList.forEach(element => {
           let picture;
-          // if (element.userPicture !== null && element.userPicture !== '' && element.userPicture !== undefined) {
-          //   picture = element.userPicture;
-          // }
-          // else {
-          //   if(environment.usingMockData) {
-          //     picture = '../../../../' + this.assetFolder + '/default-user-image.png';
-          //   } else {
-          //     this.assetFolder = this.assetFolder.replace('../', '');
-          //     picture = this.assetFolder + '/default-user-image.png';
-          //   }
-          // }
           if (environment.usingMockData) {
             picture =
               '../../../../' + this.assetFolder + '/img/default-user-image.png';
           } else {
-            this.assetFolder = this.assetFolder.replace('../', '');
-            picture = this.assetFolder + '/img/default-user-image.png';
+            // this.assetFolder = this.assetFolder.replace('../', '');
+            // picture = this.assetFolder + '/img/default-user-image.png';
+            picture = this.getUserPicture(element.Author.Name.split('|')[2]);
           }
 
           if (this.isNotNull(element.AttachmentFiles)) {
@@ -2294,22 +2266,24 @@ export class DocumentGoDetailComponent implements OnInit {
       },
       () => {
         const strSelect =
-          `?$select=*,UserRequest/Title,UserApprover/Id,UserApprover/Title,AttachmentFiles` +
+          `?$select=*,UserRequest/Title,UserApprover/Id,UserApprover/Title,UserApprover/Name,AttachmentFiles` +
           `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=DocumentGoID eq '` +
           this.ItemId +
           `' and TypeCode ne 'XYK'&$orderby=Created asc`;
-        let picture;
-        if (environment.usingMockData) {
-          picture =
-            '../../../../' + this.assetFolder + '/img/default-user-image.png';
-        } else {
-          this.assetFolder = this.assetFolder.replace('../', '');
-          picture = this.assetFolder + '/img/default-user-image.png';
-        }
+        
         this.docServices.getItem('ListProcessRequestGo', strSelect).subscribe(
           itemValue => {
             let itemList = itemValue['value'] as Array<any>;
             itemList.forEach(element => {
+              let picture;
+              if (environment.usingMockData) {
+                picture =
+                  '../../../../' + this.assetFolder + '/img/default-user-image.png';
+              } else {
+                // this.assetFolder = this.assetFolder.replace('../', '');
+                // picture = this.assetFolder + '/img/default-user-image.png';
+                picture = this.getUserPicture(element.UserRequest.Name.split('|')[2]);
+              }
               if (element.IndexStep === 1 && element.TypeCode === 'CXL') {
                 return;
               }
@@ -2775,6 +2749,10 @@ export class DocumentGoDetailComponent implements OnInit {
         break;
     }
     return stsName;
+  }
+
+  getUserPicture(email) {
+    return window.location.origin + "/_layouts/15/userphoto.aspx?size=M&username=" + email;
   }
 
   // //tree

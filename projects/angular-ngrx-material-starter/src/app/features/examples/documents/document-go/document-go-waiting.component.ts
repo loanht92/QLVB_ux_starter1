@@ -218,7 +218,7 @@ export class DocumentGoWaitingComponent implements OnInit {
               SignerName: '',
               Note:'',
               NumOfPaper :'',
-              link: this.getLinkItemByRole(this.id, element.TaskTypeCode, element.DocumentGoID, element.IndexStep)
+              link: this.getLinkItemByRole(this.id, element.DocumentGoID, element.IndexStep)
             })
           }
           else if(element.IsFinished === 1) {
@@ -251,14 +251,10 @@ export class DocumentGoWaitingComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  getLinkItemByRole(type, taskType, id, step) {
+  getLinkItemByRole(type, id, step) {
     let link = '';
     if(this.docServices.CheckNullSetZero(type) === 1) {
-      if(taskType === 'XLC' || taskType === 'TL') {
-        link = '/Documents/documentgo-detail/' + id + '/' + step;
-      } else {
-        link = '/Documents/documentgo-detail/' + id;
-      }
+      link = '/Documents/documentgo-detail/' + id + '/' + step;
     } 
     else if(this.docServices.CheckNullSetZero(type) === 4 || this.docServices.CheckNullSetZero(type) === 5) {
       link = '/Documents/documentgo-detail/' + id + '/-1';

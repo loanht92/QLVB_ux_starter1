@@ -284,9 +284,6 @@ export class DocumentDetailComponent implements OnInit {
         if(this.currentRoleTask === "XLC") {
           this.isExecution = false;
           this.isFinish = true;
-        } else if(this.currentRoleTask === "PH") {
-          this.isExecution = false;
-          this.isFinish = false;
         } else {
           this.isExecution = false;
           this.isFinish = false;
