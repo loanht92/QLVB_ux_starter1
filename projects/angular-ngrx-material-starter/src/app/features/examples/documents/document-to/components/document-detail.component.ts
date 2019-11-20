@@ -472,11 +472,11 @@ export class DocumentDetailComponent implements OnInit {
           }
           // Check để hiển thị button thu hồi
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
-            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.StatusID === 1) {
+            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.TypeCode === "CXL" && element.StatusID === 1) {
               retrieveValid = true;
               indexValid = element.IndexStep;
             }
-            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.StatusID === 0) {
+            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.TypeCode === "CXL" && element.StatusID === 0) {
               retrieveInValid = true;
               retrieveInValid = element.IndexStep;
             }
@@ -533,7 +533,7 @@ export class DocumentDetailComponent implements OnInit {
         this.dataSource = new MatTableDataSource<IncomingTicket>(this.ListItem);     
         this.dataSource.paginator = this.paginator;
         this.ArrayItemId = this.ListItem.filter(e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK");
-        if(this.IndexStep < 1 && retrieveInValid === false) {
+        if(this.IndexStep < 1 && retrieveInValid === false && retrieveValid) {
           this.isRetrieve = true;
           this.currentStep = indexValid;
         } else {
