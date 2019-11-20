@@ -19,7 +19,7 @@
                 <mat-label>Loại văn bản</mat-label>
                 <mat-select [(ngModel)]="docType">
                     <mat-option>--- Chọn ---</mat-option>
-                    <mat-option *ngFor="let item of ListDocType" value={{item.id}}>{{item.title}}</mat-option>
+                    <mat-option *ngFor="let item of ListDocType" value={{item.ID}}>{{item.Title}}</mat-option>
                 </mat-select>
             </mat-form-field>
         </div>
@@ -35,13 +35,17 @@
     <div fxFlexFill class="form-input">
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
             <ng-container matColumnDef="numberGo">
-                <th mat-header-cell *matHeaderCellDef style="width: 60px;"> Số đi </th>
+                <th mat-header-cell *matHeaderCellDef style="width: 70px;"> Số đi </th>
                 <!-- <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.numberGo}}</a></td> -->
                 <td mat-cell *matCellDef="let element">{{element.numberGo}}</td>
             </ng-container>
             <ng-container matColumnDef="numberSymbol">
                 <th mat-header-cell *matHeaderCellDef style="min-width: 100px;"> Số ký hiệu </th>
                 <td mat-cell *matCellDef="let element">{{element.numberSymbol}}</td>
+            </ng-container>
+            <ng-container matColumnDef="docType">
+                <th mat-header-cell *matHeaderCellDef style="min-width: 100px;"> Loại văn bản </th>
+                <td mat-cell *matCellDef="let element">{{element.docType}}</td>
             </ng-container>
             <ng-container matColumnDef="created">
                 <th mat-header-cell *matHeaderCellDef style="width: 100px;"> Ngày tạo </th>
