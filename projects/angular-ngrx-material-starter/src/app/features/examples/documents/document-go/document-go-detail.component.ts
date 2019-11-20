@@ -541,7 +541,13 @@ export class DocumentGoDetailComponent implements OnInit {
               CommentSubject: element.CommentRequestSubject,
               CommentBody: element.CommentRequestBody,
               ReplyCommentSubject: element.ReplyCommentSubject,
-              ReplyCommentBody: element.ReplyCommentBody
+              ReplyCommentBody: element.ReplyCommentBody,
+              ReturnEmailSubject: element.ReturnRequestSubject,
+              ReturnEmailBody: element.ReturnRequestBody,
+              RetrieveEmailSubject: element.RetrieveRequestSubject,
+              RetrieveEmailBody: element.RetrieveRequestBody,
+              OutOfDateSubject: element.OutOfDateSubject,
+              OutOfDateBody:element.OutOfDateBody,
             };
           });
         }
@@ -658,6 +664,8 @@ export class DocumentGoDetailComponent implements OnInit {
             RecipientsOutName: itemList[0].RecipientsOutName,
             SecretLevelName: itemList[0].SecretLevelName,
             UrgentLevelName: itemList[0].UrgentLevelName,
+            SecretLevelId: itemList[0].SecretLevelID,
+            UrgentLevelId: itemList[0].UrgentLevelID,
             MethodSendName: itemList[0].MethodSendName,
             DateIssued: this.docServices.formatDateTime(itemList[0].DateIssued),
             SignerName:
@@ -1035,10 +1043,10 @@ export class DocumentGoDetailComponent implements OnInit {
     }
   }
 
-  // Tra lai
-  AddTicketReturn() {
+   // Trả lại
+   AddTicketReturn() {
     try {
-      if (this.docServices.checkNull(this.ReasonReturn) === '') {
+      if (this.docServices.checkNull(this.content) === '') {
         this.notificationService.warn(
           'Bạn chưa nhập Lý do trả lại! Vui lòng kiểm tra lại'
         );
@@ -1046,116 +1054,173 @@ export class DocumentGoDetailComponent implements OnInit {
       }
       this.bsModalRef.hide();
       this.openCommentPanel();
-      let item = this.ListItem.find(i => i.indexStep === this.IndexStep);
-      let approverId;
-      if (item !== undefined) {
-        approverId = item.userRequestId;
-      }
-
-      let request, approver;
-      request = this.ListUserChoice.find(
-        item =>
-          item.Id === this.docServices.CheckNullSetZero(this.currentUserId)
-      );
-      approver = this.ListUserChoice.find(
-        item => item.Id === this.docServices.CheckNullSetZero(approverId)
-      );
-
-      const data = {
-        __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
-        Title: this.itemDoc.NumberGo,
-        DateCreated: new Date(),
-        DocumentGoID: this.ItemId,
-        UserRequestId: this.currentUserId,
-        UserApproverId: approverId,
-        Deadline: this.deadline1,
-        StatusID: 0,
-        StatusName: 'Chờ xử lý',
-        Source: request === undefined ? '' : request.DeName,
-        Destination: approver === undefined ? '' : approver.DeName,
-        RoleUserRequest: request === undefined ? '' : request.RoleName,
-        RoleUserApprover: approver === undefined ? '' : approver.RoleName,
-        TaskTypeCode: 'XLC',
-        TaskTypeName: 'Xử lý chính',
-        TypeCode: 'TL',
-        TypeName: 'Trả lại',
-        Content: this.ReasonReturn,
-        IndexStep: this.IndexStep - 1,
-        Compendium: this.itemDoc.Compendium,
-        IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
-        DocTypeName: this.itemDoc.DocTypeName
+      let item  = this.ListItem.find(i => i.indexStep === this.IndexStep && i.userApproverId === this.currentUserId && i.stsTypeCode === 'CXL' && i.statusId === 0);
+      console.log('return request ' + item);
+      const dataTicket = {
+        __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+        StatusID: 1, StatusName: "Đã xử lý",
+        IsFinished: 0
       };
-      this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
-        item => {
-          this.processId = item['d'].Id;
-        },
+      this.resService.updateListById('ListProcessRequestTo', dataTicket, item.ID).subscribe(
+        item => {},
         error => {
           this.closeCommentPanel();
           console.log(
-            'error when add item to list ListProcessRequestGo: ' +
+            'error when update item to list ListProcessRequestTo: ' +
               error.error.error.message.value
           ),
-            this.notificationService.error('Thêm phiếu xử lý thất bại');
+            this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
         },
         () => {
           console.log(
-            'Add item of approval user to list ListProcessRequestGo successfully!'
+            'update item return' + item.ID + ' of approval user to list ListProcessRequestTo successfully!'
           );
-          // update user approver
-          this.UserAppoverName +=
-            ';' +
-            this.selectedApprover.split('|')[0] +
-            '_' +
-            this.selectedApprover.split('|')[2];
-          const data = {
-            __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
-            ListUserApprover: this.UserAppoverName
-          };
-          this.resService
-            .updateListById('ListDocumentGo', data, this.ItemId)
-            .subscribe(
-              item => {},
+           // tra lai phieu cho ng xu ly chinh
+           let approverId;
+           approverId = item.userRequestId;            
+           let request, approver;
+           request = this.ListUserChoice.find(item => item.Id === this.docServices.CheckNullSetZero(this.currentUserId));
+           approver = this.ListUserChoice.find(item => item.Id === this.docServices.CheckNullSetZero(approverId));
+
+          if(item.taskTypeCode === "XLC") {           
+            const data = {
+              __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+              Title: this.itemDoc.NumberGo,
+              DateCreated: new Date(),
+              DocumentGoID: this.ItemId,
+              UserRequestId: this.currentUserId,
+              UserApproverId: approverId,
+              Deadline: this.docServices.checkNull(this.deadline1) === '' ? null : this.deadline1,
+              StatusID: 0,
+              StatusName: 'Chờ xử lý',
+              Source: request === undefined ? '' : request.DeName,
+              Destination: approver === undefined ? '' : approver.DeName,
+              RoleUserRequest :request === undefined ? '' : request.RoleName,
+              RoleUserApprover: approver === undefined ? '' : approver.RoleName,
+              TaskTypeCode: 'XLC',
+              TaskTypeName: 'Xử lý chính',
+              TypeCode: 'TL',
+              TypeName: 'Trả lại',
+              Content: this.content,
+              IndexStep: this.IndexStep - 1,
+              Compendium: this.itemDoc.Compendium,
+              IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
+              Flag: this.itemDoc.UrgentLevelId > 1 || this.itemDoc.SecretLevelId > 1 ? 1 : 0
+            };
+            this.resService.AddItemToList('ListProcessRequestTo', data).subscribe(
+              item => {this.processId = item['d'].Id},
               error => {
                 this.closeCommentPanel();
                 console.log(
-                  'error when update item to list ListDocumentGo: ' +
+                  'error when add item to list ListProcessRequestTo: ' +
                     error.error.error.message.value
-                );
+                ),
+                  this.notificationService.error('Thêm phiếu xử lý thất bại');
               },
               () => {
-                console.log('Update user approver name successfully!');
+                console.log(
+                  'Add item of approval user to list ListProcessRequestTo successfully!'
+                );
+                //gui mail tra lai
+                const dataSendUser = {
+                  __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+                  Title: this.listName,
+                  IndexItem: this.ItemId,
+                  Step: this.currentStep,
+                  KeyList: this.listName +  '_' + this.ItemId,
+                  SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailSubject, approver.DisplayName),
+                  BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailBody, approver.DisplayName),
+                  SendMailTo: approver.Email,
+                }
+                this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
+                  itemRoomRQ => {
+                    console.log(itemRoomRQ['d']);
+                  },
+                  error => {
+                    console.log(error);
+                    this.closeCommentPanel();
+                  },
+                  () => {
+                    console.log("Send mail return success.")
+                  }
+                );
+                // update user approver name
+                if(item !== undefined) {
+                  this.UserAppoverName += ';' + item.userRequestId + '_' + item.userRequest;
+                }
+              
+                const data = {
+                  __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+                  ListUserApprover: this.UserAppoverName
+                };
+                this.resService.updateListById('ListDocumentTo', data, this.ItemId).subscribe(
+                  item => {},
+                  error => {
+                    this.closeCommentPanel();
+                    console.log(
+                      'error when update item to list ListDocumentTo: ' +
+                        error.error.error.message.value
+                    );
+                  },
+                  () => {
+                    console.log(
+                      'Update user approver name successfully!'
+                    );
+                  }
+                )
+                //Update list history
+                if(this.historyId > 0) {
+                  const dataTicket = {
+                    __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' },
+                    StatusID: -1, StatusName: "Đã trả lại",
+                  };
+                  this.resService.updateListById('ListHistoryRequestTo', dataTicket, this.historyId).subscribe(
+                    item => {},
+                    error => {
+                      this.closeCommentPanel();
+                      console.log(
+                        'error when update item to list ListHistoryRequestTo: ' +
+                          error.error.error.message.value
+                      );
+                    },
+                    () => {
+                      this.callbackFunc(this.processId, this.ItemId, true);
+                    }
+                  );
+                } else {
+                  this.callbackFunc(this.processId, this.ItemId, true);
+                }
               }
             );
-
-          if (this.historyId > 0) {
-            const dataTicket = {
-              __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' },
-              StatusID: -1,
-              StatusName: 'Đã trả lại'
-            };
-            this.resService
-              .updateListById(
-                'ListHistoryRequestGo',
-                dataTicket,
-                this.historyId
-              )
-              .subscribe(
-                item => {},
-                error => {
-                  this.closeCommentPanel();
-                  console.log(
-                    'error when update item to list ListHistoryRequestGo: ' +
-                      error.error.error.message.value
-                  );
-                },
-                () => {}
-              );
-          }
-          this.UpdateStatus(0, 0);
+          } else {
+            //gui mail tra lai
+            const dataSendUser = {
+              __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+              Title: this.listName,
+              IndexItem: this.ItemId,
+              Step: this.currentStep,
+              KeyList: this.listName +  '_' + this.ItemId,
+              SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailSubject, approver.DisplayName),
+              BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailBody, approver.DisplayName),
+              SendMailTo: approver.Email,
+            }
+            this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
+              itemRoomRQ => {
+                console.log(itemRoomRQ['d']);
+              },
+              error => {
+                console.log(error);
+                this.closeCommentPanel();
+              },
+              () => {
+                console.log("Send mail return success.");
+                this.callbackFunc(this.processId, this.ItemId, true);
+              })       
+            }
         }
-      );
+      )
     } catch (err) {
-      console.log('try catch AddTicketReturn error: ' + err.message);
+      console.log("try catch AddTicketReturn error: " + err.message);
       this.closeCommentPanel();
     }
   }
@@ -1403,7 +1468,7 @@ export class DocumentGoDetailComponent implements OnInit {
           ) {
             this.AddUserKnow();
           } else {
-            this.callbackFunc(this.processId, this.ItemId);
+            this.callbackFunc(this.processId, this.ItemId, false);
           }
         }
       }
@@ -1466,7 +1531,7 @@ export class DocumentGoDetailComponent implements OnInit {
         if (this.index < this.selectedKnower.length) {
           this.AddUserKnow();
         } else {
-          this.callbackFunc(this.processId, this.ItemId);
+          this.callbackFunc(this.processId, this.ItemId, false);
         }
       }
     );
@@ -1512,7 +1577,7 @@ export class DocumentGoDetailComponent implements OnInit {
             } else {
               this.index = 0;
               if (sts === 0) {
-                this.callbackFunc(this.processId, this.ItemId);
+                this.callbackFunc(this.processId, this.ItemId, false);
               } else if (sts === 1) {
                 this.AddHistoryStep();
               }
@@ -1564,7 +1629,7 @@ export class DocumentGoDetailComponent implements OnInit {
         ) {
           this.AddUserKnow();
         } else {
-          this.callbackFunc(this.processId, this.ItemId);
+          this.callbackFunc(this.processId, this.ItemId, false);
         }
       }
     );
@@ -1615,7 +1680,7 @@ export class DocumentGoDetailComponent implements OnInit {
     );
   }
 
-  callbackFunc(id, idDocument) {
+  callbackFunc(id, idDocument, isReturn) {
     if (this.outputFileHandle.length > 0) {
       this.saveItemAttachment(
         0,
@@ -2642,6 +2707,13 @@ export class DocumentGoDetailComponent implements OnInit {
               ContentMail = ContentMail.replace(
                 '{' + strContent[i] + '}',
                 window.location.href.split('#/')[0] + '#/Documents'
+              );
+              break;
+            case 'LinkRetrieve':
+              ContentMail = ContentMail.replace(
+                '{' + strContent[i] + '}',
+                window.location.href.split('#/')[0] +
+                  '#/Documents/docGo-retrieve'
               );
               break;
           }

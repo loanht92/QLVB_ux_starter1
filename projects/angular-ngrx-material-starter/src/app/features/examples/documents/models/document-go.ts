@@ -20,6 +20,8 @@ export interface ItemDocumentGo {
   RecipientsOutName: string;
   SecretLevelName: string;
   UrgentLevelName: string;
+  UrgentLevelId: number;
+  SecretLevelId: number;
   MethodSendName: string;
   DateIssued: string;
   SignerName: string;

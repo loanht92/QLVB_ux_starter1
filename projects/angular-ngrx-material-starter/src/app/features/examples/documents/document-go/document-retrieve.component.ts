@@ -141,6 +141,8 @@ export class DocumentGoRetrieveComponent implements OnInit {
             RecipientsOutName: '',
             SecretLevelName: '',
             UrgentLevelName: '',
+            SecretLevelId: 0,
+            UrgentLevelId: 0,
             MethodSendName: '',
             DateIssued:'',
             SignerName: '',
