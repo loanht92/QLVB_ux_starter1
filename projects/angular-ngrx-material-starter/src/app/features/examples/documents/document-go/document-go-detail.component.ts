@@ -1028,9 +1028,9 @@ export class DocumentGoDetailComponent implements OnInit {
    // Trả lại
    AddTicketReturn() {
     try {
-      if (this.docServices.checkNull(this.content) === '') {
+      if (this.docServices.checkNull(this.ReasonReturn) === '') {
         this.notificationService.warn(
-          'Bạn chưa nhập Lý do trả lại! Vui lòng kiểm tra lại'
+          'Bạn chưa nhập Lý do trả lại! Vui lòng kiểm tra lại.'
         );
         return;
       }
@@ -1039,23 +1039,23 @@ export class DocumentGoDetailComponent implements OnInit {
       let item  = this.ListItem.find(i => i.indexStep === this.IndexStep && i.userApproverId === this.currentUserId && i.stsTypeCode === 'CXL' && i.statusId === 0);
       console.log('return request ' + item);
       const dataTicket = {
-        __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+        __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
         StatusID: 1, StatusName: "Đã xử lý",
         IsFinished: 0
       };
-      this.resService.updateListById('ListProcessRequestTo', dataTicket, item.ID).subscribe(
+      this.resService.updateListById('ListProcessRequestGo', dataTicket, item.ID).subscribe(
         item => {},
         error => {
           this.closeCommentPanel();
           console.log(
-            'error when update item to list ListProcessRequestTo: ' +
+            'error when update item to list ListProcessRequestGo: ' +
               error.error.error.message.value
           ),
             this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
         },
         () => {
           console.log(
-            'update item return' + item.ID + ' of approval user to list ListProcessRequestTo successfully!'
+            'update item return' + item.ID + ' of approval user to list ListProcessRequestGo successfully!'
           );
            // tra lai phieu cho ng xu ly chinh
            let approverId;
@@ -1066,7 +1066,7 @@ export class DocumentGoDetailComponent implements OnInit {
 
           if(item.taskTypeCode === "XLC") {           
             const data = {
-              __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+              __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
               Title: this.itemDoc.NumberGo,
               DateCreated: new Date(),
               DocumentGoID: this.ItemId,
@@ -1083,25 +1083,26 @@ export class DocumentGoDetailComponent implements OnInit {
               TaskTypeName: 'Xử lý chính',
               TypeCode: 'TL',
               TypeName: 'Trả lại',
-              Content: this.content,
+              Content: this.ReasonReturn,
               IndexStep: this.IndexStep - 1,
               Compendium: this.itemDoc.Compendium,
               IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
-              Flag: this.itemDoc.UrgentLevelId > 1 || this.itemDoc.SecretLevelId > 1 ? 1 : 0
+              Flag: this.itemDoc.UrgentLevelId > 1 || this.itemDoc.SecretLevelId > 1 ? 1 : 0,
+              DocTypeName: this.itemDoc.DocTypeName
             };
-            this.resService.AddItemToList('ListProcessRequestTo', data).subscribe(
+            this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
               item => {this.processId = item['d'].Id},
               error => {
                 this.closeCommentPanel();
                 console.log(
-                  'error when add item to list ListProcessRequestTo: ' +
+                  'error when add item to list ListProcessRequestGo: ' +
                     error.error.error.message.value
                 ),
                   this.notificationService.error('Thêm phiếu xử lý thất bại');
               },
               () => {
                 console.log(
-                  'Add item of approval user to list ListProcessRequestTo successfully!'
+                  'Add item of approval user to list ListProcessRequestGo successfully!'
                 );
                 //gui mail tra lai
                 const dataSendUser = {
@@ -1132,15 +1133,15 @@ export class DocumentGoDetailComponent implements OnInit {
                 }
               
                 const data = {
-                  __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+                  __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
                   ListUserApprover: this.UserAppoverName
                 };
-                this.resService.updateListById('ListDocumentTo', data, this.ItemId).subscribe(
+                this.resService.updateListById('ListDocumentGo', data, this.ItemId).subscribe(
                   item => {},
                   error => {
                     this.closeCommentPanel();
                     console.log(
-                      'error when update item to list ListDocumentTo: ' +
+                      'error when update item to list ListDocumentGo: ' +
                         error.error.error.message.value
                     );
                   },
@@ -1153,15 +1154,15 @@ export class DocumentGoDetailComponent implements OnInit {
                 //Update list history
                 if(this.historyId > 0) {
                   const dataTicket = {
-                    __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' },
+                    __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' },
                     StatusID: -1, StatusName: "Đã trả lại",
                   };
-                  this.resService.updateListById('ListHistoryRequestTo', dataTicket, this.historyId).subscribe(
+                  this.resService.updateListById('ListHistoryRequestGo', dataTicket, this.historyId).subscribe(
                     item => {},
                     error => {
                       this.closeCommentPanel();
                       console.log(
-                        'error when update item to list ListHistoryRequestTo: ' +
+                        'error when update item to list ListHistoryRequestGo: ' +
                           error.error.error.message.value
                       );
                     },
@@ -2266,7 +2267,7 @@ export class DocumentGoDetailComponent implements OnInit {
       },
       () => {
         const strSelect =
-          `?$select=*,UserRequest/Title,UserApprover/Id,UserApprover/Title,UserApprover/Name,AttachmentFiles` +
+          `?$select=*,UserRequest/Title,UserRequest/Name,UserApprover/Id,UserApprover/Title,UserApprover/Name,AttachmentFiles` +
           `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=DocumentGoID eq '` +
           this.ItemId +
           `' and TypeCode ne 'XYK'&$orderby=Created asc`;
