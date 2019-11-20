@@ -29,7 +29,7 @@ import { Router } from '@angular/router';
 export class ReportAdvanceDGComponent implements OnInit {
   listTitle = "ListProcessRequestGo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberGo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover', 'content'
+  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -258,8 +258,9 @@ export class ReportAdvanceDGComponent implements OnInit {
           this.inDocs$.push({
             STT: this.inDocs$.length + 1,
             ID: element.ID,
-            numberTo: this.docTo.checkNull(element.NumberGo) === '' ? '' : this.docTo.formatNumberGo(element.NumberGo), 
+            numberGo: this.docTo.checkNull(element.NumberGo) === '' ? '' : this.docTo.formatNumberGo(element.NumberGo), 
             numberSymbol: element.NumberSymbol, 
+            docType:element.DocTypeName,
             userRequest: element.Author.Title,
             userRequestId: element.Author.Id,
             userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
