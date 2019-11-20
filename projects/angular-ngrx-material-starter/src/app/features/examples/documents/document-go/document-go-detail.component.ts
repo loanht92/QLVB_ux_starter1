@@ -737,6 +737,7 @@ export class DocumentGoDetailComponent implements OnInit {
                   ? ''
                   : moment(element.Deadline).format('DD/MM/YYYY'),
               status: element.StatusName,
+              statusId: element.StatusID,
               source: '',
               destination: '',
               taskType:
@@ -941,21 +942,21 @@ export class DocumentGoDetailComponent implements OnInit {
 
   DeleteHistoryRetrieve(index) {
     const data = {
-      __metadata: { type: 'SP.Data.ListHistoryRequestToListItem' }
+      __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' }
     };
     this.resService
-      .DeleteItemById('ListHistoryRequestTo', data, this.ListHistoryId[index])
+      .DeleteItemById('ListHistoryRequestGo', data, this.ListHistoryId[index])
       .subscribe(
         item => {},
         error => {
           this.closeCommentPanel();
           console.log(
-            'error when delete item to list ListHistoryRequestTo: ' + error
+            'error when delete item to list ListHistoryRequestGo: ' + error
           ),
             console.log('Xóa lịch sử thất bại');
         },
         () => {
-          console.log('Delete item in list ListHistoryRequestTo successfully!');
+          console.log('Delete item in list ListHistoryRequestGo successfully!');
           console.log('Xóa lịch sử thành công');
           index++;
           if (index < this.ListHistoryId.length) {
@@ -974,7 +975,7 @@ export class DocumentGoDetailComponent implements OnInit {
     );
     if (itemUpdate !== undefined) {
       const data = {
-        __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+        __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
         Title: this.itemDoc.NumberGo,
         DateCreated: new Date(),
         NoteBookID: this.ItemId,
@@ -998,15 +999,16 @@ export class DocumentGoDetailComponent implements OnInit {
         TypeName: 'Phiếu thu hồi',
         Content: this.docServices.checkNull(this.ReasonRetrieve),
         IndexStep: this.currentStep - 1,
-        Compendium: this.itemDoc.Compendium
+        Compendium: this.itemDoc.Compendium,
+        DocTypeName:this.itemDoc.DocTypeName
       };
 
-      this.resService.AddItemToList('ListProcessRequestTo', data).subscribe(
+      this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
         item => {},
         error => {
           this.closeCommentPanel();
           console.log(
-            'error when update item to list ListProcessRequestTo: ' +
+            'error when update item to list ListProcessRequestGo: ' +
               error.error.error.message.value
           ),
             this.notificationService.error('Thu hồi văn bản thất bại');
