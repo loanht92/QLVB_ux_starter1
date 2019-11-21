@@ -114,6 +114,7 @@ export class DocumentDetailComponent implements OnInit {
   ListUserApprover = [];
   ListHistoryId = [];
   ListUserChoice: UserChoice[] = [];
+  ListAllUserChoice: UserChoice[] = [];
   ListAllUser: Observable<UserChoice[]>;
   ListUserOfDepartment: UserOfDepartment[] = [];
   ListUserCombine = [];
@@ -147,9 +148,7 @@ export class DocumentDetailComponent implements OnInit {
   UserAppoverName = '';
   currentRoleTask = '';
   EmailConfig;
-  ReasonReturn;
   content;deadline;
-  ReasonRetrieve;
   AuthorComment;
   Retieved = false;
   IsFinishItem = false;
@@ -618,7 +617,20 @@ export class DocumentDetailComponent implements OnInit {
         let item = itemValue['value'] as Array<any>;
         let ListDe = [];
         this.ListUserChoice = [];
+        this.ListAllUserChoice = [];
         item.forEach(element => {
+          if(this.ListAllUserChoice.findIndex(i => i.Id === element.User.Id) < 0) {
+            this.ListAllUserChoice.push({
+              STT: this.ListAllUserChoice.length + 1,
+              Id: element.User.Id,
+              DisplayName: element.User.Title,
+              Email: element.User.Name.split('|')[2],
+              DeCode: element.DepartmentCode,
+              DeName: element.DepartmentName,
+              RoleCode: element.RoleCode,
+              RoleName: element.RoleName
+            });
+          }
           if(this.IsGD || this.IsVT) {
             if(this.ListUserChoice.findIndex(i => i.Id === element.User.Id) < 0) {
               this.ListUserChoice.push({
@@ -943,12 +955,12 @@ export class DocumentDetailComponent implements OnInit {
     try {
       if(this.ArrayIdRetrieve !== undefined && this.ArrayIdRetrieve.length > 0) {
         let request;
-        request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+        request = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
 
         const dataTicket = {
           __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
           StatusID: -1, StatusName: "Đã thu hồi",
-          DateRetrieve: new Date(), Content: this.docTo.CheckNull(this.ReasonRetrieve) === '' ? '' : this.ReasonRetrieve,
+          DateRetrieve: new Date(), Content: this.docTo.CheckNull(this.content) === '' ? '' : this.content,
           UserRetrieveId: this.currentUserId
         };
         if(request !== undefined) {
@@ -1003,6 +1015,8 @@ export class DocumentDetailComponent implements OnInit {
                     this.bsModalRef.hide();
                     this.CloseRotiniPanel();
                     this.notificationService.success('Thu hồi văn bản thành công');
+                    this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+                    window.location.reload(); 
                   }
                 }
             });           
@@ -1062,7 +1076,7 @@ export class DocumentDetailComponent implements OnInit {
         TaskTypeName: 'Xử lý chính',
         TypeCode: 'TH',
         TypeName: 'Phiếu thu hồi',
-        Content: this.docTo.CheckNull(this.ReasonRetrieve),
+        Content: this.docTo.CheckNull(this.content),
         IndexStep: this.currentStep,
         Compendium: this.itemDoc.compendium,
         Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
@@ -1103,6 +1117,7 @@ export class DocumentDetailComponent implements OnInit {
             this.notificationService.success('Thu hồi văn bản thành công');
             this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
             // this.isRetrieve = false;
+            window.location.reload(); 
             })
         })
     } else {
@@ -1110,6 +1125,7 @@ export class DocumentDetailComponent implements OnInit {
       this.CloseRotiniPanel();
       this.notificationService.success('Thu hồi văn bản thành công');
       this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+      window.location.reload(); 
     }
   }
  
@@ -1147,8 +1163,8 @@ export class DocumentDetailComponent implements OnInit {
            let approverId;
            approverId = item.userRequestId;            
            let request, approver;
-           request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
-           approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(approverId));
+           request = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+           approver = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(approverId));
 
           if(item.taskTypeCode === "XLC") {           
             const data = {
@@ -1386,8 +1402,8 @@ export class DocumentDetailComponent implements OnInit {
         this.OpenRotiniPanel();
         //let data: Array<any> = [];
         let request, approver;
-        request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
-        approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedApprover.split('|')[0]));
+        request = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+        approver = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedApprover.split('|')[0]));
 
         const data = {
           __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
@@ -1480,8 +1496,8 @@ export class DocumentDetailComponent implements OnInit {
 
   AddUserCombine() {
     let request, approver;
-    request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
-    approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedCombiner[this.index].split('|')[0]));
+    request = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+    approver = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedCombiner[this.index].split('|')[0]));
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
       Title: this.itemDoc.numberTo,
@@ -1539,8 +1555,8 @@ export class DocumentDetailComponent implements OnInit {
 
   AddUserKnow() {
     let request, approver;
-    request = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
-    approver = this.ListUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedKnower[this.index].split('|')[0]));
+    request = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.currentUserId));
+    approver = this.ListAllUserChoice.find(item => item.Id === this.docTo.CheckNullSetZero(this.selectedKnower[this.index].split('|')[0]));
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
       Title: this.itemDoc.numberTo,
@@ -1767,8 +1783,13 @@ export class DocumentDetailComponent implements OnInit {
       this.saveItemAttachment(0, id, this.outputFileReturn,'ListProcessRequestTo', null);
     }
     else {
-       // gui mail
-      this.addItemSendMail(isReturn);
+      if(isReturn === false) {
+        // gui mail
+        this.addItemSendMail(isReturn);
+      }  else {
+        this.CloseRotiniPanel();
+        this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+      }
     }
   }
 
@@ -2461,69 +2482,64 @@ export class DocumentDetailComponent implements OnInit {
 
   addItemSendMail(isReturn) {
     try {
-      if(!isReturn) {
-        if(this.docTo.CheckNull(this.selectedApprover) !== '') {
-          const dataSendApprover = {
-            __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-            Title: this.listName,
-            IndexItem: this.IncomingDocID,
-            Step: this.currentStep,
-            KeyList: this.listName +  '_' + this.IncomingDocID,
-            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.selectedApprover.split('|')[2]),
-            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.selectedApprover.split('|')[2]),
-            SendMailTo: this.selectedApprover.split('|')[1]
-          }
-          this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
-            itemRoomRQ => {
-              console.log(itemRoomRQ['d']);
-            },
-            error => {
-              console.log(error);
-              this.CloseRotiniPanel();
-            },
-            () => {          
-              console.log('Add email success approver');
-              if(this.selectedCombiner.length > 0) {
-                this.SendMailCombiner(0);
-              } else if(this.selectedKnower.length > 0) {
-                this.SendMailKnower(0);
-              } else {                  
-                this.CloseRotiniPanel();
-                this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
-              }
-            }
-          )
-        } else if(this.IsFinishItem) {
-          const dataSendApprover = {
-            __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-            Title: this.listName,
-            IndexItem: this.IncomingDocID,
-            Step: this.currentStep,
-            KeyList: this.listName +  '_' + this.IncomingDocID,
-            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.itemDoc.authorName),
-            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.itemDoc.authorName),
-            SendMailTo: this.itemDoc.authorEmail
-          }
-          this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
-            itemRoomRQ => {
-              console.log(itemRoomRQ['d']);
-            },
-            error => {
-              console.log(error);
-              this.CloseRotiniPanel();
-            },
-            () => {    
-              this.CloseRotiniPanel();
-              this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);      
-            })
-        } else {
-          this.CloseRotiniPanel();
-          this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+      if(this.docTo.CheckNull(this.selectedApprover) !== '') {
+        const dataSendApprover = {
+          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+          Title: this.listName,
+          IndexItem: this.IncomingDocID,
+          Step: this.currentStep,
+          KeyList: this.listName +  '_' + this.IncomingDocID,
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.selectedApprover.split('|')[2]),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.selectedApprover.split('|')[2]),
+          SendMailTo: this.selectedApprover.split('|')[1]
         }
+        this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
+          itemRoomRQ => {
+            console.log(itemRoomRQ['d']);
+          },
+          error => {
+            console.log(error);
+            this.CloseRotiniPanel();
+          },
+          () => {          
+            console.log('Add email success approver');
+            if(this.selectedCombiner.length > 0) {
+              this.SendMailCombiner(0);
+            } else if(this.selectedKnower.length > 0) {
+              this.SendMailKnower(0);
+            } else {                  
+              this.CloseRotiniPanel();
+              this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+            }
+          }
+        )
+      } else if(this.IsFinishItem) {
+        const dataSendApprover = {
+          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+          Title: this.listName,
+          IndexItem: this.IncomingDocID,
+          Step: this.currentStep,
+          KeyList: this.listName +  '_' + this.IncomingDocID,
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.itemDoc.authorName),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.itemDoc.authorName),
+          SendMailTo: this.itemDoc.authorEmail
+        }
+        this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
+          itemRoomRQ => {
+            console.log(itemRoomRQ['d']);
+          },
+          error => {
+            console.log(error);
+            this.CloseRotiniPanel();
+          },
+          () => {    
+            this.CloseRotiniPanel();
+            this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);      
+          })
       } else {
         this.CloseRotiniPanel();
-        this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
-      }
+        this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+      }      
     } catch (error) {
       console.log('addItemSendMail error: ' + error.message);
     }
