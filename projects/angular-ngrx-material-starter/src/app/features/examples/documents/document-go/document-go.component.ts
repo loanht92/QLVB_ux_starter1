@@ -1278,7 +1278,7 @@ export class DocumentGoComponent implements OnInit {
       }
       //người phối hợp
       let arrUserOfCombinate = [];
-      if (itemList[0].UserOfCombinate.length > 0) {
+      if (itemList[0].UserOfCombinate != null && itemList[0].UserOfCombinate.length > 0) {
         itemList[0].UserOfCombinate.forEach(element => {
           let str =
             element.Id + '|' + element.Name.split('|')[2] + '|' + element.Title;
@@ -1287,7 +1287,7 @@ export class DocumentGoComponent implements OnInit {
       }
       //người nhận để biết
       let arrUserOfKnow = [];
-      if (itemList[0].UserOfKnow.length > 0) {
+      if (itemList[0].UserOfKnow !=null && itemList[0].UserOfKnow.length > 0) {
         itemList[0].UserOfKnow.forEach(element => {
           let str =
             element.Id + '|' + element.Name.split('|')[2] + '|' + element.Title;
@@ -1389,8 +1389,8 @@ export class DocumentGoComponent implements OnInit {
     this.form.reset();
     this.form.clearValidators();
     this.form.clearAsyncValidators();
-    this.ItemAttachments = [];
     this.form.controls['BookType'].setValue('DG');
+    this.ItemAttachments = [];
   }
 
   addAttachmentFile() {

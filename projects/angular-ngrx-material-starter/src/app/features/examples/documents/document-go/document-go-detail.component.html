@@ -372,7 +372,7 @@
                         <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px" *ngIf="isDisplay">
                             <mat-form-field fxFlex="50">
                                 <mat-label>Số đi <span class="required-field">*</span></mat-label>
-                                <input matInput [(ngModel)]="numberGo" (change)="ChangeNumberGo()" (keyup)="FormatNumberGo()" disabled='disabled'>
+                                <input matInput [(ngModel)]="numberGo" (change)="ChangeNumberGo()" (keyup)="FormatNumberGo()" disabled>
                             </mat-form-field>
                             <mat-form-field fxFlex="50">
                                 <mat-label>Số / Ký hiệu <span class="required-field">*</span></mat-label>

@@ -1039,7 +1039,6 @@ export class DocumentGoDetailComponent implements OnInit {
         return;
       }
       this.bsModalRef.hide();
-      this.openCommentPanel();
       let item = this.ListItem.find(
         i =>
           i.indexStep === this.IndexStep &&
@@ -1052,6 +1051,7 @@ export class DocumentGoDetailComponent implements OnInit {
         console.log('không tìm thấy phiếu');
         return;
       }
+      this.openCommentPanel();
       const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
         StatusID: 1,
@@ -1696,7 +1696,46 @@ export class DocumentGoDetailComponent implements OnInit {
       }
     );
   }
-
+  AddListTicketCombiner() {
+    if (this.docServices.checkNull(this.content) === '') {
+      this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
+      return ;
+    } else {
+      let item = this.ListItem.find(i => i.indexStep === this.currentStep && i.taskTypeCode === "PH");
+      if(item !== undefined) {
+        this.openCommentPanel();
+        const dataTicket = {
+          __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+          StatusID: 1, StatusName: "Đã xử lý",
+          IsFinished: 0
+        };
+        this.docServices.updateItem('ListProcessRequestGo', dataTicket, item.ID).subscribe(
+          item => {},
+          error => {
+            this.closeCommentPanel();
+            console.log(
+              'error when update item to list ListProcessRequestGo: ' +
+                error.error.error.message.value
+            ),
+              this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
+          },
+          () => {
+            this.bsModalRef.hide();
+            console.log(
+              'update item of combiner to list ListProcessRequestGo successfully!'
+            );
+            if(this.outputFileHandle.length > 0) {
+              this.saveItemAttachment(0,'ListProcessRequestGo', item.ID,this.outputFileHandle, null);
+            } else {
+              this.closeCommentPanel();
+              this.notificationService.success('Xử lý văn bản thành công');
+              this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.ItemId]);
+            }          
+          }
+        );
+      }
+    }
+  }
   FinishRequest() {
     this.openCommentPanel();
     const data = {

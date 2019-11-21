@@ -38,6 +38,7 @@
                                 <mat-option *ngFor="let item of ListBookType" value={{item.Code}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
+
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Loại văn bản" [(ngModel)]="selectedDocType" formControlName="DocType">
                                 <mat-option *ngFor="let item of ListDocType" value={{item.ID}}>{{item.Title}}</mat-option>
