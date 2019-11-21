@@ -471,18 +471,24 @@
                     </mat-card>
                 </div>
                 <mat-card fxFlex="40" fxLayout="column" fxLayoutGap="15px">
-                    <mat-list role="list">
-                        <h3 mat-subheader class="title-handle">Xử lý chính</h3>
-                        <mat-list-item *ngIf="selectedApprover">{{selectedApprover.split('|')[2]}}</mat-list-item>
-                    </mat-list>
-                    <mat-list role="list">
-                        <h3 mat-subheader class="title-combine">Phối hợp xử lý</h3>
-                        <mat-list-item *ngFor="let element of selectedCombiner">{{element.split('|')[2]}}</mat-list-item>
-                    </mat-list>
-                    <mat-list role="list">
-                        <h3 mat-subheader class="title-know">Nhận để biết</h3>
-                        <mat-list-item *ngFor="let element of selectedKnower">{{element.split('|')[2]}}</mat-list-item>
-                    </mat-list>
+                    <div>
+                        <h3 mat-subheader fxFlex="auto" class="title-handle" style="margin-top: 8px;">Xử lý chính</h3>
+                        <mat-list role="list" fxLayout="column" fxFlex="55">
+                            <mat-list-item *ngIf="selectedApprover" style="font-weight: 600;">{{selectedApprover.split('|')[2]}}</mat-list-item>
+                        </mat-list>
+                    </div>
+                    <div>
+                        <h3 mat-subheader fxFlex="auto" class="title-combine" style="margin-top: 8px;">Phối hợp xử lý</h3>
+                        <mat-list role="list" fxLayout="column" fxFlex="55">
+                            <mat-list-item *ngFor="let element of selectedCombiner" style="font-weight: 600;">{{element.split('|')[2]}}</mat-list-item>
+                        </mat-list>
+                    </div>
+                    <div>
+                        <h3 mat-subheader fxFlex="auto" class="title-know" style="margin-top: 8px;">Nhận để biết</h3>
+                        <mat-list role="list" fxLayout="column" fxFlex="55">
+                            <mat-list-item *ngFor="let element of selectedKnower" style="font-weight: 600;">{{element.split('|')[2]}}</mat-list-item>
+                        </mat-list>
+                    </div>
                 </mat-card>
             </div>
         </div>

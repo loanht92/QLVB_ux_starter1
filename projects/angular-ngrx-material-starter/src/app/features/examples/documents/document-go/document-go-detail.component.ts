@@ -730,8 +730,8 @@ export class DocumentGoDetailComponent implements OnInit {
                   : '',
               userRequestId:
                 element.UserRequest !== undefined ? element.UserRequest.Id : 0,
-                userApproverId:
-                element.userApprover !== undefined ? element.userApprover.Id : 0,
+              userApproverId:
+                element.UserApprover !== undefined ? element.UserApprover.Id : 0,
               userApprover:
                 element.UserApprover !== undefined
                   ? element.UserApprover.Title
@@ -1242,6 +1242,7 @@ export class DocumentGoDetailComponent implements OnInit {
                   }
                 );
             } else {
+              this.processId = item.ID;
               //gui mail tra lai
               const dataSendUser = {
                 __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },

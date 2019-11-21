@@ -215,7 +215,8 @@ export class DocumentWaitingComponent implements OnInit {
           ID: element.ID,
           documentID: element.NoteBookID, 
           compendium: element.Compendium, 
-          userRequest: (element.IndexStep === 1 && this.docTo.CheckNull(element.IndexReturn) === '') ? this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
+          userRequest: (element.IndexStep === 1 && element.TypeCode === "CXL" ) ? 
+                      this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
           userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
           userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
           userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
@@ -225,7 +226,7 @@ export class DocumentWaitingComponent implements OnInit {
           source: '',
           destination: '',
           taskType: this.docTo.CheckNull(element.TaskTypeName),
-          typeCode: '',
+          typeCode: element.TaskTypeCode,
           content: this.docTo.CheckNull(element.Content),
           indexStep: element.IndexStep,
           created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
@@ -252,7 +253,9 @@ export class DocumentWaitingComponent implements OnInit {
           if(listItem1.findIndex(e => e.documentID === element.documentID) < 0 && 
             listItem3.findIndex(e => e.documentID === element.documentID) < 0 &&
             listItem2.findIndex(e => e.ID === element.ID || e.documentID === element.documentID) < 0) {
-            listItem2.push(element);
+              if(element.typeCode === "XLC") {
+                listItem2.push(element);
+              }
           }
         })
         this.dataSource = new MatTableDataSource<IncomingTicket>(listItem2);

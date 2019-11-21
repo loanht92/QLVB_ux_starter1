@@ -960,7 +960,7 @@ export class DocumentDetailComponent implements OnInit {
         const dataTicket = {
           __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
           StatusID: -1, StatusName: "Đã thu hồi",
-          DateRetrieve: new Date(), Content: this.docTo.CheckNull(this.content) === '' ? '' : this.content,
+          DateRetrieve: new Date(),   //  Content: this.docTo.CheckNull(this.content) === '' ? '' : this.content
           UserRetrieveId: this.currentUserId
         };
         if(request !== undefined) {
@@ -1277,6 +1277,7 @@ export class DocumentDetailComponent implements OnInit {
               }
             );
           } else {
+            this.processId = item.ID;
             //gui mail tra lai
             const dataSendUser = {
               __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
@@ -1320,6 +1321,8 @@ export class DocumentDetailComponent implements OnInit {
         const dataTicket = {
           __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
           StatusID: 1, StatusName: "Đã xử lý",
+          Content: this.docTo.CheckNull(this.content),
+          TaskTypeID: 1,
           IsFinished: 0
         };
         this.services.updateListById('ListProcessRequestTo', dataTicket, item.ID).subscribe(
@@ -1338,7 +1341,7 @@ export class DocumentDetailComponent implements OnInit {
               'update item of combiner to list ListProcessRequestTo successfully!'
             );
             if(this.outputFileHandle.length > 0) {
-              this.saveItemAttachment(0, item.ID,this.outputFileHandle,'ListProcessRequestTo', null);
+              this.saveItemAttachment(0, item.ID, this.outputFileHandle,'ListProcessRequestTo', null);
             } else {
               this.CloseRotiniPanel();
               this.notificationService.success('Xử lý văn bản thành công');
@@ -2329,7 +2332,9 @@ export class DocumentDetailComponent implements OnInit {
     },
     () => {
       const strSelect = `?$select=*,UserRequest/Title,UserRequest/Name,UserApprover/Id,UserApprover/Title,AttachmentFiles`
-      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + this.IncomingDocID + `' and TypeCode ne 'XYK' and TaskTypeCode eq 'XLC' &$orderby=Created asc`
+      + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + 
+      this.IncomingDocID + `' and TypeCode ne 'XYK' and (TaskTypeCode eq 'XLC' or (TaskTypeCode eq 'PH' and TaskTypeID eq '1'))&$orderby=Created asc`
+
       this.services.getItem("ListProcessRequestTo", strSelect).subscribe(itemValue => {
         let itemList = itemValue["value"] as Array<any>;
         itemList.forEach(element => { 
