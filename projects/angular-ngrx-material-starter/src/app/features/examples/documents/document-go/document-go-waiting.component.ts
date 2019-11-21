@@ -175,29 +175,22 @@ export class DocumentGoWaitingComponent implements OnInit {
   }
   //lấy ds phiếu xử lý
   getListDocumentGo_Wait() {
-    let idStatus;
-    let TypeCode = '';
     let strSelect = '';
     // {-1:Thu hồi, 1:chờ xử lý, 2:Đang xử lý, 3:Đã xử lý, 4:Chờ xin ý kiến, 5:Đã cho ý kiến}
     //chờ xử lý
     if (this.id == '1') {
-      idStatus = 0;
-      TypeCode = 'CXL';
       strSelect = `'and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '0'`;
       this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đang xử lý
     else if (this.id == '2') {
-      idStatus = 1;
-      TypeCode = 'CXL';
    //   strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
       strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `'and TaskTypeCode eq 'XLC'`  + strSelect;
+      //or UserApprover/Id eq '` + this.currentUserId
     }
     //Đã xử lý
     else if (this.id == '3') {
-      idStatus = 1;
-      TypeCode = 'CXL';
      // strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and IsFinished eq '1'`;
       strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1'`;
       this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
@@ -209,15 +202,11 @@ export class DocumentGoWaitingComponent implements OnInit {
     }
     //Chờ xin ý kiến
     else if (this.id == '4') {
-      idStatus = 0;
-      TypeCode = 'XYK';
    strSelect = `' and TypeCode eq 'XYK' and StatusID eq '0'`;
    this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã cho ý kiến
     else if (this.id == '5') {
-      idStatus = 1;
-      TypeCode = 'XYK';
      strSelect = `' and TypeCode eq 'XYK' and StatusID eq '1'`;
      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }

@@ -123,7 +123,7 @@ export class DocumentGoDetailComponent implements OnInit {
   buffer;
   content;
   deadline; //ngày hết hạn xử lý
-  deadline1; //ngày hết hạn xử lý mà không fomat trong phần hiển thị thông tin văn bản
+  deadline_VB; //ngày hết hạn xử lý mà không fomat trong phần hiển thị thông tin văn bản
   strFilter = '';
   indexComment;
   Comments = null;
@@ -606,7 +606,7 @@ export class DocumentGoDetailComponent implements OnInit {
               });
             });
           }
-          this.deadline1 =
+          this.deadline_VB =
             this.docServices.checkNull(itemList[0].Deadline) === ''
               ? null
               : itemList[0].Deadline;
@@ -888,7 +888,7 @@ export class DocumentGoDetailComponent implements OnInit {
         );
 
         const dataTicket = {
-          __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+          __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
           StatusID: -1,
           StatusName: 'Đã thu hồi',
           DateRetrieve: new Date(),
@@ -903,7 +903,7 @@ export class DocumentGoDetailComponent implements OnInit {
         }
         this.resService
           .updateListById(
-            'ListProcessRequestTo',
+            'ListProcessRequestGo',
             dataTicket,
             this.ArrayIdRetrieve[index]
           )
@@ -912,7 +912,7 @@ export class DocumentGoDetailComponent implements OnInit {
             error => {
               this.closeCommentPanel();
               console.log(
-                'error when update item to list ListProcessRequestTo: ' +
+                'error when update item to list ListProcessRequestGo: ' +
                   error.error.error.message.value
               ),
                 this.notificationService.error('Thu hồi văn bản thất bại');
@@ -921,7 +921,7 @@ export class DocumentGoDetailComponent implements OnInit {
               console.log(
                 'update item ' +
                   this.ArrayIdRetrieve[index] +
-                  ' of approval user to list ListProcessRequestTo successfully!'
+                  ' of approval user to list ListProcessRequestGo successfully!'
               );
               index++;
               if (index < this.ArrayIdRetrieve.length) {
@@ -985,9 +985,7 @@ export class DocumentGoDetailComponent implements OnInit {
         UserApproverId: this.currentUserId,
         Deadline:
           this.docServices.checkNull(this.deadline) === ''
-            ? this.docServices.checkNull(this.itemDoc.Deadline) === ''
-              ? null
-              : this.itemDoc.Deadline
+            ? this.deadline_VB
             : this.deadline,
         StatusID: 0,
         StatusName: 'Chờ xử lý',
@@ -1095,10 +1093,7 @@ export class DocumentGoDetailComponent implements OnInit {
                 DocumentGoID: this.ItemId,
                 UserRequestId: this.currentUserId,
                 UserApproverId: approverId,
-                Deadline:
-                  this.docServices.checkNull(this.deadline1) === ''
-                    ? null
-                    : this.deadline1,
+                Deadline: this.deadline_VB,
                 StatusID: 0,
                 StatusName: 'Chờ xử lý',
                 Source: request === undefined ? '' : request.DeName,
@@ -1344,7 +1339,7 @@ export class DocumentGoDetailComponent implements OnInit {
           UserApproverId: this.selectedApprover.split('|')[0],
           Deadline:
             this.docServices.checkNull(this.deadline) === ''
-              ? null
+              ? this.deadline_VB
               : this.deadline,
           StatusID: 0,
           StatusName: 'Chờ xử lý',
@@ -1485,7 +1480,7 @@ export class DocumentGoDetailComponent implements OnInit {
       UserRequestId: this.currentUserId,
       UserApproverId: this.selectedCombiner[this.index].split('|')[0],
       Deadline:
-        this.docServices.checkNull(this.deadline) === '' ? null : this.deadline,
+        this.docServices.checkNull(this.deadline) === '' ? this.deadline_VB : this.deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
       Source: request === undefined ? '' : request.DeName,
@@ -1556,7 +1551,7 @@ export class DocumentGoDetailComponent implements OnInit {
       UserRequestId: this.currentUserId,
       UserApproverId: this.selectedKnower[this.index].split('|')[0],
       Deadline:
-        this.docServices.checkNull(this.deadline) === '' ? null : this.deadline,
+        this.docServices.checkNull(this.deadline) === '' ? this.deadline_VB : this.deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
       Source: request === undefined ? '' : request.DeName,
@@ -1657,7 +1652,7 @@ export class DocumentGoDetailComponent implements OnInit {
       UserRequestId: this.currentUserId,
       UserApproverId: this.selectedApprover.split('|')[0],
       Deadline:
-        this.docServices.checkNull(this.deadline) === '' ? null : this.deadline,
+        this.docServices.checkNull(this.deadline) === '' ? this.deadline_VB : this.deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
       Content: this.itemDoc.Note,
@@ -2162,6 +2157,7 @@ export class DocumentGoDetailComponent implements OnInit {
       } else {
         content = this.listCommentParent[i].children[j].Content;
       }
+      this.ContentReply=content;
       if (this.isNotNull(content)) {
         const dataComment = {
           __metadata: { type: 'SP.Data.ListCommentsListItem' },
@@ -2463,7 +2459,7 @@ export class DocumentGoDetailComponent implements OnInit {
         Content: this.contentComment,
         Compendium: this.itemDoc.Compendium,
         DocTypeName: this.itemDoc.DocTypeName,
-        Deadline: this.deadline1
+        Deadline: this.deadline_VB
       };
       this.resService
         .AddItemToList('ListProcessRequestGo', dataProcess)

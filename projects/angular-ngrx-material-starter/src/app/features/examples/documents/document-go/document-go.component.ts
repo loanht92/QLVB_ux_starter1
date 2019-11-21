@@ -92,7 +92,7 @@ export class DocumentGoComponent implements OnInit {
     'Compendium',
     'UserCreateName',
     'DateCreated',
-    'UserOfHandle',
+    //'UserOfHandle',
     'Deadline',
     'StatusName',
     'Edit',
@@ -1390,7 +1390,7 @@ export class DocumentGoComponent implements OnInit {
     this.form.clearValidators();
     this.form.clearAsyncValidators();
     this.ItemAttachments = [];
-    this.BookType = 'DG';
+    this.form.controls['BookType'].setValue('DG');
   }
 
   addAttachmentFile() {
