@@ -215,7 +215,7 @@ export class DocumentWaitingComponent implements OnInit {
           ID: element.ID,
           documentID: element.NoteBookID, 
           compendium: element.Compendium, 
-          userRequest: (element.IndexStep === 1 && this.docTo.CheckNull(element.IndexReturn) === '')? this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
+          userRequest: (element.IndexStep === 1 && this.docTo.CheckNull(element.IndexReturn) === '') ? this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
           userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
           userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
           userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',

@@ -560,7 +560,7 @@ export class DocumentDetailComponent implements OnInit {
         this.ArrCurrentRetrieve = [];
         this.ListItem.forEach(element => {
           // if((element.indexStep === this.currentStep && element.stsTypeCode === "XYK") || (element.indexStep === (this.currentStep + 1) && element.stsTypeCode === "CXL")) {
-          if(element.indexStep === (this.currentStep + 1)) {
+          if(element.indexStep === (this.currentStep + 1) && element.statusId !== -1) {
             this.ArrCurrentRetrieve.push({
               Id: element.ID,
               UserId: element.userApproverId,
@@ -579,7 +579,9 @@ export class DocumentDetailComponent implements OnInit {
         if (!(this.ref as ViewRef).destroyed) {
           this.ref.detectChanges();  
         }  
-
+        if(this.ArrCurrentRetrieve.length === 0) {
+          this.isRetrieve = false;
+        }
         let strFilter = ` and IndexStep eq '` + this.IndexStep + `'`;
         this.docTo.getHistoryStep(this.IncomingDocID, strFilter).subscribe((itemValue: any[]) => {
           let item = itemValue['value'] as Array<any>;
@@ -1107,6 +1109,7 @@ export class DocumentDetailComponent implements OnInit {
       this.bsModalRef.hide();
       this.CloseRotiniPanel();
       this.notificationService.success('Thu hồi văn bản thành công');
+      this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
     }
   }
  
