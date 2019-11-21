@@ -180,7 +180,7 @@ export class DocumentWaitingComponent implements OnInit {
     else  if(this.styleId === 2) {
       // strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
       // this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
-      strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
+      strSelect = `') and TypeCode ne 'XYK' and IsFinished ne '1'`;
       this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã xử lý
@@ -243,11 +243,15 @@ export class DocumentWaitingComponent implements OnInit {
         // }
       })
       if(this.styleId === 2) {
-        let listItem1 = [];
-        let listItem2 = [];
+        let listItem1 = []; // list chờ xử lý
+        let listItem2 = []; // list đang xử lý
+        let listItem3 = [];   // list thu hồi
         listItem1 = this.inDocs$.filter(i => i.statusID === 0 && i.userApproverId === this.currentUserId);
+        listItem3 =  this.inDocs$.filter(i => i.statusID === -1 && i.userApproverId === this.currentUserId);
         this.inDocs$.forEach(element => {
-          if(listItem1.findIndex(e => e.documentID === element.documentID) < 0 && listItem2.findIndex(e => e.ID === element.ID || e.documentID === element.documentID) < 0) {
+          if(listItem1.findIndex(e => e.documentID === element.documentID) < 0 && 
+            listItem3.findIndex(e => e.documentID === element.documentID) < 0 &&
+            listItem2.findIndex(e => e.ID === element.ID || e.documentID === element.documentID) < 0) {
             listItem2.push(element);
           }
         })

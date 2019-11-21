@@ -436,7 +436,7 @@
                     <div style="margin-top: 60px"></div>
                     <mat-card fxLayout="column">
                         <mat-form-field fxFlex="100" *ngIf="IsDeadline">
-                            <mat-label>Hạn xử lý văn bản</mat-label>
+                            <mat-label>Hạn xử lý văn bản <span class="required-field">*</span></mat-label>
                             <input matInput [matDatepicker]="picker2" [matDatepickerFilter]="myFilter" (click)="picker2.open()" [(ngModel)]="deadlineDoc" (keypress)="validateQty($event)">
                             <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
                             <mat-datepicker #picker2></mat-datepicker>

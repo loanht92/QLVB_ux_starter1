@@ -831,7 +831,7 @@ export class DocumentDetailComponent implements OnInit {
             ReturnEmailSubject: element.ReturnRequestSubject,
             ReturnEmailBody: element.ReturnRequestBody,
             RetrieveEmailSubject: element.RetrieveRequestSubject,
-            RetrieveEmailBody: element.RetrieveRequestBody,
+            RetrieveEmailBody: element.RetrieveRequestbody,
             OutOfDateSubject: element.OutOfDateSubject,
             OutOfDateBody:element.OutOfDateBody,
           }
@@ -920,7 +920,7 @@ export class DocumentDetailComponent implements OnInit {
     if(length > 0) {
       this.OpenRotiniPanel();
       for(let i = 0; i < length; i++) {
-        if(this.ArrayIdRetrieve.indexOf(e => e.Id === this.selection.selected[i].Id) < 0) {
+        if(this.ArrayIdRetrieve.findIndex(e => e.Id === this.selection.selected[i].Id) < 0) {
           this.ArrayIdRetrieve.push({ Id: this.selection.selected[i].Id, Email: this.selection.selected[i].Email, Name: this.selection.selected[i].Name});
         }
         if(this.selection.selected[i].TaskTypeCode === "XLC" || this.selection.selected[i].TaskTypeCode === "XYK") {
@@ -928,7 +928,7 @@ export class DocumentDetailComponent implements OnInit {
           this.ListItem.forEach(element => {
             if((element.stsTypeCode === "XYK" && element.indexStep >= this.currentStep) 
             || (element.stsTypeCode === "CXL" && element.indexStep > this.currentStep) ) {
-              if(this.ArrayIdRetrieve.indexOf(e => e.Id === element.ID) < 0) {
+              if(this.ArrayIdRetrieve.findIndex(e => e.Id === element.ID) < 0) {
                 this.ArrayIdRetrieve.push({ Id: element.ID, Email: element.userApproverEmail, Name: element.userApprover});
               }
             }

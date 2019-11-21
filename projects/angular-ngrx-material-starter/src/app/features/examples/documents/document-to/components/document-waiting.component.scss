@@ -49,3 +49,9 @@ tr.example-element-row:hover {
 .mat-elevation-z8 {
     margin-top: 10px;
 }
+
+::ng-deep {
+    .mat-input-element {
+        border: 2px !important;
+    }
+}
