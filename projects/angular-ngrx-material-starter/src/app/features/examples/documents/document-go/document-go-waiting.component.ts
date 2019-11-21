@@ -183,45 +183,57 @@ export class DocumentGoWaitingComponent implements OnInit {
     if (this.id == '1') {
       idStatus = 0;
       TypeCode = 'CXL';
-      strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '0'`;
+      strSelect = `'and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '0'`;
+      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đang xử lý
     else if (this.id == '2') {
       idStatus = 1;
       TypeCode = 'CXL';
-      strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
+   //   strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
+      strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã xử lý
     else if (this.id == '3') {
       idStatus = 1;
       TypeCode = 'CXL';
-      strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and IsFinished eq '1'`;
+     // strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and IsFinished eq '1'`;
+      strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
+    }
+     //Thu hồi
+     else if(this.id === -1) {
+      strSelect = `') and TypeCode ne 'XYK' and StatusID eq '-1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Chờ xin ý kiến
     else if (this.id == '4') {
       idStatus = 0;
       TypeCode = 'XYK';
-      strSelect = ` and TypeCode eq 'XYK' and StatusID eq '0'`;
+   strSelect = `' and TypeCode eq 'XYK' and StatusID eq '0'`;
+   this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã cho ý kiến
     else if (this.id == '5') {
       idStatus = 1;
       TypeCode = 'XYK';
-      strSelect = ` and TypeCode eq 'XYK' and StatusID eq '1'`;
+     strSelect = `' and TypeCode eq 'XYK' and StatusID eq '1'`;
+     this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     this.openCommentPanel();
-    let strFilter =
-      `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover` +
-      `&$filter=UserApprover/Id eq '` +
-      this.currentUserId +
-      `'` +
-      strSelect +
-      `&$orderby=Created desc`;
-    console.log('strSelect=' + strSelect);
+    let strFilter1 =
+      `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover` + this.strFilter+`&$orderby=Created desc`;
+      // `&$filter=UserApprover/Id eq '` +
+      // this.currentUserId +
+      // `'` +
+      // strSelect +
+      // `&$orderby=Created desc`;
+    console.log('strSelect=' + strFilter1);
     try {
       this.ListDocumentGo = [];
       this.shareServices
-        .getItemList('ListProcessRequestGo', strFilter)
+        .getItemList('ListProcessRequestGo', strFilter1)
         .subscribe(
           itemValue => {
             let item = itemValue['value'] as Array<any>;

@@ -2346,7 +2346,7 @@ export class DocumentGoDetailComponent implements OnInit {
           `?$select=*,UserRequest/Title,UserRequest/Name,UserApprover/Id,UserApprover/Title,UserApprover/Name,AttachmentFiles` +
           `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=DocumentGoID eq '` +
           this.ItemId +
-          `' and TypeCode ne 'XYK'&$orderby=Created asc`;
+          `' and TypeCode ne 'XYK' and TaskTypeCode eq 'XLC'&$orderby=Created asc`;
 
         this.docServices.getItem('ListProcessRequestGo', strSelect).subscribe(
           itemValue => {
