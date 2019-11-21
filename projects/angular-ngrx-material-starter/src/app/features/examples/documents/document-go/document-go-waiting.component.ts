@@ -185,8 +185,8 @@ export class DocumentGoWaitingComponent implements OnInit {
     //Đang xử lý
     else if (this.id == '2') {
    //   strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
-      strSelect = `') and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `'and TaskTypeCode eq 'XLC'`  + strSelect;
+      strSelect = ` and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
+      this.strFilter = `&$filter=UserRequest/Id eq '` + this.currentUserId + `'and TaskTypeCode eq 'XLC'`  + strSelect;
       //or UserApprover/Id eq '` + this.currentUserId
     }
     //Đã xử lý

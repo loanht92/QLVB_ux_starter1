@@ -730,6 +730,8 @@ export class DocumentGoDetailComponent implements OnInit {
                   : '',
               userRequestId:
                 element.UserRequest !== undefined ? element.UserRequest.Id : 0,
+                userApproverId:
+                element.userApprover !== undefined ? element.userApprover.Id : 0,
               userApprover:
                 element.UserApprover !== undefined
                   ? element.UserApprover.Title
@@ -1046,6 +1048,10 @@ export class DocumentGoDetailComponent implements OnInit {
           i.statusId === 0
       );
       console.log('return request ' + item);
+      if(item==undefined){
+        console.log('không tìm thấy phiếu');
+        return;
+      }
       const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
         StatusID: 1,
@@ -1737,6 +1743,8 @@ export class DocumentGoDetailComponent implements OnInit {
   }
 
   callbackFunc(id, idDocument, isReturn) {
+     //gửi mail
+     this.addItemSendMail();
     if (this.outputFileHandle.length > 0) {
       this.saveItemAttachment(
         0,
@@ -1764,11 +1772,12 @@ export class DocumentGoDetailComponent implements OnInit {
         1
       );
     } else {
+     
       this.closeCommentPanel();
       this.routes.navigate(['/Documents/documentgo-detail/' + idDocument]);
     }
   }
-
+ 
   gotoBack() {
     window.history.back();
   }
