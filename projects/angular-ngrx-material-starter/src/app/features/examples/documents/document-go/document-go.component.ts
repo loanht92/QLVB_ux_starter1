@@ -146,7 +146,7 @@ export class DocumentGoComponent implements OnInit {
   UserOfKnow = 0;
   DocumentToId = '';
   IdDelete = 0;
-  ChuyenXL = 0;IsTP=false;IsNV=false;
+  ChuyenXL = 0;IsTP=false;IsNV=false;IsFlag=false;
   constructor(
     private fb: FormBuilder,
     private notificationService: NotificationService,
@@ -1577,12 +1577,12 @@ export class DocumentGoComponent implements OnInit {
         SubjectMail: this.Replace_Field_Mail(
           this.EmailConfig.FieldMail,
           this.EmailConfig.NewEmailSubject,
-          this.currentUserName
+          this.userApproverName
         ),
         BodyMail: this.Replace_Field_Mail(
           this.EmailConfig.FieldMail,
           this.EmailConfig.NewEmailBody,
-          this.currentUserName
+          this.userApproverName
         ),
         SendMailTo: this.currentUserEmail
       };

@@ -193,7 +193,8 @@ export class DocumentGoDetailComponent implements OnInit {
   ContentReply;
   NumberGoMax = 0;
   currentRoleTask = '';
-
+  IsFinishItem=false;IsFlag=false;
+  AuthorDocument;
   constructor(
     private docServices: DocumentGoService,
     private resService: ResApiService,
@@ -632,13 +633,13 @@ export class DocumentGoDetailComponent implements OnInit {
               ? null
               : itemList[0].Deadline;
           this.UserAppoverName = itemList[0].ListUserApprover;
+          this.AuthorDocument={Id:itemList[0].Author.Id,Name:itemList[0].Author.Title,Email:itemList[0].Author.Name.split('|')[2]};
           this.itemDoc = {
             ID: itemList[0].ID,
             NumberGo:
               this.docServices.CheckNullSetZero(itemList[0].NumberGo) === 0
                 ? ''
                 : this.docServices.formatNumberGo(itemList[0].NumberGo),
-            //  NumberToSub: itemList[0].NumberToSub === 0 ? '' : itemList[0].NumberToSub ,
             DocTypeName: this.docServices.checkNull(itemList[0].DocTypeName),
             NumberSymbol: this.docServices.checkNull(itemList[0].NumberSymbol),
             Compendium: this.docServices.checkNull(itemList[0].Compendium),
@@ -1356,7 +1357,7 @@ export class DocumentGoDetailComponent implements OnInit {
               this.selectedApprover.split('|')[0]
             )
         );
-
+//phiếu XL cho người xử lý chính
         const data = {
           __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
           Title: this.itemDoc.NumberGo,
@@ -1485,7 +1486,7 @@ export class DocumentGoDetailComponent implements OnInit {
       this.closeCommentPanel();
     }
   }
-
+//phiếu XL cho người phối hợp
   AddUserCombine() {
     let request, approver;
     request = this.ListUserChoice.find(
@@ -1556,7 +1557,7 @@ export class DocumentGoDetailComponent implements OnInit {
       }
     );
   }
-
+//phiếu XL cho người nhận để biết
   AddUserKnow() {
     let request, approver;
     request = this.ListUserChoice.find(
@@ -1793,11 +1794,11 @@ export class DocumentGoDetailComponent implements OnInit {
                 );
               },
               () => {
-                this.UpdateStatus(0, 1);
+                this.UpdateStatusFinish(0);
               }
             );
         } else {
-          this.UpdateStatus(0, 1);
+          this.UpdateStatusFinish(0);
         }
       }
     );
@@ -2584,31 +2585,43 @@ export class DocumentGoDetailComponent implements OnInit {
       console.log('saveItemListProcess error: ' + error.message);
     }
   }
-
+  UpdateStatusFinish(index) {
+    if(this.ListItem !== undefined && this.ListItem.length > 0) {
+      const dataTicket = {
+        __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
+        StatusID: 1, StatusName: "Đã xử lý",
+        IsFinished: 1
+      };
+      this.shareService.updateListById('ListProcessRequestGo', dataTicket, this.ListItem[index].ID).subscribe(
+        item => {},
+        error => {
+          this.closeCommentPanel();
+          console.log(
+            'error when update item to list ListProcessRequestGo: ' +
+              error.error.error.message.value
+          ),
+            this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
+        },
+        () => {
+          console.log(
+            'update item ' + this.ListItem[index] + ' of approval user to list ListProcessRequestGo successfully!'
+          );
+          index ++;
+          if(index < this.ListItem.length) {
+            this.UpdateStatusFinish(index);
+          }
+          else {
+            this.bsModalRef.hide();
+            this.IsFinishItem = true;
+            this.callbackFunc(this.processId, this.ItemId, false);
+          }
+        }
+      );
+    }
+  }
   addItemSendMail() {
     try {
-      // send mail user created
-      // const dataSendUser = {
-      //   __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
-      //   Title: this.listName,
-      //   IndexItem: this.ItemId,
-      //   Step: 1,
-      //   KeyList: this.listName +  '_' + this.ItemId,
-      //   SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailSubject, this.selectedApprover.split('|')[2]),
-      //   BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.NewEmailBody, this.selectedApprover.split('|')[2]),
-      //   SendMailTo: this.currentUserEmail,
-      // }
-      // this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
-      //   itemRoomRQ => {
-      //     console.log(itemRoomRQ['d']);
-      //   },
-      //   error => {
-      //     console.log(error);
-      //     this.closeCommentPanel();
-      //   },
-      //   () => {
-      // console.log('Save item success');
-
+      if(this.docServices.checkNull(this.selectedApprover) !== '') {
       const dataSendApprover = {
         __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
         Title: this.listName,
@@ -2647,7 +2660,34 @@ export class DocumentGoDetailComponent implements OnInit {
             }
           }
         );
-      // })
+      }
+      else if(this.IsFinishItem) {
+        const dataSendApprover = {
+          __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+          Title: this.listName,
+          IndexItem: this.ItemId,
+          Step: this.currentStep,
+          KeyList: this.listName +  '_' + this.ItemId,
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.AuthorDocument.Name),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.AuthorDocument.Name),
+          SendMailTo: this.AuthorDocument.Email
+        }
+        this.resService.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
+          itemRoomRQ => {
+            console.log(itemRoomRQ['d']);
+          },
+          error => {
+            console.log(error);
+            this.closeCommentPanel();
+          },
+          () => {    
+            this.closeCommentPanel();
+            this.routes.navigate(['/Documents/documentgo-detail/' + this.ItemId]);      
+          })
+      } else {
+        this.closeCommentPanel();
+        this.routes.navigate(['/Documents/documentgo-detail/' + this.ItemId]);
+      }      
     } catch (error) {
       console.log('addItemSendMail error: ' + error.message);
     }
