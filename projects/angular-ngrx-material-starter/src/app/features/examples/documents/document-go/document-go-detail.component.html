@@ -386,7 +386,7 @@
 
                         <mat-form-field fxFlex="100">
                             <mat-label>Hạn xử lý</mat-label>
-                            <input matInput [matDatepicker]="picker" [(ngModel)]="deadline">
+                            <input matInput [matDatepicker]="picker" [(ngModel)]="deadline" (click)="picker.open()" [matDatepickerFilter]="myFilter" (keypress)="validateQty($event)">
                             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                             <mat-datepicker #picker></mat-datepicker>
                         </mat-form-field>
