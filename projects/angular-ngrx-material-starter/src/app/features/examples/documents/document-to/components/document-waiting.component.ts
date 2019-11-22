@@ -185,7 +185,7 @@ export class DocumentWaitingComponent implements OnInit {
     }
     //Đã xử lý
     else  if(this.styleId === 3) {
-      strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1'`;
+      strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1' and StatusID ne '-1'`;
       this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Thu hồi

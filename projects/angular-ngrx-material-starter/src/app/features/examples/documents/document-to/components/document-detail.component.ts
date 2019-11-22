@@ -292,11 +292,14 @@ export class DocumentDetailComponent implements OnInit {
       } else if(this.IndexStep > 0){    
         if(this.currentRoleTask === "XLC") {
           this.isExecution = true;
-          this.isAddDocGo = true;
           if(this.IsTP || this.IsGD) {
+            if(this.IsTP) {
+              this.isAddDocGo = true;
+            }
             this.isFinish = true;
           } else if(this.IsNV){
             this.isFinish = false;
+            this.isAddDocGo = true;
           }
         } else if(this.currentRoleTask === "PH") {
           this.isExecution = false;
@@ -465,7 +468,7 @@ export class DocumentDetailComponent implements OnInit {
         item.forEach(element => {
           if(element.IndexStep === this.IndexStep) {
             // if(element.TypeCode === "TL") {
-            if(this.IndexStep <= 1) {
+            if(this.IndexStep <= 1 || element.TypeCode === "TL" || element.TypeCode === "TH") {
               this.isReturn = false;
             } else {
               this.isReturn = true;
@@ -478,7 +481,8 @@ export class DocumentDetailComponent implements OnInit {
                 indexValid = element.IndexStep;
               }
             }
-            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" && element.TypeCode === "CXL" && element.StatusID === 1) {
+            if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" 
+              && element.TypeCode === "CXL" && element.StatusID === 1 && element.TaskTypeID !== -1) {
               retrieveValid = true;
               if(indexValid < element.IndexStep) {
                 indexValid = element.IndexStep;
@@ -1143,6 +1147,7 @@ export class DocumentDetailComponent implements OnInit {
       const dataTicket = {
         __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
         StatusID: 1, StatusName: "Đã xử lý",
+        TaskTypeID: -1,
         IsFinished: 0
       };
       this.services.updateListById('ListProcessRequestTo', dataTicket, item.ID).subscribe(
@@ -2361,7 +2366,8 @@ export class DocumentDetailComponent implements OnInit {
           }
           this.listCommentParent.push({
             ID: element.ID,
-            Author:element.UserRequest.Title,
+            Author:element.TaskTypeCode === 'XLC' ? element.UserRequest.Title : 
+                  (element.TaskTypeCode === 'PH' && element.TaskTypeID === 1) ? element.UserApprover.Title : element.UserRequest.Title,
             Chat_Comments: this.docTo.CheckNull(element.Content === '') ? 'Chuyển xử lý' : element.Content,
             Created: moment(element.Created).format('DD/MM/YYYY HH:mm:ss'),
             userPicture: picture,
@@ -2657,10 +2663,10 @@ export class DocumentDetailComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", this.docTo.CheckNull(this.selectedUserComment) === '' ? '' : this.selectedUserComment.split('|')[2]);
               break;
             case 'userStep':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}",UserApprover);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", UserApprover);
               break;
             case 'UserApprover':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}",UserApprover);
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", UserApprover);
               break;
             case 'ItemUrl':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID);

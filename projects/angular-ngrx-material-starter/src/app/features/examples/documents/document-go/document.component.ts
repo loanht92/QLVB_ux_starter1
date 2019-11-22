@@ -62,7 +62,7 @@ export class DocumentComponent implements OnInit {
           itemValue => {
             let itemUserMember = itemValue['value'] as Array<any>;
             itemUserMember.forEach(element => {
-              if (element.RoleCode === 'NV' || element.RoleCode === 'TP' || element.RoleCode === 'GĐ') {
+              if (element.RoleCode === 'NV' || element.RoleCode === 'TP') {
                 this.isAuthenticated$ = true;
                 if (!(this.ref as ViewRef).destroyed) {
                   this.ref.detectChanges();  
