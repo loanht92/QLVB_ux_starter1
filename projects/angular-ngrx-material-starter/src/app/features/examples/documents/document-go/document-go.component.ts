@@ -146,7 +146,7 @@ export class DocumentGoComponent implements OnInit {
   UserOfKnow = 0;
   DocumentToId = '';
   IdDelete = 0;
-  ChuyenXL = 0;
+  ChuyenXL = 0;IsTP=false;IsNV=false;
   constructor(
     private fb: FormBuilder,
     private notificationService: NotificationService,
@@ -182,10 +182,10 @@ export class DocumentGoComponent implements OnInit {
     this.getListSecret();
     this.getListUrgent();
     this.getSourceAddress();
-    this.getUserApproverStep();
+    //this.getUserApproverStep();
     //  this.getUserSigner();
     this.getUserCreate();
-    this.getListEmailConfig();
+   // this.getListEmailConfig();
   }
 
   ClickItem(row) {
@@ -224,34 +224,88 @@ export class DocumentGoComponent implements OnInit {
   }
 
   //Lấy người dùng hiện tại
-  getCurrentUser() {
-    this.services.getCurrentUser().subscribe(
-      itemValue => {
-        this.currentUserId = itemValue['Id'];
-        this.currentUserName = itemValue['Title'];
-        this.currentUserEmail = itemValue['Email'];
-      },
-      error => {
-        console.log('error: ' + error);
-        this.CloseDocumentGoPanel();
-      },
-      () => {
-        this.CheckPermission();
-        console.log(
-          'Current user email is: \n' +
-            'Current user Id is: ' +
-            this.currentUserId +
-            '\n' +
-            'Current user name is: ' +
-            this.currentUserName
-        );
-        this.getListDocumentGo();
-      }
-    );
-  }
+  // getCurrentUser() {
+  //   this.services.getCurrentUser().subscribe(
+  //     itemValue => {
+  //       this.currentUserId = itemValue['Id'];
+  //       this.currentUserName = itemValue['Title'];
+  //       this.currentUserEmail = itemValue['Email'];
+  //     },
+  //     error => {
+  //       console.log('error: ' + error);
+  //       this.CloseDocumentGoPanel();
+  //     },
+  //     () => {
+  //       this.CheckPermission();
+  //       console.log(
+  //         'Current user email is: \n' +
+  //           'Current user Id is: ' +
+  //           this.currentUserId +
+  //           '\n' +
+  //           'Current user name is: ' +
+  //           this.currentUserName
+  //       );
+  //       this.getListDocumentGo();
+  //     }
+  //   );
+  // }
+ //Lấy người dùng hiện tại
+ getCurrentUser() {
+  this.services.getCurrentUser().subscribe(
+    itemValue => {
+      this.currentUserId = itemValue['Id'];
+      this.currentUserName = itemValue['Title'];
+      this.currentUserEmail = itemValue['Email'];
+      console.log('currentUserEmail: ' + this.currentUserEmail);
+    },
+    error => {
+      console.log('error: ' + error);
+      this.CloseDocumentGoPanel();
+    },
+    () => {
+      this.OpenDocumentGoPanel();
+      console.log(
+        'Current user email is: \n' +
+          'Current user Id is: ' +
+          this.currentUserId +
+          '\n' +
+          'Current user name is: ' +
+          this.currentUserName
+      );
+      this.services.getDepartmnetOfUser(this.currentUserId).subscribe(
+        itemValue => {
+          let itemUserMember = itemValue['value'] as Array<any>;
+          if (itemUserMember.length > 0) {
+            itemUserMember.forEach(element => {
+              if (element.RoleCode === 'TP') {
+                this.IsTP = true;
+              } else if (element.RoleCode === 'NV') {
+                this.IsNV = true;
+              } 
+            });
+            this.CheckPermission();
+            this.getListEmailConfig();
+            this.getListDocumentGo();
+            this.getUserApproverStep();
+            this.CloseDocumentGoPanel();
+          } else {
+            this.notificationService.info('Bạn không có quyền truy cập');
+            this.routes.navigate(['/']);
+            this.CloseDocumentGoPanel();
+          }
+        },
+        error => {
+          console.log('Load department code error: ' + error);
+          this.CloseDocumentGoPanel();
+        },
+        () => {}
+      );
+    }
+  );
+}
 
   CheckPermission() {
-    this.OpenDocumentGoPanel();
+  //  this.OpenDocumentGoPanel();
     this.docServices.getRoleCurrentUser(this.currentUserId).subscribe(
       (itemValue: any[]) => {
         let item = itemValue['value'] as Array<any>;
@@ -266,7 +320,7 @@ export class DocumentGoComponent implements OnInit {
       },
       () => {
         console.log('Check permission success');
-        this.CloseDocumentGoPanel();
+      //  this.CloseDocumentGoPanel();
       }
     );
   }
@@ -376,7 +430,10 @@ export class DocumentGoComponent implements OnInit {
             });
           });
         },
-        error => console.log(error),
+        error =>{
+          console.log(error);
+          this.CloseDocumentGoPanel();
+        } ,
         () => {
           console.log('get success');
           this.dataSource = new MatTableDataSource<ItemDocumentGo>(
@@ -390,6 +447,7 @@ export class DocumentGoComponent implements OnInit {
       );
     } catch (error) {
       console.log(error);
+      this.CloseDocumentGoPanel();
     }
   }
   // danh mục phong ban
@@ -480,7 +538,13 @@ export class DocumentGoComponent implements OnInit {
   }
   //danh sách người xử lý
   getUserApproverStep() {
-    let strFilterUser = `&$filter=RoleCode eq 'TP'`;
+    let strFilterUser;
+    if(this.IsTP){
+      strFilterUser  = `&$filter=RoleCode eq 'VT'`;
+    }
+    else{
+       strFilterUser = `&$filter=RoleCode eq 'TP'`;
+    }
     this.docServices.getUser(strFilterUser).subscribe(
       items => {
         let itemUserMember = items['value'] as Array<any>;

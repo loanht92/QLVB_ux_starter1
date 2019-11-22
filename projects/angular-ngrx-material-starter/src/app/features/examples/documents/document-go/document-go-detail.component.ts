@@ -249,6 +249,11 @@ export class DocumentGoDetailComponent implements OnInit {
       this.selection.isSelected(row) ? 'deselect' : 'select'
     } row ${row.stt + 1}`;
   }
+  myFilter = (d: Date): boolean => {
+    const day = d;
+    // Prevent Saturday and Sunday from being selected.
+    return day >= moment().subtract(1, 'day').toDate();
+  }
 
   validateQty(event) {
     var key = window.event ? event.keyCode : event.which;
