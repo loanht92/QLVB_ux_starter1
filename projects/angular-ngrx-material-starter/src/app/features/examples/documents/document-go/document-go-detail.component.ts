@@ -383,6 +383,7 @@ export class DocumentGoDetailComponent implements OnInit {
             let ListDe = [];
             this.ListUserChoice = [];
             item.forEach(element => {
+              if (this.IndexStep === this.totalStep - 1 && element.RoleCode=='GD') {
               this.ListUserChoice.push({
                 Id: element.User.Id,
                 DisplayName: element.User.Title,
@@ -395,6 +396,21 @@ export class DocumentGoDetailComponent implements OnInit {
               if (ListDe.indexOf(element.DepartmentCode) < 0) {
                 ListDe.push(element.DepartmentCode);
               }
+            }
+            else{
+              this.ListUserChoice.push({
+                Id: element.User.Id,
+                DisplayName: element.User.Title,
+                Email: element.User.Name.split('|')[2],
+                DeCode: element.DepartmentCode,
+                DeName: element.DepartmentName,
+                RoleCode: element.RoleCode,
+                RoleName: element.RoleName
+              });
+              if (ListDe.indexOf(element.DepartmentCode) < 0) {
+                ListDe.push(element.DepartmentCode);
+              }
+            }
             });
             console.log('array ' + ListDe);
             ListDe.forEach(element => {
@@ -525,7 +541,7 @@ export class DocumentGoDetailComponent implements OnInit {
             this.isCombine = false;
           }
         }
-        this.getUserPofile(this.currentUserEmail);
+     //   this.getUserPofile(this.currentUserEmail);
         this.GetItemDetail();
         this.GetAllUser();
         this.getComment();
@@ -2137,9 +2153,9 @@ export class DocumentGoDetailComponent implements OnInit {
             isAddComment == true ? this.listUserIdSelect[index] : null,
           UserRequestId: this.currentUserId
         };
-        if (this.isNotNull(this.pictureCurrent)) {
-          Object.assign(dataComment, { userPicture: this.pictureCurrent });
-        }
+        // if (this.isNotNull(this.pictureCurrent)) {
+        //   Object.assign(dataComment, { userPicture: this.pictureCurrent });
+        // }
         this.resService.AddItemToList('ListComments', dataComment).subscribe(
           itemComment => {
             this.indexComment = itemComment['d'].Id;
@@ -2223,9 +2239,9 @@ export class DocumentGoDetailComponent implements OnInit {
               ? this.listCommentParent[i].ID
               : this.listCommentParent[i].ParentID
         };
-        if (this.isNotNull(this.pictureCurrent)) {
-          Object.assign(dataComment, { userPicture: this.pictureCurrent });
-        }
+        // if (this.isNotNull(this.pictureCurrent)) {
+        //   Object.assign(dataComment, { userPicture: this.pictureCurrent });
+        // }
         this.resService.AddItemToList('ListComments', dataComment).subscribe(
           itemComment => {
             this.indexComment = itemComment['d'].Id;
