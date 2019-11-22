@@ -2,7 +2,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
+import { mergeMap } from 'rxjs/operators';
+export interface FormDigestResponse {
+  'odata.metadata': string;
+  FormDigestTimeoutSeconds: number;
+  FormDigestValue: string;
+  LibraryVersion: string;
+  SiteFullUrl: string;
+  SupportedSchemaVersions: string[];
+  WebFullUrl: string;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -114,6 +123,77 @@ export class SharedService {
 
   inserAttachmentFile(data, filename, listName, indexItem) {
     return this.http.post(`${this.restUrl}${this.urlAPI}` + listName + `')/items(` + indexItem + `)/AttachmentFiles/add(FileName='` + filename + `')`, data, this.opInsertFile);
+  }
+  updateListById(listName, data, id) {
+    return this.http.post(`${this.restUrl}/_api/contextinfo`, '').pipe(
+      mergeMap((xRequest: FormDigestResponse) => {
+        const digest = xRequest.FormDigestValue;
+        const headers = new HttpHeaders({
+          accept: 'application/json;odata=verbose',
+          'X-RequestDigest': digest
+        });
+
+        this.opUpdate = {
+          headers: new HttpHeaders({
+            'accept': 'application/json;odata=verbose',
+            'dataType': 'json',
+            'Content-Type': 'application/json;odata=verbose',
+            "x-requestdigest": digest,
+            "X-HTTP-Method": "MERGE",
+            "IF-MATCH": "*",
+          })
+        }
+        return this.http.post(`${this.restUrl}/_api/web/lists/getbytitle('` + listName + `')/items` + `(` + id + `)`, data, this.opUpdate);
+      })
+    );
+  }
+
+  DeleteItemById(listName, data, id) {
+    return this.http.post(`${this.restUrl}/_api/contextinfo`, '').pipe(
+      mergeMap((xRequest: FormDigestResponse) => {
+        const digest = xRequest.FormDigestValue;
+        const headers = new HttpHeaders({
+          accept: 'application/json;odata=verbose',
+          'X-RequestDigest': digest
+        });
+
+        this.opDelete = {
+          headers: new HttpHeaders({
+            'accept': 'application/json;odata=verbose',
+            'dataType': 'json',
+            'Content-Type': 'application/json;odata=verbose',
+            "x-requestdigest": digest,
+            "X-HTTP-Method": "DELETE",
+            "IF-MATCH": "*",
+          })
+        }
+        return this.http.post(`${this.restUrl}/_api/web/lists/getbytitle('` + listName + `')/items` + `(` + id + `)`, data, this.opDelete);
+      })
+    );
+  }
+  
+  DeleteAttachmentById(listName, data, id, fileName) {
+    return this.http.post(`${this.restUrl}/_api/contextinfo`, '').pipe(
+      mergeMap((xRequest: FormDigestResponse) => {
+        const digest = xRequest.FormDigestValue;
+        const headers = new HttpHeaders({
+          accept: 'application/json;odata=verbose',
+          'X-RequestDigest': digest
+        });
+
+        this.opDelete = {
+          headers: new HttpHeaders({
+            'accept': 'application/json;odata=verbose',
+            'dataType': 'json',
+            'Content-Type': 'application/json;odata=verbose',
+            "x-requestdigest": digest,
+            "X-HTTP-Method": "DELETE",
+            "IF-MATCH": "*",
+          })
+        }
+        return this.http.post(`${this.restUrl}/_api/web/lists/getbytitle('` + listName + `')/items` + `(` + id + `)/AttachmentFiles/getByFileName('` + fileName + `')`, data, this.opDelete);
+      })
+    );
   }
 
 }

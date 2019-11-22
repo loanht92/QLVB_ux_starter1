@@ -730,7 +730,7 @@ export class DocumentGoDetailComponent implements OnInit {
                   : '',
               userRequestId:
                 element.UserRequest !== undefined ? element.UserRequest.Id : 0,
-              userApproverId:
+                userApproverId:
                 element.UserApprover !== undefined ? element.UserApprover.Id : 0,
               userApprover:
                 element.UserApprover !== undefined
@@ -1242,7 +1242,6 @@ export class DocumentGoDetailComponent implements OnInit {
                   }
                 );
             } else {
-              this.processId = item.ID;
               //gui mail tra lai
               const dataSendUser = {
                 __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
@@ -1697,26 +1696,27 @@ export class DocumentGoDetailComponent implements OnInit {
       }
     );
   }
+  //người phối hợp : xử lý
   AddListTicketCombiner() {
     if (this.docServices.checkNull(this.content) === '') {
       this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
       return ;
     } else {
-      let item = this.ListItem.find(i => i.indexStep === this.currentStep && i.taskTypeCode === "PH");
+      let item = this.ListItem.find(i => i.indexStep === this.currentStep && i.stsTaskCode === "PH");
       if(item !== undefined) {
         this.openCommentPanel();
         const dataTicket = {
-          __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
+          __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
           StatusID: 1, StatusName: "Đã xử lý",
           IsFinished: 0
         };
-        this.docServices.updateItem('ListProcessRequestGo', dataTicket, item.ID).subscribe(
+        this.shareService.updateListById('ListProcessRequestGo',dataTicket,item.ID).subscribe(
           item => {},
           error => {
             this.closeCommentPanel();
             console.log(
               'error when update item to list ListProcessRequestGo: ' +
-                error.error.error.message.value
+                error.message.value
             ),
               this.notificationService.error('Cập nhật thông tin phiếu xử lý thất bại');
           },
@@ -1730,7 +1730,7 @@ export class DocumentGoDetailComponent implements OnInit {
             } else {
               this.closeCommentPanel();
               this.notificationService.success('Xử lý văn bản thành công');
-              this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.ItemId]);
+              this.routes.navigate(['/Documents/documentgo-detail/' + this.ItemId]);
             }          
           }
         );
