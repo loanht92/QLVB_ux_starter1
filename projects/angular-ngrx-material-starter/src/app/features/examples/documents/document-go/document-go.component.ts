@@ -1163,27 +1163,27 @@ GetTotalStep() {
       dataForm.DocType
     );
     //phiếu xử lý cho người tạo
-    const data = {
-      __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
-      // Title:dataForm.NumberSymbol,
-      DocTypeName: DocTypeName == undefined ? '' : DocTypeName.Title,
-      DateCreated: new Date(),
-      DocumentGoID: this.DocumentID,
-      UserRequestId: this.currentUserId,
-      UserApproverId: this.currentUserId,
-      Deadline: dataForm.Deadline,
-      StatusID: 1,
-      StatusName: 'Đã xử lý',
-      TaskTypeCode: 'XLC',
-      TaskTypeName: 'Xử lý chính',
-      TypeCode: 'CXL',
-      TypeName: 'Chuyển xử lý',
-      Content: dataForm.Note,
-      IndexStep: 1,
-      Compendium: dataForm.Compendium,
-      SecretCode: dataForm.SecretLevel,
-      UrgentCode: dataForm.UrgentLevel,
-    };
+    // const data = {
+    //   __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
+    //   // Title:dataForm.NumberSymbol,
+    //   DocTypeName: DocTypeName == undefined ? '' : DocTypeName.Title,
+    //   DateCreated: new Date(),
+    //   DocumentGoID: this.DocumentID,
+    //   UserRequestId: this.currentUserId,
+    //   UserApproverId: this.currentUserId,
+    //   Deadline: dataForm.Deadline,
+    //   StatusID: 1,
+    //   StatusName: 'Đã xử lý',
+    //   TaskTypeCode: 'XLC',
+    //   TaskTypeName: 'Xử lý chính',
+    //   TypeCode: 'CXL',
+    //   TypeName: 'Chuyển xử lý',
+    //   Content: dataForm.Note,
+    //   IndexStep: 1,
+    //   Compendium: dataForm.Compendium,
+    //   SecretCode: dataForm.SecretLevel,
+    //   UrgentCode: dataForm.UrgentLevel,
+    // };
     //phiếu cho người xử lý tiếp theo
     const data1 = {
       __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
@@ -1206,20 +1206,20 @@ GetTotalStep() {
       SecretCode: dataForm.SecretLevel,
       UrgentCode: dataForm.UrgentLevel,
     };
-    this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
-      item => {},
-      error => {
-        this.CloseDocumentGoPanel();
-        console.log(
-          'error when add item to list ListProcessRequestGo: ' +
-            error.error.error.message.value
-        ),
-          this.notificationService.error('Thêm phiếu xử lý thất bại');
-      },
-      () => {
-        console.log(
-          'Add item of approval user to list ListProcessRequestGo successfully!'
-        );
+    // this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
+    //   item => {},
+    //   error => {
+    //     this.CloseDocumentGoPanel();
+    //     console.log(
+    //       'error when add item to list ListProcessRequestGo: ' +
+    //         error.error.error.message.value
+    //     ),
+    //       this.notificationService.error('Thêm phiếu xử lý thất bại');
+    //   },
+    //   () => {
+    //     console.log(
+    //       'Add item of approval user to list ListProcessRequestGo successfully!'
+    //     );
         this.services.AddItemToList('ListProcessRequestGo', data1).subscribe(
           item => {},
           error => {
@@ -1245,8 +1245,8 @@ GetTotalStep() {
             );
           }
         );
-      }
-    );
+    //   }
+    // );
   }
 
   AddUserCombine() {

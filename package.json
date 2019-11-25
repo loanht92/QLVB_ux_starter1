@@ -25,12 +25,7 @@
         "contributors:check": "all-contributors check",
         "spProxy": "node ./server.js"
     },
-    "husky": {
-        "hooks": {
-            "pre-commit": "pretty-quick --staged",
-            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-        }
-    },
+
     "commitlint": {
         "extends": [
             "@commitlint/config-conventional"
