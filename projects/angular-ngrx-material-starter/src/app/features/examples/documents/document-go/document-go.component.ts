@@ -45,6 +45,7 @@ import {
 import { ErrorStateMatcher } from '@angular/material/core';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { RegExp } from 'core-js';
 
 @Component({
   selector: 'anms-document-go',
@@ -109,8 +110,8 @@ export class DocumentGoComponent implements OnInit {
   ListDocumentGo: ItemDocumentGo[] = [];
   ListBookType: ItemSeletedCode[] = [];
   ListDocType: ItemSeleted[] = [];
-  ListSecret: ItemSeleted[] = [];
-  ListUrgent: ItemSeleted[] = [];
+  ListSecret= [];
+  ListUrgent = [];
   ListMethodSend: ItemSeleted[] = [];
   ListDepartment: ItemSeleted[] = [];
   ListSource: ItemSeletedCode[] = [];
@@ -124,7 +125,7 @@ export class DocumentGoComponent implements OnInit {
   idStatus = '';
   strFilter = '';
   strFilterUser = '';
-  userApproverId = '';
+  userApproverId ;
   userApproverEmail = '';
   userApproverName = '';
   currentUserId = 0;
@@ -147,6 +148,7 @@ export class DocumentGoComponent implements OnInit {
   DocumentToId = '';
   IdDelete = 0;
   ChuyenXL = 0;IsTP=false;IsNV=false;IsFlag=false;
+  listTotalStep=[];TotalStep;
   constructor(
     private fb: FormBuilder,
     private notificationService: NotificationService,
@@ -186,6 +188,7 @@ export class DocumentGoComponent implements OnInit {
     //  this.getUserSigner();
     this.getUserCreate();
    // this.getListEmailConfig();
+   this.GetTotalStep();
   }
 
   ClickItem(row) {
@@ -300,6 +303,30 @@ export class DocumentGoComponent implements OnInit {
         },
         () => {}
       );
+    }
+  );
+}
+//ds tổng số bước
+GetTotalStep() {
+  this.listTotalStep=[];
+  this.services.getListTotalStep('DG').subscribe(
+    items => {
+      let itemList = items['value'] as Array<any>;
+      if (itemList.length > 0) {
+        itemList.forEach(element => {
+          this.listTotalStep.push({
+            'TypeStep':element.TypeStep,
+            'TotalStep':element.TotalStep
+        });
+        });
+        
+      }
+    },
+    error => {
+      console.log('Load total step error: ' + error);
+      this.CloseDocumentGoPanel();
+    },
+    () => {
     }
   );
 }
@@ -419,8 +446,9 @@ export class DocumentGoComponent implements OnInit {
               RecipientsOutName: '',
               SecretLevelName: '',
               UrgentLevelName: '',
-              SecretLevelId: 0,
-              UrgentLevelId: 0,
+              SecretCode: '',
+              UrgentCode:'',
+              TotalStep:0,
               MethodSendName: '',
               DateIssued: '',
               SignerName: '',
@@ -494,7 +522,8 @@ export class DocumentGoComponent implements OnInit {
       item.forEach(element => {
         this.ListSecret.push({
           ID: element.ID,
-          Title: element.Title
+          Title: element.Title,
+          Code: element.Code
         });
       });
     });
@@ -506,7 +535,8 @@ export class DocumentGoComponent implements OnInit {
       item.forEach(element => {
         this.ListUrgent.push({
           ID: element.ID,
-          Title: element.Title
+          Title: element.Title,
+          Code:element.Code
         });
       });
     });
@@ -536,7 +566,7 @@ export class DocumentGoComponent implements OnInit {
       });
     });
   }
-  //danh sách người xử lý
+  //danh sách người xử lý chính
   getUserApproverStep() {
     let strFilterUser;
     //nếu người tạo là trưởng phòng
@@ -639,9 +669,16 @@ export class DocumentGoComponent implements OnInit {
 
   //lấy ra id , email
   splitDataUserApprover(value) {
+    if(value!=null && value!=0){
     this.userApproverId = value.split('|')[0];
     this.userApproverEmail = value.split('|')[1];
     this.userApproverName = value.split('|')[2];
+  }
+  else{
+    this.userApproverId =null;
+    this.userApproverEmail = '';
+    this.userApproverName = '';
+  }
   }
 
   //Thêm mới văn bản đi
@@ -668,11 +705,11 @@ export class DocumentGoComponent implements OnInit {
           this.ListSource,
           this.form.get('RecipientsOut').value
         );
-        let itemSecretLevel = this.docServices.FindItemById(
+        let itemSecretLevel = this.docServices.FindItemByCode(
           this.ListSecret,
           this.form.get('SecretLevel').value
         );
-        let itemUrgentLevel = this.docServices.FindItemById(
+        let itemUrgentLevel = this.docServices.FindItemByCode(
           this.ListUrgent,
           this.form.get('UrgentLevel').value
         );
@@ -685,9 +722,7 @@ export class DocumentGoComponent implements OnInit {
             item.UserId == this.currentUserId &&
             (item.RoleCode === 'NV' || item.RoleCode === 'TP')
         );
-        //  console.log('UserOfHandle:'+ this.form.get('UserOfHandle').value);
-        // console.log('UserOfHandle:'+ dataForm.UserOfHandle);
-
+        //lấy ra người PH và người nhận để biết
         this.UserOfCombinate =
           dataForm.UserOfCombinate == null || dataForm.UserOfCombinate == 0
             ? 0
@@ -696,15 +731,26 @@ export class DocumentGoComponent implements OnInit {
           dataForm.UserOfKnow == null || dataForm.UserOfKnow == 0
             ? 0
             : dataForm.UserOfKnow.split('|')[0];
-
+            this.SelectUserCombiner = dataForm.UserOfCombinate;
+            this.SelectUserKnower = dataForm.UserOfKnow;
+        //lấy ra id , email của người xl chính
         this.splitDataUserApprover(dataForm.UserOfHandle);
-        let UserOfHandle =
-          dataForm.UserOfHandle == null || dataForm.UserOfHandle == 0
-            ? null
-            : dataForm.UserOfHandle.split('|')[0];
-        this.userApproverId = UserOfHandle;
-        this.SelectUserCombiner = dataForm.UserOfCombinate;
-        this.SelectUserKnower = dataForm.UserOfKnow;
+        //lấy ra tổng số bước
+        this.TotalStep=0;
+        if(this.IsTP){//nếu người tạo VB là trưởng phòng
+        let objHandle=this.ListApproverStep.find(x=>x.UserId==this.userApproverId*1);
+      if(objHandle!=null && objHandle!=undefined && objHandle.RoleCode=='VT'){
+        let objStep=this.listTotalStep.find(a=>a.TypeStep.toUpperCase()=='TP-VT'); //replace(new RegExp(' ', 'g'), '')
+        this.TotalStep=(objStep!=undefined && objStep!=null)? objStep.TotalStep:0
+      }
+      else if(objHandle!=null && objHandle!=undefined && objHandle.RoleCode=='NV'){
+        let objStep=this.listTotalStep.find(a=>a.TypeStep.toUpperCase()=='TP-NV-TP');
+        this.TotalStep=(objStep!=undefined && objStep!=null)? objStep.TotalStep:0
+      }
+     }else if(this.IsNV){//nếu người tạo VB là nhân viên
+        let objStep=this.listTotalStep.find(a=>a.TypeStep.toUpperCase()=='NV');
+        this.TotalStep=(objStep!=undefined && objStep!=null)? objStep.TotalStep:0
+      }
         // let Signer =
         //   dataForm.Signer == null || dataForm.Signer == 0
         //     ? null
@@ -714,7 +760,6 @@ export class DocumentGoComponent implements OnInit {
           Title: 'Văn bản đi',
           BookTypeName: itemBookType == undefined ? '' : itemBookType.Title,
           BookTypeCode: this.form.get('BookType').value,
-          // NumberSymbol: this.form.get('NumberSymbol').value,
           DocTypeID: this.form.get('DocType').value,
           Compendium: this.form.get('Compendium').value,
           RecipientsInID: this.form.get('RecipientsIn').value,
@@ -724,8 +769,10 @@ export class DocumentGoComponent implements OnInit {
           UserOfKnowId: { results: [this.UserOfKnow] },
           UserCreateId: this.currentUserId,
           // SignerId: Signer,
-          SecretLevelID: this.form.get('SecretLevel').value,
-          UrgentLevelID: this.form.get('UrgentLevel').value,
+          // SecretLevelID: this.form.get('SecretLevel').value,
+          // UrgentLevelID: this.form.get('UrgentLevel').value,
+          SecretCode: this.form.get('SecretLevel').value,
+          UrgentCode: this.form.get('UrgentLevel').value,
           MethodSendID: this.form.get('MethodSend').value,
           DocTypeName: itemDocType == undefined ? '' : itemDocType.Title,
           RecipientsInName:
@@ -750,7 +797,8 @@ export class DocumentGoComponent implements OnInit {
           isSendMail: this.form.get('isSendMail').value == true ? 1 : 0,
           StatusID: ChuyenXL,
           StatusName: ChuyenXL === 0 ? 'Chờ xử lý' : 'Dự thảo',
-          ListUserApprover: this.userApproverId + '_' + this.userApproverName
+          ListUserApprover: this.userApproverId + '_' + this.userApproverName,
+          TotalStep:this.TotalStep
         };
         console.log('data=' + data);
         if (this.IdEdit == 0) {
@@ -1128,7 +1176,9 @@ export class DocumentGoComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: dataForm.Note,
       IndexStep: 1,
-      Compendium: dataForm.Compendium
+      Compendium: dataForm.Compendium,
+      SecretCode: dataForm.SecretLevel,
+      UrgentCode: dataForm.UrgentLevel,
     };
     //phiếu cho người xử lý tiếp theo
     const data1 = {
@@ -1148,7 +1198,9 @@ export class DocumentGoComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: dataForm.Note,
       IndexStep: 2,
-      Compendium: dataForm.Compendium
+      Compendium: dataForm.Compendium,
+      SecretCode: dataForm.SecretLevel,
+      UrgentCode: dataForm.UrgentLevel,
     };
     this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
@@ -1216,7 +1268,9 @@ export class DocumentGoComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: dataForm.Note,
       IndexStep: 2,
-      Compendium: dataForm.Compendium
+      Compendium: dataForm.Compendium,
+      SecretCode: dataForm.SecretLevel,
+      UrgentCode: dataForm.UrgentLevel,
     };
     this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
@@ -1261,7 +1315,9 @@ export class DocumentGoComponent implements OnInit {
       TypeName: 'Chuyển xử lý',
       Content: dataForm.Note,
       IndexStep: 2,
-      Compendium: dataForm.Compendium
+      Compendium: dataForm.Compendium,
+      SecretCode: dataForm.SecretLevel,
+      UrgentCode: dataForm.UrgentLevel,
     };
     this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
@@ -1395,8 +1451,11 @@ export class DocumentGoComponent implements OnInit {
         ),
         SecretLevelName: this.docServices.checkNull(itemList[0].SecretLevelID),
         UrgentLevelName: this.docServices.checkNull(itemList[0].UrgentLevelID),
-        SecretLevelId: this.docServices.CheckNullSetZero(itemList[0].SecretLevelID),
-        UrgentLevelId: this.docServices.CheckNullSetZero(itemList[0].UrgentLevelID),
+        // SecretLevelId: this.docServices.CheckNullSetZero(itemList[0].SecretLevelID),
+        // UrgentLevelId: this.docServices.CheckNullSetZero(itemList[0].UrgentLevelID),
+        SecretCode: this.docServices.checkNull(itemList[0].SecretCode),
+        UrgentCode: this.docServices.checkNull(itemList[0].UrgentCode),
+        TotalStep:( itemList[0].TotalStep == null)?0:itemList[0].TotalStep,
         MethodSendName: this.docServices.checkNull(itemList[0].MethodSendID),
         DateIssued: itemList[0].DateIssued,
         SignerName: '',

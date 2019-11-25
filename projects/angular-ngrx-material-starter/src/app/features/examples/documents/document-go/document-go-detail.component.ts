@@ -386,7 +386,7 @@ export class DocumentGoDetailComponent implements OnInit {
             let ListDe = [];
             this.ListUserChoice = [];
             item.forEach(element => {
-              if (this.IndexStep === this.totalStep - 1 && element.RoleCode=='GD') {
+              if (this.IndexStep === this.totalStep - 2 && element.RoleCode=='GD') {
               this.ListUserChoice.push({
                 Id: element.User.Id,
                 DisplayName: element.User.Title,
@@ -503,48 +503,48 @@ export class DocumentGoDetailComponent implements OnInit {
 
   GetTotalStep() {
     this.GetHistory();
-    this.resService.getListTotalStep('DG').subscribe(
-      items => {
-        let itemList = items['value'] as Array<any>;
-        if (itemList.length > 0) {
-          this.totalStep = itemList[0].TotalStep;
-        }
-      },
-      error => {
-        console.log('Load total step error: ' + error);
-        this.closeCommentPanel();
-      },
-      () => {
-        if (this.IndexStep >= this.totalStep) {
-          if (this.currentRoleTask === 'XLC') {
-            this.isExecution = false;
-            this.isFinish = true;
-          } else {
-            this.isExecution = false;
-            this.isFinish = false;
-          }
-        } else if (this.IndexStep > 0) {
-          if (this.IndexStep === this.totalStep - 1) {
-            this.isDisplay = true;
-          }
-          if (this.currentRoleTask === 'XLC') {
-            this.isExecution = true;
-          } else if (this.currentRoleTask === 'PH') {
-            this.isExecution = false;
-            this.isFinish = false;
-            this.isCombine = true;
-          } else {
-            this.isExecution = false;
-            this.isFinish = false;
-            this.isCombine = false;
-          }
-        }
+    // this.resService.getListTotalStep('DG').subscribe(
+    //   items => {
+    //     let itemList = items['value'] as Array<any>;
+    //     if (itemList.length > 0) {
+    //       this.totalStep = itemList[0].TotalStep;
+    //     }
+    //   },
+    //   error => {
+    //     console.log('Load total step error: ' + error);
+    //     this.closeCommentPanel();
+    //   },
+    //   () => {
+    //     if (this.IndexStep >= this.totalStep) {
+    //       if (this.currentRoleTask === 'XLC') {
+    //         this.isExecution = false;
+    //         this.isFinish = true;
+    //       } else {
+    //         this.isExecution = false;
+    //         this.isFinish = false;
+    //       }
+    //     } else if (this.IndexStep > 0) {
+    //       if (this.IndexStep === this.totalStep - 1) {
+    //         this.isDisplay = true;
+    //       }
+    //       if (this.currentRoleTask === 'XLC') {
+    //         this.isExecution = true;
+    //       } else if (this.currentRoleTask === 'PH') {
+    //         this.isExecution = false;
+    //         this.isFinish = false;
+    //         this.isCombine = true;
+    //       } else {
+    //         this.isExecution = false;
+    //         this.isFinish = false;
+    //         this.isCombine = false;
+    //       }
+    //     }
      //   this.getUserPofile(this.currentUserEmail);
         this.GetItemDetail();
         this.GetAllUser();
         this.getComment();
-      }
-    );
+      // }
+    // );
   }
 
   getListEmailConfig() {
@@ -625,6 +625,7 @@ export class DocumentGoDetailComponent implements OnInit {
               });
             });
           }
+          this.totalStep=itemList[0].TotalStep==null?0:itemList[0].TotalStep;
           this.deadline_VB =
             this.docServices.checkNull(itemList[0].Deadline) === ''
               ? null
@@ -668,8 +669,9 @@ export class DocumentGoDetailComponent implements OnInit {
             RecipientsOutName: itemList[0].RecipientsOutName,
             SecretLevelName: itemList[0].SecretLevelName,
             UrgentLevelName: itemList[0].UrgentLevelName,
-            SecretLevelId: itemList[0].SecretLevelID,
-            UrgentLevelId: itemList[0].UrgentLevelID,
+            SecretCode: this.docServices.checkNull(itemList[0].SecretCode),
+            UrgentCode: this.docServices.checkNull(itemList[0].UrgentCode),
+            TotalStep:itemList[0].TotalStep==null ? 0: itemList[0].TotalStep,
             MethodSendName: itemList[0].MethodSendName,
             DateIssued: this.docServices.formatDateTime(itemList[0].DateIssued),
             SignerName:
@@ -684,6 +686,31 @@ export class DocumentGoDetailComponent implements OnInit {
           this.closeCommentPanel();
         },
         () => {
+          
+          if (this.IndexStep >= this.totalStep) {
+                  if (this.currentRoleTask === 'XLC') {
+                    this.isExecution = false;
+                    this.isFinish = true;
+                  } else {
+                    this.isExecution = false;
+                    this.isFinish = false;
+                  }
+                } else if (this.IndexStep > 0) {
+                  if (this.IndexStep === this.totalStep - 2) {
+                    this.isDisplay = true;
+                  }
+                  if (this.currentRoleTask === 'XLC') {
+                    this.isExecution = true;
+                  } else if (this.currentRoleTask === 'PH') {
+                    this.isExecution = false;
+                    this.isFinish = false;
+                    this.isCombine = true;
+                  } else {
+                    this.isExecution = false;
+                    this.isFinish = false;
+                    this.isCombine = false;
+                  }
+                }
           if (
             !this.isCheckPermission &&
             this.itemDoc.AuthorId !== this.currentUserId
@@ -1050,7 +1077,9 @@ export class DocumentGoDetailComponent implements OnInit {
         Content: this.docServices.checkNull(this.ReasonRetrieve),
         IndexStep: this.currentStep - 1,
         Compendium: this.itemDoc.Compendium,
-        DocTypeName: this.itemDoc.DocTypeName
+        DocTypeName: this.itemDoc.DocTypeName,
+        UrgentCode:this.itemDoc.UrgentCode ,
+        SecretCode:this.itemDoc.SecretCode ,
       };
 
       this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
@@ -1164,11 +1193,13 @@ export class DocumentGoDetailComponent implements OnInit {
               IndexStep: this.IndexStep - 1,
               Compendium: this.itemDoc.Compendium,
               IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
-              Flag:
-                this.itemDoc.UrgentLevelId > 1 ||
-                this.itemDoc.SecretLevelId > 1
-                  ? 1
-                  : 0,
+              UrgentCode:this.itemDoc.UrgentCode ,
+              SecretCode:this.itemDoc.SecretCode ,
+              // Flag:
+              //  (this.itemDoc.UrgentCode !='' && this.itemDoc.UrgentCode !='BT' )||
+              //  (this.itemDoc.SecretCode !='' && this.itemDoc.SecretCode !='BT')
+              //     ? 1
+              //     : 0,
               DocTypeName: this.itemDoc.DocTypeName
             };
             this.resService
@@ -1410,7 +1441,9 @@ export class DocumentGoDetailComponent implements OnInit {
           Content: this.content,
           IndexStep: this.IndexStep + 1,
           Compendium: this.itemDoc.Compendium,
-          DocTypeName: this.itemDoc.DocTypeName
+          DocTypeName: this.itemDoc.DocTypeName,
+          UrgentCode:this.itemDoc.UrgentCode ,
+          SecretCode:this.itemDoc.SecretCode ,
         };
 
         this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
@@ -1550,7 +1583,9 @@ export class DocumentGoDetailComponent implements OnInit {
       Content: this.content,
       IndexStep: this.IndexStep + 1,
       Compendium: this.itemDoc.Compendium,
-      DocTypeName: this.itemDoc.DocTypeName
+      DocTypeName: this.itemDoc.DocTypeName,
+      UrgentCode:this.itemDoc.UrgentCode ,
+      SecretCode:this.itemDoc.SecretCode ,
     };
     this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
@@ -1621,7 +1656,9 @@ export class DocumentGoDetailComponent implements OnInit {
       Content: this.content,
       IndexStep: this.IndexStep + 1,
       Compendium: this.itemDoc.Compendium,
-      DocTypeName: this.itemDoc.DocTypeName
+      DocTypeName: this.itemDoc.DocTypeName,
+      UrgentCode:this.itemDoc.UrgentCode ,
+      SecretCode:this.itemDoc.SecretCode ,
     };
     this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
