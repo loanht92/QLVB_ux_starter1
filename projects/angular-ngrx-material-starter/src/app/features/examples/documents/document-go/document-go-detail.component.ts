@@ -693,33 +693,33 @@ export class DocumentGoDetailComponent implements OnInit {
         () => {
           
           if (this.IndexStep >= this.totalStep) {
-                  if (this.currentRoleTask === 'XLC') {
-                    this.isExecution = false;
-                    this.isFinish = true;
-                  } else {
-                    this.isExecution = false;
-                    this.isFinish = false;
-                  }
-                } else if (this.IndexStep > 0) {
-                  if (this.IndexStep === this.totalStep - 2) {
-                    this.isDisplay = true;
-                  }
-                  if (this.currentRoleTask === 'XLC') {
-                    // if(this.IndexStep==this.totalStep-1){
-                    //   this.isCombine = true;
-                    // }
-                    // else
-                    this.isExecution = true;
-                  } else if (this.currentRoleTask === 'PH') {
-                    this.isExecution = false;
-                    this.isFinish = false;
-                    this.isCombine = true;
-                  } else {
-                    this.isExecution = false;
-                    this.isFinish = false;
-                    this.isCombine = false;
-                  }
-                }
+            if (this.currentRoleTask === 'XLC') {
+              this.isExecution = false;
+              this.isFinish = true;
+            } else {
+              this.isExecution = false;
+              this.isFinish = false;
+            }
+          } else if (this.IndexStep > 0) {
+            if (this.IndexStep === this.totalStep - 2) {
+              this.isDisplay = true;
+            }
+            if (this.currentRoleTask === 'XLC') {
+              // if(this.IndexStep==this.totalStep-1){
+              //   this.isCombine = true;
+              // }
+              // else
+              this.isExecution = true;
+            } else if (this.currentRoleTask === 'PH') {
+              this.isExecution = false;
+              this.isFinish = false;
+              this.isCombine = true;
+            } else {
+              this.isExecution = false;
+              this.isFinish = false;
+              this.isCombine = false;
+            }
+          }
           if (
             !this.isCheckPermission &&
             this.itemDoc.AuthorId !== this.currentUserId
@@ -779,22 +779,8 @@ export class DocumentGoDetailComponent implements OnInit {
             } else {
               indexValid = this.IndexStep;
             }
-
-            // if (this.docServices.CheckNullSetZero(this.IndexStep) === 0) {
-            //   if (
-            //     element.UserApprover.Id === this.currentUserId &&
-            //     element.TaskTypeCode === 'XLC'
-            //   ) {
-            //     this.isRetrieve = true;
-            //     this.currentStep = element.IndexStep;
-            //   }
-            // }
-
             if (element.IsFinished === 1) {
               this.isRetrieve = false;
-            }
-            if (element.IndexStep === 1) {
-              return;
             }
             this.ListItem.push({
               STT: this.ListItem.length + 1,
@@ -851,7 +837,7 @@ export class DocumentGoDetailComponent implements OnInit {
             this.isRetrieve = true;
             this.currentStep = indexValid;
           } else {
-            this.isRetrieve = undefined;
+            this.isRetrieve = false;
             this.currentStep = indexValid;
           }
         },
@@ -883,7 +869,9 @@ export class DocumentGoDetailComponent implements OnInit {
           if (!(this.ref as ViewRef).destroyed) {
             this.ref.detectChanges();
           }
-
+          if(this.ArrCurrentRetrieve.length === 0) {
+            this.isRetrieve = false;
+          }
           this.docServices
             .getHistoryStep(this.ItemId, this.currentStep)
             .subscribe(

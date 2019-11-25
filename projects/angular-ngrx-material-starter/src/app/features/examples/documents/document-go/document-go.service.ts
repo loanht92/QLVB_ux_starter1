@@ -107,7 +107,7 @@ export class DocumentGoService {
   }
 
   urlRequestGo =
-  "/_api/web/lists/getbytitle('ListProcessRequestGo')/items?$select=*, UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$orderby=ID desc&$expand=UserApprover,UserRequest";
+  "/_api/web/lists/getbytitle('ListProcessRequestGo')/items?$select=*, UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id,UserRetrieve/Id,UserRetrieve/Title&$orderby=ID desc&$expand=UserApprover,UserRequest,UserRetrieve";
   getListRequestTo(strFilter): Observable<any> {
     return this.http.get(`${this.restUrl}${this.urlRequestGo}` + strFilter);
   }

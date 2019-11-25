@@ -80,7 +80,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
   }
 
   ClickItem(template, row) {
-    let docId = row.documentID;
+    let docId = row.ID;
     this.openCommentPanel();
     let strSelect = '';
     strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
@@ -221,7 +221,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
     this.openCommentPanel();
     let strSelect = '';
     strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
-    this.strFilter = `&$filter=NoteBookID eq ` + docId + strSelect;
+    this.strFilter = `&$filter=DocumentGoID eq ` + docId + strSelect;
     this.docServices.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
       let item = itemValue["value"] as Array<any>; 
       this.ListItem = [];
