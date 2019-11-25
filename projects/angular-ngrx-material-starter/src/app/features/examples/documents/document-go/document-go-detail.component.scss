@@ -237,7 +237,7 @@ table {
 }
 
 ::ng-deep {
-    .mat-form-field-appearance-legacy.mat-form-field-disabled.mat-form-field-underline {
+    .mat-form-field-appearance-legacy.mat-form-field-disabled .mat-form-field-underline {
         background-image: none!important;
         background-color: rgba(0, 0, 0, 0.42) !important;
     }

@@ -386,7 +386,8 @@ export class DocumentGoDetailComponent implements OnInit {
             let ListDe = [];
             this.ListUserChoice = [];
             item.forEach(element => {
-              if (this.IndexStep === this.totalStep - 2 && element.RoleCode=='GD') {
+              if (this.IndexStep === this.totalStep - 2) {
+                if(element.RoleCode=='GĐ'){
               this.ListUserChoice.push({
                 Id: element.User.Id,
                 DisplayName: element.User.Title,
@@ -399,6 +400,7 @@ export class DocumentGoDetailComponent implements OnInit {
               if (ListDe.indexOf(element.DepartmentCode) < 0) {
                 ListDe.push(element.DepartmentCode);
               }
+            }
             }
             else{
               this.ListUserChoice.push({
@@ -703,6 +705,10 @@ export class DocumentGoDetailComponent implements OnInit {
                     this.isDisplay = true;
                   }
                   if (this.currentRoleTask === 'XLC') {
+                    // if(this.IndexStep==this.totalStep-1){
+                    //   this.isCombine = true;
+                    // }
+                    // else
                     this.isExecution = true;
                   } else if (this.currentRoleTask === 'PH') {
                     this.isExecution = false;
@@ -1386,7 +1392,7 @@ export class DocumentGoDetailComponent implements OnInit {
     //   return false;
     // }
     else if (
-      this.IndexStep === this.totalStep - 1 &&
+      this.IndexStep === this.totalStep - 2 &&
       (this.docServices.CheckNullSetZero(this.numberGo) === 0 ||
         this.docServices.CheckNullSetZero(this.numberGo) <=
           this.currentNumberGo)
@@ -1475,7 +1481,7 @@ export class DocumentGoDetailComponent implements OnInit {
               __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
               ListUserApprover: this.UserAppoverName
             };
-            if (this.IndexStep === this.totalStep - 1) {
+            if (this.IndexStep === this.totalStep - 2) {
               Object.assign(data, {
                 NumberGo: this.docServices.CheckNullSetZero(this.numberGo),
                 NumberSymbol: this.numberOfSymbol
@@ -1563,8 +1569,7 @@ export class DocumentGoDetailComponent implements OnInit {
           this.selectedCombiner[this.index].split('|')[0]
         )
     );
-
-    const data = {
+    const dataCombiner = {
       __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
       Title: this.itemDoc.NumberGo,
       DateCreated: new Date(),
@@ -1590,7 +1595,8 @@ export class DocumentGoDetailComponent implements OnInit {
       UrgentCode:this.itemDoc.UrgentCode ,
       SecretCode:this.itemDoc.SecretCode ,
     };
-    this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
+    
+    this.resService.AddItemToList('ListProcessRequestGo', dataCombiner).subscribe(
       item => {},
       error => {
         this.closeCommentPanel();
@@ -1786,7 +1792,7 @@ export class DocumentGoDetailComponent implements OnInit {
       }
     );
   }
-  //người phối hợp : xử lý
+  //người phối hợp : nút xử lý
   AddListTicketCombiner() {
     if (this.docServices.checkNull(this.content) === '') {
       this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
