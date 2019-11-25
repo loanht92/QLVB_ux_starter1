@@ -539,10 +539,12 @@ export class DocumentGoComponent implements OnInit {
   //danh sách người xử lý
   getUserApproverStep() {
     let strFilterUser;
+    //nếu người tạo là trưởng phòng
     if(this.IsTP){
-      strFilterUser  = `&$filter=RoleCode eq 'VT'`;
+      strFilterUser  = `&$filter=RoleCode eq 'VT' or RoleCode eq 'NV'`;
     }
-    else{
+    //nếu người tạo là nhân viên
+    else  if(this.IsNV){
        strFilterUser = `&$filter=RoleCode eq 'TP'`;
     }
     this.docServices.getUser(strFilterUser).subscribe(
