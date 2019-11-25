@@ -146,7 +146,6 @@ export class DocumentGoDetailComponent implements OnInit {
   currentUserId;
   currentUserName = '';
   currentUserEmail = '';
-  ReasonReturn;
   pictureCurrent;
   index = 0;
   ArrayItemId = [];
@@ -175,6 +174,7 @@ export class DocumentGoDetailComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   ListDocument: ItemDocumentGo;
   displayedColumns2 = ['person', 'role', 'process', 'combine', 'know'];
+  displayedColumns3: string[] = ['stt', 'select', 'department', 'role', 'name', 'type']; // 'userId'
   dataSource2 = new MatTableDataSource<UserOfDepartment>();
   isPermision;
   currentStep = 0;
@@ -221,7 +221,9 @@ export class DocumentGoDetailComponent implements OnInit {
     this.route.paramMap.subscribe(parames => {
       this.ItemId = this.docServices.CheckNullSetZero(parames.get('id'));
       this.IndexStep = this.docServices.CheckNullSetZero(parames.get('step'));
-      this.currentStep = this.IndexStep;
+      if(this.IndexStep > 0) {
+        this.currentStep = this.IndexStep;
+      }
     });
     this.getCurrentUser();
     //this.documentGo.isAuthenticated$ = false;
@@ -513,11 +515,6 @@ export class DocumentGoDetailComponent implements OnInit {
         this.closeCommentPanel();
       },
       () => {
-        if (this.IndexStep <= 1) {
-          this.isReturn = false;
-        } else {
-          this.isReturn = true;
-        }
         if (this.IndexStep >= this.totalStep) {
           if (this.currentRoleTask === 'XLC') {
             this.isExecution = false;
@@ -715,25 +712,47 @@ export class DocumentGoDetailComponent implements OnInit {
         (itemValue: any[]) => {
           let item = itemValue['value'] as Array<any>;
           this.ListItem = [];
+          let retrieveValid = false;
+          let indexValid = 0;
+          let retrieveInValid = false;
           item.forEach(element => {
             if (element.IndexStep === this.IndexStep) {
-              // if(element.TypeCode === "TL") {
-              if (this.IndexStep <= 1) {
+              if(this.IndexStep <= 1 || element.TypeCode === "TL" || element.TypeCode === "TH") {
                 this.isReturn = false;
               } else {
                 this.isReturn = true;
               }
             }
             // Check để hiển thị button thu hồi
-            if (this.docServices.CheckNullSetZero(this.IndexStep) === 0) {
-              if (
-                element.UserApprover.Id === this.currentUserId &&
-                element.TaskTypeCode === 'XLC'
-              ) {
-                this.isRetrieve = true;
-                this.currentStep = element.IndexStep;
+            if(this.docServices.CheckNullSetZero(this.IndexStep) === 0) {
+              // if(element.UserApprover.Id === this.currentUserId) {
+              //   if(indexValid < element.IndexStep) {
+              //     indexValid = element.IndexStep;
+              //   }
+              // }
+              if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" 
+                && element.TypeCode === "CXL" && element.StatusID === 1 && element.TaskTypeID !== -1) {
+                retrieveValid = true;
+                if(indexValid < element.IndexStep) {
+                  indexValid = element.IndexStep;
+                }
               }
+              if(element.UserApprover.Id === this.currentUserId && element.TypeCode === "CXL" && element.StatusID === 0) {
+                retrieveInValid = true;
+              }
+            } else {
+              indexValid = this.IndexStep;
             }
+
+            // if (this.docServices.CheckNullSetZero(this.IndexStep) === 0) {
+            //   if (
+            //     element.UserApprover.Id === this.currentUserId &&
+            //     element.TaskTypeCode === 'XLC'
+            //   ) {
+            //     this.isRetrieve = true;
+            //     this.currentStep = element.IndexStep;
+            //   }
+            // }
 
             if (element.IsFinished === 1) {
               this.isRetrieve = false;
@@ -758,22 +777,21 @@ export class DocumentGoDetailComponent implements OnInit {
                 element.UserApprover !== undefined
                   ? element.UserApprover.Title
                   : '',
+              userApproverEmail:
+                element.UserApprover !== undefined
+                ? element.UserApprover.Name.split('|')[2]
+                : '',
               deadline:
                 this.docServices.checkNull(element.Deadline) === ''
                   ? ''
                   : moment(element.Deadline).format('DD/MM/YYYY'),
               status: element.StatusName,
               statusId: element.StatusID,
-              source: '',
-              destination: '',
-              taskType:
-                element.TaskTypeCode === 'XLC'
-                  ? element.TypeCode === 'XYK'
-                    ? ''
-                    : 'Xử lý chính'
-                  : element.TaskTypeCode === 'PH'
-                  ? 'Phối hợp'
-                  : 'Nhận để biết',
+              destination: this.docServices.checkNull(element.Destination),
+              roleRequest: this.docServices.checkNull(element.RoleUserRequest),
+              roleApprover: this.docServices.checkNull(element.RoleUserApprover),
+              taskTypeCode: element.TaskTypeCode,
+              taskType: element.TaskTypeCode === 'XLC'? (element.TypeCode === "XYK" ? '' : "Xử lý chính") : element.TaskTypeCode === 'PH'? 'Phối hợp' : 'Nhận để biết',
               typeCode: this.GetTypeCode(element.TypeCode),
               content: this.docServices.checkNull(element.Content),
               indexStep: element.IndexStep,
@@ -791,8 +809,15 @@ export class DocumentGoDetailComponent implements OnInit {
             this.ref.detectChanges();
           }
           this.ArrayItemId = this.ListItem.filter(
-            e => e.indexStep === this.IndexStep
+            e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK"
           );
+          if(this.IndexStep < 1 && retrieveInValid === false && retrieveValid) {
+            this.isRetrieve = true;
+            this.currentStep = indexValid;
+          } else {
+            this.isRetrieve = undefined;
+            this.currentStep = indexValid;
+          }
         },
         error => {
           console.log('Load history item: ' + error);
@@ -801,17 +826,18 @@ export class DocumentGoDetailComponent implements OnInit {
         () => {
           this.ArrCurrentRetrieve = [];
           this.ListItem.forEach(element => {
-            if (element.indexStep === this.currentStep) {
+            if(element.indexStep === (this.currentStep + 1) && element.statusId !== -1) {
               this.ArrCurrentRetrieve.push({
                 Id: element.ID,
                 UserId: element.userApproverId,
                 stt: this.ArrCurrentRetrieve.length + 1,
                 Department: element.destination,
                 Role: element.roleApprover,
-                UserName: element.userApprover,
-                TaskTypeName: element.taskType,
-                TaskTypeCode: element.taskTypeCode
-              });
+                Name: element.userApprover,
+                TaskType: element.taskType,
+                TaskTypeCode: element.taskTypeCode,
+                Email: element.userApproverEmail
+              })
             }
           });
           this.dataSource3 = new MatTableDataSource<UserRetieve>(
@@ -1054,7 +1080,7 @@ export class DocumentGoDetailComponent implements OnInit {
  // Trả lại
  AddTicketReturn() {
   try {
-    if (this.docServices.checkNull(this.ReasonReturn) === '') {
+    if (this.docServices.checkNull(this.content) === '') {
       this.notificationService.warn(
         'Bạn chưa nhập Lý do trả lại! Vui lòng kiểm tra lại.'
       );
@@ -1078,6 +1104,7 @@ export class DocumentGoDetailComponent implements OnInit {
       __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
       StatusID: 1,
       StatusName: 'Đã xử lý',
+      TaskTypeID: -1,
       IsFinished: 0
     };
     this.resService
@@ -1133,7 +1160,7 @@ export class DocumentGoDetailComponent implements OnInit {
               TaskTypeName: 'Xử lý chính',
               TypeCode: 'TL',
               TypeName: 'Trả lại',
-              Content: this.ReasonReturn,
+              Content: this.content,
               IndexStep: this.IndexStep - 1,
               Compendium: this.itemDoc.Compendium,
               IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
@@ -1731,6 +1758,7 @@ export class DocumentGoDetailComponent implements OnInit {
         const dataTicket = {
           __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
           StatusID: 1, StatusName: "Đã xử lý",
+          TaskTypeID: 1,
           IsFinished: 0
         };
         this.shareService.updateListById('ListProcessRequestGo',dataTicket,item.ID).subscribe(
@@ -2414,7 +2442,7 @@ export class DocumentGoDetailComponent implements OnInit {
           `?$select=*,UserRequest/Title,UserRequest/Name,UserApprover/Id,UserApprover/Title,UserApprover/Name,AttachmentFiles` +
           `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=DocumentGoID eq '` +
           this.ItemId +
-          `' and TypeCode ne 'XYK' and TaskTypeCode eq 'XLC'&$orderby=Created asc`;
+          `' and TypeCode ne 'XYK' and (TaskTypeCode eq 'XLC' or (TaskTypeCode eq 'PH' and (TaskTypeID eq '1' or TaskTypeID eq '-1')))&$orderby=Created asc`;
 
         this.docServices.getItem('ListProcessRequestGo', strSelect).subscribe(
           itemValue => {

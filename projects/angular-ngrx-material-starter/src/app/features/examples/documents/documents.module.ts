@@ -12,6 +12,7 @@ import { environment } from '../../../../environments/environment';
 import {MatTableModule} from '@angular/material/table';
 import {MatTreeModule} from '@angular/material/tree'
 import {MatAutocompleteModule} from '@angular/material';
+import {NgxPaginationModule} from 'ngx-pagination';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
 import { BrowserModule } from '@angular/platform-browser';
@@ -63,6 +64,7 @@ export function HttpLoaderFactory(http: HttpClient) {
   FlexLayoutModule,
   MatTreeModule,
   MatAutocompleteModule,
+  NgxPaginationModule,
   // ModalModule.forRoot(),
 ],
   declarations: [

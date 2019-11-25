@@ -42,12 +42,6 @@ export interface PeriodicElement {
   know: boolean
 }
 
-const ELEMENT_DATA: PeriodicElement[] = [
-  {position: 1, name: 'Hydrogen', process: false, combine: false, know: false},
-  {position: 2, name: 'Helium', process: false, combine: false, know: false},
-  {position: 3, name: 'Lithium', process: false, combine: false, know: false},
-];
-
 export class UserOfDepartment {
   STT: Number;
   IsDepartment: boolean;
@@ -476,11 +470,11 @@ export class DocumentDetailComponent implements OnInit {
           }
           // Check để hiển thị button thu hồi
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
-            if(element.UserApprover.Id === this.currentUserId) {
-              if(indexValid < element.IndexStep) {
-                indexValid = element.IndexStep;
-              }
-            }
+            // if(element.UserApprover.Id === this.currentUserId) {
+            //   if(indexValid < element.IndexStep) {
+            //     indexValid = element.IndexStep;
+            //   }
+            // }
             if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" 
               && element.TypeCode === "CXL" && element.StatusID === 1 && element.TaskTypeID !== -1) {
               retrieveValid = true;
@@ -2338,7 +2332,7 @@ export class DocumentDetailComponent implements OnInit {
     () => {
       const strSelect = `?$select=*,UserRequest/Title,UserRequest/Name,UserApprover/Id,UserApprover/Title,AttachmentFiles`
       + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + 
-      this.IncomingDocID + `' and TypeCode ne 'XYK' and (TaskTypeCode eq 'XLC' or (TaskTypeCode eq 'PH' and TaskTypeID eq '1'))&$orderby=Created asc`
+      this.IncomingDocID + `' and TypeCode ne 'XYK' and (TaskTypeCode eq 'XLC' or (TaskTypeCode eq 'PH' and (TaskTypeID eq '1' or TaskTypeID eq '-1')))&$orderby=Created asc`
 
       this.services.getItem("ListProcessRequestTo", strSelect).subscribe(itemValue => {
         let itemList = itemValue["value"] as Array<any>;

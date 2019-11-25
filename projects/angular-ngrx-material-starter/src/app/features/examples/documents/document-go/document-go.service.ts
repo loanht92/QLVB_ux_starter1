@@ -122,7 +122,7 @@ export class DocumentGoService {
   }
   private urlAddDocumentGo="/_api/web/lists/getbytitle('ListDocumentGo')/items";
   private getDocumentGoAPI = "/_api/web/lists/getbytitle('ListDocumentGo')/items?$select=ID,NumberGo,DocTypeName,NumberSymbol,Compendium,DateCreated,Deadline,StatusName,UserCreate/Title,UserOfHandle/Title&$expand=UserCreate/Id,UserOfHandle/Id";
-  private getProcessRequestGo= "/_api/web/lists/getbytitle('ListProcessRequestGo')/items?$select=*,UserRequest/Title,UserRequest/Name,UserRequest/Id,Author/Id,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title&$expand=Author/Id,UserApprover/Id,UserRequest";
+  private getProcessRequestGo= "/_api/web/lists/getbytitle('ListProcessRequestGo')/items?$select=*,UserRequest/Title,UserRequest/Name,UserRequest/Id,Author/Id,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title,UserApprover/Name&$expand=Author,UserApprover,UserRequest";
   private  urlGroupApprover = "/_api/web/lists/getbytitle('ListMapEmployee')/items?$select=*,User/Name,User/Title,User/Id&$expand=User"
   private urlDetailLeave = "/_api/web/lists/getbytitle('ListDocumentGo')/items?$select=*,Author/Id,Author/Title,Author/Name,UserOfHandle/Id,UserOfHandle/Title,UserOfHandle/Name,"
   + "UserOfCombinate/Title,UserOfCombinate/Id,UserOfCombinate/Name,UserOfKnow/Title,UserOfKnow/Id,UserOfKnow/Name,Signer/Id,Signer/Title,Signer/Name,AttachmentFiles"
@@ -130,7 +130,7 @@ export class DocumentGoService {
  
   getHistoryStep(noteBookID, step) {
     return this.http.get(
-      `${this.restUrl}` + `/_api/web/lists/getbytitle('ListHistoryRequestGo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id&$expand=UserRequest,UserApprover&$filter=DocumentGoID eq '` + noteBookID + `' and IndexStep eq '` + step + `'`
+      `${this.restUrl}` + `/_api/web/lists/getbytitle('ListHistoryRequestGo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserApprover/Title,UserApprover/Id,UserApprover/Name&$expand=UserRequest,UserApprover&$filter=DocumentGoID eq '` + noteBookID + `' and IndexStep eq '` + step + `'`
     );
   }
 
