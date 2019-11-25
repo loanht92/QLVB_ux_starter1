@@ -44,9 +44,7 @@
         </table>
         <!-- <pagination-controls id="some_id" (pageChange)="pageChanged($event)" maxSize="5" directionLinks="true" responsive="true" previousLabel="Previous" nextLabel="Next" screenReaderPaginationLabel="Pagination" screenReaderPageLabel="page" screenReaderCurrentLabel="You're on page">
         </pagination-controls> -->
-        <mat-paginator #paginator [length]="dataSource.length" [pageIndex]="0" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]">
-        </mat-paginator>
-        <!-- <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator> -->
+        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
 
         <!-- <mat-tree [dataSource]="dataSource2" [treeControl]="treeControl">
             <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>

@@ -428,6 +428,8 @@ GetTotalStep() {
               UserCreateName:
                 element.UserCreate == undefined ? '' : element.UserCreate.Title,
               DateCreated: this.docServices.formatDateTime(element.DateCreated),
+              UserApproverId:
+              element.UserOfHandle == undefined ? '' : element.UserOfHandle.Id,
               UserOfHandleName:
                 element.UserOfHandle == undefined
                   ? ''
@@ -454,7 +456,9 @@ GetTotalStep() {
               SignerName: '',
               Note: '',
               NumOfPaper: '',
-              link: ''
+              link: '',
+              TypeCode: element.TypeCode,
+              StatusID: element.StatusID
             });
           });
         },
@@ -1427,6 +1431,7 @@ GetTotalStep() {
         UserCreateName:
           itemList[0].Author == undefined ? '' : itemList[0].Author.Title,
         DateCreated: this.docServices.formatDateTime(itemList[0].DateCreated),
+        UserApproverId:  itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Id,
         UserOfHandleName:
           itemList[0].UserOfHandle == undefined
             ? ''
@@ -1435,9 +1440,9 @@ GetTotalStep() {
               itemList[0].UserOfHandle.Name.split('|')[2] +
               '|' +
               itemList[0].UserOfHandle.Title,
-        UserOfKnowName: arrUserOfKnow.length > 0 ? arrUserOfKnow[0] : '', // itemList[0].UserOfKnow == undefined ? '' : itemList[0].UserOfKnow.Id + '|' + itemList[0].UserOfKnow.Name.split('|')[2] + '|' + itemList[0].UserOfKnow.Title,
+        UserOfKnowName: arrUserOfKnow.length > 0 ? arrUserOfKnow[0] : '', 
         UserOfCombinateName:
-          arrUserOfCombinate.length > 0 ? arrUserOfCombinate[0] : '', //itemList[0].UserOfCombinate == undefined ? '' : itemList[0].UserOfCombinate.Id + '|' + itemList[0].UserOfCombinate.Name.split('|')[2] + '|' + itemList[0].UserOfCombinate.Title,
+          arrUserOfCombinate.length > 0 ? arrUserOfCombinate[0] : '',
         Deadline: itemList[0].Deadline,
         link: '',
         StatusName: this.docServices.checkNull(itemList[0].StatusName),
@@ -1451,8 +1456,6 @@ GetTotalStep() {
         ),
         SecretLevelName: this.docServices.checkNull(itemList[0].SecretLevelID),
         UrgentLevelName: this.docServices.checkNull(itemList[0].UrgentLevelID),
-        // SecretLevelId: this.docServices.CheckNullSetZero(itemList[0].SecretLevelID),
-        // UrgentLevelId: this.docServices.CheckNullSetZero(itemList[0].UrgentLevelID),
         SecretCode: this.docServices.checkNull(itemList[0].SecretCode),
         UrgentCode: this.docServices.checkNull(itemList[0].UrgentCode),
         TotalStep:( itemList[0].TotalStep == null)?0:itemList[0].TotalStep,
@@ -1465,7 +1468,9 @@ GetTotalStep() {
         //       '|' +
         //       itemList[0].Signer.Name.split('|')[2],
         NumOfPaper: itemList[0].NumOfPaper,
-        Note: itemList[0].Note
+        Note: itemList[0].Note,
+        TypeCode: itemList[0].TypeCode,
+        StatusID: itemList[0].StatusID
       };
       this.form.patchValue({
         // NumberSymbol: this.itemDoc.NumberSymbol,

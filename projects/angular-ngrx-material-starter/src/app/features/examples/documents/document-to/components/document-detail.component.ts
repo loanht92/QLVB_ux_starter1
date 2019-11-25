@@ -1110,12 +1110,12 @@ export class DocumentDetailComponent implements OnInit {
               this.CloseRotiniPanel();
             },
             () => {
-            this.bsModalRef.hide();
-            this.CloseRotiniPanel();
-            this.notificationService.success('Thu hồi văn bản thành công');
-            this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
-            // this.isRetrieve = false;
-            window.location.reload(); 
+              this.bsModalRef.hide();
+              this.CloseRotiniPanel();
+              this.notificationService.success('Thu hồi văn bản thành công');
+              this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
+              // this.isRetrieve = false;
+              window.location.reload(); 
             })
         })
     } else {

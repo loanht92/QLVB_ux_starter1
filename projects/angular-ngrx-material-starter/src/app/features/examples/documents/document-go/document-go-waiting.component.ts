@@ -82,7 +82,7 @@ export class DocumentGoWaitingComponent implements OnInit {
   strFilterUser = '';
   userApproverId = '';
   userApproverEmail = '';
-  currentUserId = '';
+  currentUserId;
   currentUserName = '';
   currentUserEmail = '';
   overlayRef;
@@ -90,7 +90,7 @@ export class DocumentGoWaitingComponent implements OnInit {
   ngOnInit() {
     // lấy tham số truyền vào qua url
     this.route.paramMap.subscribe(parames => {
-      this.id = parames.get('id');
+      this.id = this.docServices.CheckNullSetZero(parames.get('id'));
       //Load ds văn bản
       // this.getListDocumentGo_Wait();
     });
@@ -178,21 +178,20 @@ export class DocumentGoWaitingComponent implements OnInit {
     let strSelect = '';
     // {-1:Thu hồi, 1:chờ xử lý, 2:Đang xử lý, 3:Đã xử lý, 4:Chờ xin ý kiến, 5:Đã cho ý kiến}
     //chờ xử lý
-    if (this.id == '1') {
-      strSelect = `'and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '0'`;
+    if (this.id === 1) {
+      strSelect = `'and TypeCode ne 'XYK' and StatusID eq '0'`;
       this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đang xử lý
-    else if (this.id == '2') {
+    else if (this.id === 2) {
    //   strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
-      strSelect = ` and TypeCode ne 'XYK' and (StatusID eq '1' or StatusID eq '0') and IsFinished ne '1'`;
-      this.strFilter = `&$filter=UserRequest/Id eq '` + this.currentUserId + `'and TaskTypeCode eq 'XLC'`  + strSelect;
-      //or UserApprover/Id eq '` + this.currentUserId
+      strSelect = `') and TypeCode ne 'XYK' and IsFinished ne '1'`;
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã xử lý
-    else if (this.id == '3') {
+    else if (this.id === 3) {
      // strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and IsFinished eq '1'`;
-      strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1'`;
+      strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1' and StatusID ne '-1'`;
       this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
      //Thu hồi
@@ -201,23 +200,18 @@ export class DocumentGoWaitingComponent implements OnInit {
       this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Chờ xin ý kiến
-    else if (this.id == '4') {
+    else if (this.id === 4) {
    strSelect = `' and TypeCode eq 'XYK' and StatusID eq '0'`;
    this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã cho ý kiến
-    else if (this.id == '5') {
+    else if (this.id === 5) {
      strSelect = `' and TypeCode eq 'XYK' and StatusID eq '1'`;
      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     this.openCommentPanel();
     let strFilter1 =
       `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover` + this.strFilter+`&$orderby=Created desc`;
-      // `&$filter=UserApprover/Id eq '` +
-      // this.currentUserId +
-      // `'` +
-      // strSelect +
-      // `&$orderby=Created desc`;
     console.log('strSelect=' + strFilter1);
     try {
       this.ListDocumentGo = [];
@@ -239,10 +233,12 @@ export class DocumentGoWaitingComponent implements OnInit {
                   NumberSymbol: this.CheckNull(element.Title),
                   Compendium: this.CheckNull(element.Compendium),
                   AuthorId:
-                    element.Author == undefined ? '' : element.Author.Id,
+                    element.Author == undefined ? '' : element.Author.Id,               
                   UserCreateName:
                     element.Author == undefined ? '' : element.Author.Title,
                   DateCreated: this.formatDateTime(element.DateCreated),
+                  UserApproverId:
+                  element.UserApprover == undefined ? '' : element.UserApprover.Id,
                   UserOfHandleName:
                     element.UserApprover == undefined
                       ? ''
@@ -263,9 +259,9 @@ export class DocumentGoWaitingComponent implements OnInit {
                   RecipientsOutName: '',
                   SecretLevelName: '',
                   UrgentLevelName: '',
+                  UrgentCode: '',
                   SecretCode: '',
-              UrgentCode:'',
-              TotalStep:0,
+                  TotalStep: 0,
                   MethodSendName: '',
                   DateIssued: '',
                   SignerName: '',
@@ -275,7 +271,9 @@ export class DocumentGoWaitingComponent implements OnInit {
                     this.id,
                     element.DocumentGoID,
                     element.IndexStep
-                  )
+                  ),
+                  TypeCode: element.TypeCode,
+                  StatusID: element.StatusID,
                 });
               } else if (element.IsFinished === 1) {
                 let index = this.ListDocumentGo.findIndex(
@@ -286,6 +284,31 @@ export class DocumentGoWaitingComponent implements OnInit {
                 }
               }
             });
+            if(this.id === 2) {
+              let listItem1 = []; // list chờ xử lý
+              let listItem2 = []; // list đang xử lý
+              let listItem3 = [];   // list thu hồi
+              listItem1 = this.ListDocumentGo.filter(i => i.StatusID === 0 && i.UserApproverId === this.currentUserId);
+              listItem3 =  this.ListDocumentGo.filter(i => i.StatusID === -1 && i.UserApproverId === this.currentUserId);
+              this.ListDocumentGo.forEach(element => {
+                if(listItem1.findIndex(e => e.ID === element.ID) < 0 && 
+                  listItem3.findIndex(e => e.ID === element.ID) < 0 &&
+                  listItem2.findIndex(e => e.ID === element.ID || e.ID === element.ID) < 0) {
+                    if(element.TypeCode === "XLC") {
+                      listItem2.push(element);
+                    }
+                }
+              })
+              this.dataSource = new MatTableDataSource<ItemDocumentGo>(listItem2);
+            } else {
+              let listItem1 = [];
+              this.ListDocumentGo.forEach(element => {
+                if(listItem1.findIndex(e => e.ID === element.ID) < 0) {
+                  listItem1.push(element);
+                }
+              })
+              this.dataSource = new MatTableDataSource<ItemDocumentGo>(listItem1);
+            }
           },
           error => {
             console.log(error);

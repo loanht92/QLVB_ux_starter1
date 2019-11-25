@@ -29,6 +29,9 @@ export interface ItemDocumentGo {
   Note: string;
   NumOfPaper: string;
   link: string;
+  TypeCode: string;
+  StatusID: number;
+  UserApproverId: number;
 }
 export interface IncomingDoc {
   bookType: string;

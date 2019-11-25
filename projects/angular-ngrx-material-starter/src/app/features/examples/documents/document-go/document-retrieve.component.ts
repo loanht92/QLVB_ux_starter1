@@ -130,6 +130,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
             AuthorId: element.Author == undefined ? '' : element.Author.Id,
             UserCreateName: element.Author == undefined ? '' : element.Author.Title,
             DateCreated: this.formatDateTime(element.DateCreated),
+            UserApproverId: element.UserApprover == undefined ? '' : element.UserApprover.Id,
             UserOfHandleName: element.UserApprover == undefined ? '' : element.UserApprover.Title,
             UserOfKnowName: element.UserOfKnow == undefined ? '' : element.UserOfKnow.Title,
             UserOfCombinateName: element.UserOfCombinate == undefined ? '' : element.UserOfCombinate.Title,
@@ -149,7 +150,9 @@ export class DocumentGoRetrieveComponent implements OnInit {
             SignerName: '',
             Note:'',
             NumOfPaper :'',
-            link: ''
+            link: '',
+            TypeCode: element.TypeCode,
+            StatusID: element.StatusID
           })
         } 
         else if(element.IsFinished === 1) {

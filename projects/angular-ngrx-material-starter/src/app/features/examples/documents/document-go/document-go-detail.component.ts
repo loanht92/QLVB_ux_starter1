@@ -648,7 +648,8 @@ export class DocumentGoDetailComponent implements OnInit {
             DateCreated: this.docServices.formatDateTime(
               itemList[0].DateCreated
             ),
-            UserOfHandleName:
+            UserApproverId:  itemList[0].UserOfHandle == undefined ? '' : itemList[0].UserOfHandle.Id,
+            UserOfHandleName: 
               itemList[0].UserOfHandle == undefined
                 ? ''
                 : itemList[0].UserOfHandle.Title,
@@ -678,7 +679,9 @@ export class DocumentGoDetailComponent implements OnInit {
               itemList[0].Signer == undefined ? '' : itemList[0].Signer.Title,
             NumOfPaper: itemList[0].NumOfPaper,
             Note: itemList[0].Note,
-            link: ''
+            link: '',
+            TypeCode: itemList[0].TypeCode,
+            StatusID: itemList[0].StatusID
           };
         },
         error => {
