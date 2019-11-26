@@ -832,6 +832,7 @@ export class DocumentGoDetailComponent implements OnInit {
                   : moment(element.Deadline).format('DD/MM/YYYY'),
               status: element.StatusName,
               statusId: element.StatusID,
+              source: this.docServices.checkNull(element.Source),
               destination: this.docServices.checkNull(element.Destination),
               roleRequest: this.docServices.checkNull(element.RoleUserRequest),
               roleApprover: this.docServices.checkNull(element.RoleUserApprover),
@@ -841,7 +842,7 @@ export class DocumentGoDetailComponent implements OnInit {
               content: this.docServices.checkNull(element.Content),
               indexStep: element.IndexStep,
               created: this.docServices.formatDateTime(element.DateCreated),
-              stsClass: element.StatusID === 0 ? 'Ongoing' : 'Approved',
+              stsClass: this.getStatusColor(element.StatusID),
               stsTypeCode: element.TypeCode,
               stsTaskCode: element.TaskTypeCode
             });
@@ -989,12 +990,12 @@ export class DocumentGoDetailComponent implements OnInit {
         const dataTicket = {
           __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
           StatusID: -1,
-          StatusName: 'Đã thu hồi',
+          StatusName: 'Bị thu hồi',
           DateRetrieve: new Date(),
-          Content:
-            this.docServices.checkNull(this.content) === ''
-              ? ''
-              : this.content,
+          // Content:
+          //   this.docServices.checkNull(this.content) === ''
+          //     ? ''
+          //     : this.content,
           UserRetrieveId: this.currentUserId
         };
         if (request !== undefined) {
@@ -1123,7 +1124,7 @@ export class DocumentGoDetailComponent implements OnInit {
         TypeCode: 'TH',
         TypeName: 'Phiếu thu hồi',
         Content: this.docServices.checkNull(this.content),
-        IndexStep: this.currentStep - 1,
+        IndexStep: this.currentStep,
         Compendium: this.itemDoc.Compendium,
         DocTypeName: this.itemDoc.DocTypeName,
         UrgentCode: this.itemDoc.UrgentCode,
@@ -3049,6 +3050,25 @@ export class DocumentGoDetailComponent implements OnInit {
         break;
       default:
         stsName = 'Chờ xử lý';
+        break;
+    }
+    return stsName;
+  }
+
+  getStatusColor(sts) {
+    let stsName = '';
+    switch(sts) {
+      case 0: 
+        stsName = 'Ongoing';
+        break;
+      case 1: 
+        stsName = 'Approved';
+        break;
+      case -1: 
+        stsName = 'Retrieve';
+        break;
+      default:
+        stsName = 'Ongoing';
         break;
     }
     return stsName;
