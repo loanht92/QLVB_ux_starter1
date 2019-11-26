@@ -2,7 +2,7 @@
 export interface ItemDocumentGo {
   ID: number;
   NumberGo: string;
-  // NumberToSub:string,
+  DocumentID: number;
   NumberSymbol: string;
   DocTypeName: string;
   Compendium: string;

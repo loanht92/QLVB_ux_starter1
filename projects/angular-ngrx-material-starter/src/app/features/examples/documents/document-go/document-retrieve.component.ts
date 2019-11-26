@@ -80,7 +80,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
   }
 
   ClickItem(template, row) {
-    let docId = row.ID;
+    let docId = row.DocumentID;
     this.openCommentPanel();
     let strSelect = '';
     strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
@@ -122,7 +122,8 @@ export class DocumentGoRetrieveComponent implements OnInit {
       item.forEach(element => {
         if(this.inDocs$.findIndex(e => e.ID === element.DocumentGoID) < 0) {
           this.inDocs$.push({
-            ID: element.DocumentGoID,
+            ID: element.ID,
+            DocumentID: element.DocumentGoID,
             NumberGo: this.docServices.formatNumberGo(element.NumberGo),
             DocTypeName: this.docServices.checkNull(element.DocTypeName),
             NumberSymbol:this.docServices.checkNull(element.Title),
@@ -216,39 +217,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
       }
       );
   }
-
-  getInforRetrieve(template, docId) {
-    this.openCommentPanel();
-    let strSelect = '';
-    strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
-    this.strFilter = `&$filter=DocumentGoID eq ` + docId + strSelect;
-    this.docServices.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
-      let item = itemValue["value"] as Array<any>; 
-      this.ListItem = [];
-      item.forEach(element => {
-        this.ListItem.push({
-          Department: element.Source,
-          UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
-          TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
-          Reason: element.Content
-        })
-      })
-    },
-    error => { 
-      console.log("error: " + error);
-      this.closeCommentPanel();
-    },
-    () => {
-      this.dataSource2 = new MatTableDataSource<ItemRetrieve>(this.ListItem);
-      if (!(this.ref as ViewRef).destroyed) {
-        this.ref.detectChanges();  
-      } 
-      this.dataSource2.paginator = this.paginator;
-      this.bsModalRef = this.modalService.show(template, {class: 'modal-lg'});
-      this.closeCommentPanel();
-    })
-  }
-
+  
   // format định dạng ngày    
   formatDateTime(date: Date): string {
     if (!date) {

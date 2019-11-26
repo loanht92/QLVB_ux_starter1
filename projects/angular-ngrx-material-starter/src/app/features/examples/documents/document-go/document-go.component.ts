@@ -419,6 +419,7 @@ GetTotalStep() {
             // console.log('UserOfHandle:'+ element.UserOfHandle.Title);
             this.ListDocumentGo.push({
               ID: element.ID,
+              DocumentID: element.DocumentGoID,
               NumberGo: this.docServices.checkNull(element.NumberGo),
               DocTypeName: this.docServices.checkNull(element.DocTypeName),
               NumberSymbol: this.docServices.checkNull(element.NumberSymbol),
@@ -1422,6 +1423,7 @@ GetTotalStep() {
       }
       this.itemDoc = {
         ID: itemList[0].ID,
+        DocumentID: itemList[0].DocumentGoID,
         NumberGo: '', // (itemList[0].NumberGo === 0 || itemList[0].NumberGo == null)? '' : itemList[0].NumberGo,
         DocTypeName: this.docServices.checkNull(itemList[0].DocTypeID),
         NumberSymbol: this.docServices.checkNull(itemList[0].NumberSymbol),

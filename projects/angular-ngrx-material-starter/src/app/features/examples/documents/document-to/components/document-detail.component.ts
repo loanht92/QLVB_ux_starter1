@@ -465,16 +465,15 @@ export class DocumentDetailComponent implements OnInit {
             if(this.IndexStep <= 1 || element.TypeCode === "TL" || element.TypeCode === "TH") {
               this.isReturn = false;
             } else {
-              this.isReturn = true;
+              if(this.currentRoleTask === "NĐB") {
+                this.isReturn = false;
+              } else {
+                this.isReturn = true;
+              }
             }
           }
           // Check để hiển thị button thu hồi
           if(this.docTo.CheckNullSetZero(this.IndexStep) === 0) {
-            // if(element.UserApprover.Id === this.currentUserId) {
-            //   if(indexValid < element.IndexStep) {
-            //     indexValid = element.IndexStep;
-            //   }
-            // }
             if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" 
               && element.TypeCode === "CXL" && element.StatusID === 1 && element.TaskTypeID !== -1) {
               retrieveValid = true;
@@ -984,8 +983,8 @@ export class DocumentDetailComponent implements OnInit {
               IndexItem: this.IncomingDocID,
               Step: this.currentStep,
               KeyList: this.listName +  '_' + this.IncomingDocID,
-              SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.RetrieveEmailSubject, this.ArrayIdRetrieve[index].Name),
-              BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.RetrieveEmailBody, this.ArrayIdRetrieve[index].Name),
+              SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.RetrieveEmailSubject, this.ArrayIdRetrieve[index].Name, this.IndexStep + 1),
+              BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.RetrieveEmailBody, this.ArrayIdRetrieve[index].Name, this.IndexStep + 1),
               SendMailTo: this.ArrayIdRetrieve[index].Email,
             }
             this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -1097,8 +1096,8 @@ export class DocumentDetailComponent implements OnInit {
             IndexItem: this.IncomingDocID,
             Step: this.currentStep,
             KeyList: this.listName +  '_' + this.IncomingDocID,
-            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.currentUserName),
-            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.currentUserName),
+            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.currentUserName, this.currentStep),
+            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.currentUserName, this.currentStep),
             SendMailTo: this.currentUserEmail,
           }
           this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -1144,6 +1143,9 @@ export class DocumentDetailComponent implements OnInit {
         TaskTypeID: -1,
         IsFinished: 0
       };
+      if(this.currentRoleTask === "PH") {
+        Object.assign(dataTicket, {Content: this.docTo.CheckNull(this.content)});
+      }
       this.services.updateListById('ListProcessRequestTo', dataTicket, item.ID).subscribe(
         item => {},
         error => {
@@ -1211,8 +1213,8 @@ export class DocumentDetailComponent implements OnInit {
                   IndexItem: this.IncomingDocID,
                   Step: this.currentStep,
                   KeyList: this.listName +  '_' + this.IncomingDocID,
-                  SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailSubject, approver.DisplayName),
-                  BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailBody, approver.DisplayName),
+                  SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailSubject, approver.DisplayName, this.IndexStep - 1),
+                  BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailBody, approver.DisplayName, this.IndexStep - 1),
                   SendMailTo: approver.Email,
                 }
                 this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -1284,8 +1286,8 @@ export class DocumentDetailComponent implements OnInit {
               IndexItem: this.IncomingDocID,
               Step: this.currentStep,
               KeyList: this.listName +  '_' + this.IncomingDocID,
-              SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailSubject, approver.DisplayName),
-              BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailBody, approver.DisplayName),
+              SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailSubject, approver.DisplayName, 0),
+              BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReturnEmailBody, approver.DisplayName, 0),
               SendMailTo: approver.Email,
             }
             this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -2229,8 +2231,8 @@ export class DocumentDetailComponent implements OnInit {
           IndexItem: this.IncomingDocID,
           Step: this.currentStep,
           KeyList: this.listName +  '_' + this.IncomingDocID,
-          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentSubject, ''),
-          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentBody, ''),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentSubject, '', this.IndexStep + 1),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.ReplyCommentBody, '', this.IndexStep + 1),
           SendMailTo: this.AuthorComment.Email,
         }
         this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -2330,7 +2332,7 @@ export class DocumentDetailComponent implements OnInit {
       this.CloseRotiniPanel();
     },
     () => {
-      const strSelect = `?$select=*,UserRequest/Title,UserRequest/Name,UserApprover/Id,UserApprover/Title,AttachmentFiles`
+      const strSelect = `?$select=*,UserRequest/Title,UserRequest/Name,UserApprover/Id,UserApprover/Title,UserApprover/Name,AttachmentFiles`
       + `&$expand=UserRequest,UserApprover,AttachmentFiles&$filter=NoteBookID eq '` + 
       this.IncomingDocID + `' and TypeCode ne 'XYK' and (TaskTypeCode eq 'XLC' or (TaskTypeCode eq 'PH' and (TaskTypeID eq '1' or TaskTypeID eq '-1')))&$orderby=Created asc`
 
@@ -2344,9 +2346,15 @@ export class DocumentDetailComponent implements OnInit {
           if(environment.usingMockData) {
             picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';
           } else {
-            this.assetFolder = this.assetFolder.replace('../', '');
-            // picture = this.assetFolder + '/img/default-user-image.png';
-            picture = this.getUserPicture(element.UserRequest.Name.split('|')[2]);
+            if(element.TaskTypeCode === 'XLC') {
+              picture = this.getUserPicture(
+                element.UserRequest.Name.split('|')[2]
+              );
+            } else if (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) {
+              picture = this.getUserPicture(
+                element.UserApprover.Name.split('|')[2]
+              );
+            }
           }     
           
           if (this.isNotNull(element.AttachmentFiles)) {
@@ -2360,10 +2368,11 @@ export class DocumentDetailComponent implements OnInit {
           }
           this.listCommentParent.push({
             ID: element.ID,
-            Author:element.TaskTypeCode === 'XLC' ? element.UserRequest.Title : 
-                  (element.TaskTypeCode === 'PH' && element.TaskTypeID === 1) ? element.UserApprover.Title : element.UserRequest.Title,
+            Author: element.TaskTypeCode === 'XLC' ? element.UserRequest.Title : 
+                  (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) ? element.UserApprover.Title : element.UserRequest.Title,
             Chat_Comments: this.docTo.CheckNull(element.Content === '') ? 'Chuyển xử lý' : element.Content,
-            Created: moment(element.Created).format('DD/MM/YYYY HH:mm:ss'),
+            Created: element.TaskTypeCode === 'XLC' ? moment(element.Created).format('DD/MM/YYYY HH:mm:ss') :
+                (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) ? moment(element.Modified).format('DD/MM/YYYY HH:mm:ss') : moment(element.Created).format('DD/MM/YYYY HH:mm:ss'),
             userPicture: picture,
             UserApprover: '',
             XinYKien:'',
@@ -2463,8 +2472,8 @@ export class DocumentDetailComponent implements OnInit {
             IndexItem: this.IncomingDocID,
             Step: this.currentStep,
             KeyList: this.listName +  '_' + this.IncomingDocID,
-            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentSubject, ''),
-            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentBody, ''),
+            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentSubject, '', this.IndexStep + 1),
+            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.CommentBody, '', this.IndexStep + 1),
             SendMailTo: this.selectedUserComment.split('|')[1],
           }
           this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -2494,8 +2503,8 @@ export class DocumentDetailComponent implements OnInit {
           IndexItem: this.IncomingDocID,
           Step: this.currentStep,
           KeyList: this.listName +  '_' + this.IncomingDocID,
-          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.selectedApprover.split('|')[2]),
-          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.selectedApprover.split('|')[2]),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.selectedApprover.split('|')[2], this.IndexStep + 1),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.selectedApprover.split('|')[2], this.IndexStep + 1),
           SendMailTo: this.selectedApprover.split('|')[1]
         }
         this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
@@ -2525,8 +2534,8 @@ export class DocumentDetailComponent implements OnInit {
           IndexItem: this.IncomingDocID,
           Step: this.currentStep,
           KeyList: this.listName +  '_' + this.IncomingDocID,
-          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.itemDoc.authorName),
-          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.itemDoc.authorName),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.itemDoc.authorName, this.IndexStep + 1),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.itemDoc.authorName, this.IndexStep + 1),
           SendMailTo: this.itemDoc.authorEmail
         }
         this.services.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
@@ -2558,8 +2567,8 @@ export class DocumentDetailComponent implements OnInit {
       IndexItem: this.IncomingDocID,
       Step: this.currentStep,
       KeyList: this.listName +  '_' + this.IncomingDocID,
-      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, user.split('|')[2]),
-      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, user.split('|')[2]),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, user.split('|')[2], this.IndexStep + 1),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, user.split('|')[2], this.IndexStep + 1),
       SendMailTo: user.split('|')[1],
     }
     this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -2593,8 +2602,8 @@ export class DocumentDetailComponent implements OnInit {
       IndexItem: this.IncomingDocID,
       Step: this.currentStep,
       KeyList: this.listName +  '_' + this.IncomingDocID,
-      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, user.split('|')[2]),
-      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, user.split('|')[2]),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, user.split('|')[2], this.IndexStep + 1),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, user.split('|')[2], this.IndexStep + 1),
       SendMailTo: user.split('|')[1],
     }
     this.services.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
@@ -2622,7 +2631,7 @@ export class DocumentDetailComponent implements OnInit {
 
   }
 
-  Replace_Field_Mail(FieldMail, ContentMail, UserApprover) {
+  Replace_Field_Mail(FieldMail, ContentMail, UserApprover, indexStep) {
     try {
       if (this.isNotNull(FieldMail) && this.isNotNull(ContentMail)) {
         let strContent = FieldMail.split(",");
@@ -2666,7 +2675,7 @@ export class DocumentDetailComponent implements OnInit {
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID);
               break;
             case 'TaskUrl':
-              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID + '/' + (this.IndexStep + 1));
+              ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID + '/' + indexStep);
               break;
             case 'HomeUrl':
               ContentMail = ContentMail.replace("{" + strContent[i] + "}", window.location.href.split('#/')[0] + '#/Documents/IncomingDoc');

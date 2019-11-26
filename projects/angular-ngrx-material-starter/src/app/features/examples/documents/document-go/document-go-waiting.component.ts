@@ -186,8 +186,7 @@ export class DocumentGoWaitingComponent implements OnInit {
     else if (this.id === 2) {
    //   strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
       strSelect = `') and TypeCode ne 'XYK' and IsFinished ne '1'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId +  strSelect;
-      //`' or UserApprover/Id eq '` + this.currentUserId +
+      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
     }
     //Đã xử lý
     else if (this.id === 3) {
@@ -224,11 +223,10 @@ export class DocumentGoWaitingComponent implements OnInit {
             item.forEach(element => {
               if (
                 this.ListDocumentGo.findIndex(
-                  e => e.ID === element.DocumentGoID
-                ) < 0
-              ) {
+                  e => e.ID === element.DocumentGoID ) < 0 ) {
                 this.ListDocumentGo.push({
-                  ID: element.DocumentGoID,
+                  ID: element.ID,
+                  DocumentID: element.DocumentGoID,
                   NumberGo: this.docServices.formatNumberGo(element.NumberGo),
                   DocTypeName: this.CheckNull(element.DocTypeName),
                   NumberSymbol: this.CheckNull(element.Title),
@@ -273,7 +271,7 @@ export class DocumentGoWaitingComponent implements OnInit {
                     element.DocumentGoID,
                     element.IndexStep
                   ),
-                  TypeCode: element.TypeCode,
+                  TypeCode: element.TaskTypeCode,
                   StatusID: element.StatusID,
                 });
               } else if (element.IsFinished === 1) {
@@ -292,10 +290,11 @@ export class DocumentGoWaitingComponent implements OnInit {
               listItem1 = this.ListDocumentGo.filter(i => i.StatusID === 0 && i.UserApproverId === this.currentUserId);
               listItem3 =  this.ListDocumentGo.filter(i => i.StatusID === -1 && i.UserApproverId === this.currentUserId);
               this.ListDocumentGo.forEach(element => {
-                if(listItem1.findIndex(e => e.ID === element.ID) < 0 && 
-                  listItem3.findIndex(e => e.ID === element.ID) < 0 &&
-                  listItem2.findIndex(e => e.ID === element.ID || e.ID === element.ID) < 0) {
-                    if(element.TypeCode === "XLC") {
+                if(listItem1.findIndex(e => e.DocumentID === element.DocumentID) < 0 && 
+                  listItem3.findIndex(e => e.DocumentID === element.DocumentID) < 0 &&
+                  listItem2.findIndex(e => e.DocumentID === element.DocumentID) < 0) {
+                    if(element.AuthorId === this.currentUserId && element.TypeCode === "XLC"
+                      || (element.UserApproverId === this.currentUserId && (element.TypeCode === "PH" || element.TypeCode === "NĐB"))) {
                       listItem2.push(element);
                     }
                 }
@@ -310,20 +309,16 @@ export class DocumentGoWaitingComponent implements OnInit {
               })
               this.dataSource = new MatTableDataSource<ItemDocumentGo>(listItem1);
             }
+            if (!(this.ref as ViewRef).destroyed) {
+              this.ref.detectChanges();
+            }
+            this.dataSource.paginator = this.paginator;
           },
           error => {
             console.log(error);
             this.closeCommentPanel();
           },
           () => {
-            console.log('get success');
-            this.dataSource = new MatTableDataSource<ItemDocumentGo>(
-              this.ListDocumentGo
-            );
-            if (!(this.ref as ViewRef).destroyed) {
-              this.ref.detectChanges();
-            }
-            this.dataSource.paginator = this.paginator;
             this.closeCommentPanel();
           }
         );

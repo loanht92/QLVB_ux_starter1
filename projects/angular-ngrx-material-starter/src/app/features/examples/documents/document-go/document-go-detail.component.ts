@@ -92,6 +92,7 @@ export class UserRetieve {
   TaskType: string;
   TaskTypeCode: string;
   UserId: number;
+  Email: string;
 }
 
 @Component({
@@ -152,6 +153,7 @@ export class DocumentGoDetailComponent implements OnInit {
   ListDepartment = [];
   ListUserApprover = [];
   ListUserChoice: UserChoice[] = [];
+  ListAllUserChoice: UserChoice[] = [];
   ListUserOfDepartment: UserOfDepartment[] = [];
   ListUserCombine = [];
   ListUserKnow = [];
@@ -188,13 +190,13 @@ export class DocumentGoDetailComponent implements OnInit {
   dataSource3 = new MatTableDataSource<UserRetieve>();
   ListHistoryId = [];
   selection = new SelectionModel<UserRetieve>(true, []);
-  ReasonRetrieve;
   AuthorComment;
   ContentReply;
   NumberGoMax = 0;
   currentRoleTask = '';
-  IsFinishItem=false;IsFlag=false;
+  IsFinishItem = false; IsFlag = false;
   AuthorDocument;
+  Retieved = false;
   constructor(
     private docServices: DocumentGoService,
     private resService: ResApiService,
@@ -385,22 +387,34 @@ export class DocumentGoDetailComponent implements OnInit {
             let item = itemValue['value'] as Array<any>;
             let ListDe = [];
             this.ListUserChoice = [];
+            this.ListAllUserChoice = [];
             item.forEach(element => {
-              if (this.IndexStep === this.totalStep - 2) {
-                if(element.RoleCode=='GĐ'){
-              this.ListUserChoice.push({
-                Id: element.User.Id,
-                DisplayName: element.User.Title,
-                Email: element.User.Name.split('|')[2],
-                DeCode: element.DepartmentCode,
-                DeName: element.DepartmentName,
-                RoleCode: element.RoleCode,
-                RoleName: element.RoleName
-              });
-              if (ListDe.indexOf(element.DepartmentCode) < 0) {
-                ListDe.push(element.DepartmentCode);
+              if(this.ListAllUserChoice.findIndex(i => i.Id === element.User.Id) < 0) {
+                this.ListAllUserChoice.push({
+                  Id: element.User.Id,
+                  DisplayName: element.User.Title,
+                  Email: element.User.Name.split('|')[2],
+                  DeCode: element.DepartmentCode,
+                  DeName: element.DepartmentName,
+                  RoleCode: element.RoleCode,
+                  RoleName: element.RoleName
+                });
               }
-            }
+              if (this.IndexStep === this.totalStep - 2) {
+                if(element.RoleCode=='GĐ') {
+                  this.ListUserChoice.push({
+                    Id: element.User.Id,
+                    DisplayName: element.User.Title,
+                    Email: element.User.Name.split('|')[2],
+                    DeCode: element.DepartmentCode,
+                    DeName: element.DepartmentName,
+                    RoleCode: element.RoleCode,
+                    RoleName: element.RoleName
+                  });
+                if (ListDe.indexOf(element.DepartmentCode) < 0) {
+                  ListDe.push(element.DepartmentCode);
+                }
+              }
             }
             else{
               this.ListUserChoice.push({
@@ -574,9 +588,9 @@ export class DocumentGoDetailComponent implements OnInit {
               ReturnEmailSubject: element.ReturnRequestSubject,
               ReturnEmailBody: element.ReturnRequestBody,
               RetrieveEmailSubject: element.RetrieveRequestSubject,
-              RetrieveEmailBody: element.RetrieveRequestBody,
+              RetrieveEmailBody: element.RetrieveRequestbody,
               OutOfDateSubject: element.OutOfDateSubject,
-              OutOfDateBody: element.OutOfDateBody
+              OutOfDateBody:element.OutOfDateBody,
             };
           });
         }
@@ -636,6 +650,7 @@ export class DocumentGoDetailComponent implements OnInit {
           this.AuthorDocument={Id:itemList[0].Author.Id,Name:itemList[0].Author.Title,Email:itemList[0].Author.Name.split('|')[2]};
           this.itemDoc = {
             ID: itemList[0].ID,
+            DocumentID: itemList[0].DocumentGoID,
             NumberGo:
               this.docServices.CheckNullSetZero(itemList[0].NumberGo) === 0
                 ? ''
@@ -756,7 +771,11 @@ export class DocumentGoDetailComponent implements OnInit {
               if(this.IndexStep <= 1 || element.TypeCode === "TL" || element.TypeCode === "TH") {
                 this.isReturn = false;
               } else {
-                this.isReturn = true;
+                if(this.currentRoleTask === "NĐB") {
+                  this.isReturn = false;
+                } else {
+                  this.isReturn = true;
+                }
               }
             }
             // Check để hiển thị button thu hồi
@@ -766,6 +785,10 @@ export class DocumentGoDetailComponent implements OnInit {
               //     indexValid = element.IndexStep;
               //   }
               // }
+              if(element.UserRequest.Id === this.currentUserId && element.IndexStep === 2 && element.TaskTypeCode === "XLC") {
+                retrieveValid = true;
+                indexValid = 1;
+              }
               if(element.UserApprover.Id === this.currentUserId && element.TaskTypeCode === "XLC" 
                 && element.TypeCode === "CXL" && element.StatusID === 1 && element.TaskTypeID !== -1) {
                 retrieveValid = true;
@@ -929,24 +952,26 @@ export class DocumentGoDetailComponent implements OnInit {
   AddTicketRetrieve() {
     // DateRetrieve
     const length = this.selection.selected.length;
-    if (length > 0) {
+    if(length > 0) {
       this.openCommentPanel();
-      for (let i = 0; i < length; i++) {
-        if (this.ArrayIdRetrieve.indexOf(this.selection.selected[i].Id) < 0) {
-          this.ArrayIdRetrieve.push(this.selection.selected[i].Id);
+      for(let i = 0; i < length; i++) {
+        if(this.ArrayIdRetrieve.findIndex(e => e.Id === this.selection.selected[i].Id) < 0) {
+          this.ArrayIdRetrieve.push({ Id: this.selection.selected[i].Id, Email: this.selection.selected[i].Email, Name: this.selection.selected[i].Name});
         }
-        if (this.selection.selected[i].TaskTypeCode === 'XLC') {
+        if(this.selection.selected[i].TaskTypeCode === "XLC" || this.selection.selected[i].TaskTypeCode === "XYK") {
+          this.Retieved = true;
           this.ListItem.forEach(element => {
-            if (element.indexStep > this.currentStep) {
-              if (this.ArrayIdRetrieve.indexOf(element.ID) < 0) {
-                this.ArrayIdRetrieve.push(element.ID);
+            if((element.stsTypeCode === "XYK" && element.indexStep >= this.currentStep) 
+            || (element.stsTypeCode === "CXL" && element.indexStep > this.currentStep) ) {
+              if(this.ArrayIdRetrieve.findIndex(e => e.Id === element.ID) < 0) {
+                this.ArrayIdRetrieve.push({ Id: element.ID, Email: element.userApproverEmail, Name: element.userApprover});
               }
             }
           });
         }
       }
       this.UpdateTicketRetrieve(0);
-    }
+    }   
   }
 
   UpdateTicketRetrieve(index) {
@@ -956,7 +981,7 @@ export class DocumentGoDetailComponent implements OnInit {
         this.ArrayIdRetrieve.length > 0
       ) {
         let request;
-        request = this.ListUserChoice.find(
+        request = this.ListAllUserChoice.find(
           item =>
             item.Id === this.docServices.CheckNullSetZero(this.currentUserId)
         );
@@ -967,9 +992,9 @@ export class DocumentGoDetailComponent implements OnInit {
           StatusName: 'Đã thu hồi',
           DateRetrieve: new Date(),
           Content:
-            this.docServices.checkNull(this.ReasonRetrieve) === ''
+            this.docServices.checkNull(this.content) === ''
               ? ''
-              : this.ReasonRetrieve,
+              : this.content,
           UserRetrieveId: this.currentUserId
         };
         if (request !== undefined) {
@@ -979,7 +1004,7 @@ export class DocumentGoDetailComponent implements OnInit {
           .updateListById(
             'ListProcessRequestGo',
             dataTicket,
-            this.ArrayIdRetrieve[index]
+            this.ArrayIdRetrieve[index].Id
           )
           .subscribe(
             item => {},
@@ -994,19 +1019,48 @@ export class DocumentGoDetailComponent implements OnInit {
             () => {
               console.log(
                 'update item ' +
-                  this.ArrayIdRetrieve[index] +
+                  this.ArrayIdRetrieve[index].Id +
                   ' of approval user to list ListProcessRequestGo successfully!'
               );
-              index++;
-              if (index < this.ArrayIdRetrieve.length) {
-                this.UpdateTicketRetrieve(index);
-              } else {
-                if (this.ListHistoryId.length > 0) {
-                  this.DeleteHistoryRetrieve(0);
-                } else {
-                  this.callbackRetrieve();
-                }
+              const dataSendUser = {
+                __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+                Title: this.listName,
+                IndexItem: this.ItemId,
+                Step: this.currentStep,
+                KeyList: this.listName +  '_' + this.ItemId,
+                SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.RetrieveEmailSubject, this.ArrayIdRetrieve[index].Name, this.IndexStep + 1),
+                BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.RetrieveEmailBody, this.ArrayIdRetrieve[index].Name, this.IndexStep + 1),
+                SendMailTo: this.ArrayIdRetrieve[index].Email,
               }
+              this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
+                itemRoomRQ => {
+                  console.log(itemRoomRQ['d']);
+                },
+                error => {
+                  console.log(error);
+                  this.closeCommentPanel();
+                },
+                () => {
+                  console.log('Save item success and send mail success');
+                  index ++;
+                  if(index < this.ArrayIdRetrieve.length) {
+                    this.UpdateTicketRetrieve(index);
+                  }
+                  else {
+                    if(this.Retieved) {
+                      if(this.ListHistoryId.length > 0) {
+                        this.DeleteHistoryRetrieve(0);
+                      } else {
+                        this.callbackRetrieve();
+                      }
+                    } else {
+                      this.bsModalRef.hide();
+                      this.closeCommentPanel();
+                      this.notificationService.success('Thu hồi văn bản thành công');
+                      window.location.reload(); 
+                    }
+                  }
+                })
             }
           );
       }
@@ -1045,16 +1099,13 @@ export class DocumentGoDetailComponent implements OnInit {
   }
 
   callbackRetrieve() {
-    let itemUpdate = this.ListItem.find(
-      item =>
-        item.indexStep === this.currentStep - 1 && item.taskTypeCode === 'XLC'
-    );
+    let itemUpdate = this.ListItem.find(item => item.indexStep === (this.currentStep + 1) && item.taskTypeCode === "XLC");
     if (itemUpdate !== undefined) {
       const data = {
         __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
         Title: this.itemDoc.NumberGo,
         DateCreated: new Date(),
-        NoteBookID: this.ItemId,
+        DocumentGoID: this.ItemId,
         UserRequestId: itemUpdate.userApproverId,
         UserApproverId: this.currentUserId,
         Deadline:
@@ -1071,12 +1122,13 @@ export class DocumentGoDetailComponent implements OnInit {
         TaskTypeName: 'Xử lý chính',
         TypeCode: 'TH',
         TypeName: 'Phiếu thu hồi',
-        Content: this.docServices.checkNull(this.ReasonRetrieve),
+        Content: this.docServices.checkNull(this.content),
         IndexStep: this.currentStep - 1,
         Compendium: this.itemDoc.Compendium,
         DocTypeName: this.itemDoc.DocTypeName,
-        UrgentCode:this.itemDoc.UrgentCode ,
-        SecretCode:this.itemDoc.SecretCode ,
+        UrgentCode: this.itemDoc.UrgentCode,
+        SecretCode: this.itemDoc.SecretCode,
+        // Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
       };
 
       this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
@@ -1090,16 +1142,37 @@ export class DocumentGoDetailComponent implements OnInit {
             this.notificationService.error('Thu hồi văn bản thất bại');
         },
         () => {
-          this.bsModalRef.hide();
-          this.closeCommentPanel();
-          this.notificationService.success('Thu hồi văn bản thành công');
-          this.isRetrieve = false;
-        }
-      );
+          const dataSendUser = {
+            __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
+            Title: this.listName,
+            IndexItem: this.ItemId,
+            Step: this.currentStep,
+            KeyList: this.listName +  '_' + this.ItemId,
+            SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailSubject, this.currentUserName, this.currentStep),
+            BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.AssignEmailBody, this.currentUserName, this.currentStep),
+            SendMailTo: this.currentUserEmail,
+          }
+          this.resService.AddItemToList('ListRequestSendMail', dataSendUser).subscribe(
+            itemRoomRQ => {
+              console.log(itemRoomRQ['d']);
+            },
+            error => {
+              console.log(error);
+              this.closeCommentPanel();
+            },
+            () => {
+              this.bsModalRef.hide();
+              this.closeCommentPanel();
+              this.notificationService.success('Thu hồi văn bản thành công');
+              // this.isRetrieve = false;
+              window.location.reload(); 
+            })
+        })
     } else {
       this.bsModalRef.hide();
       this.closeCommentPanel();
       this.notificationService.success('Thu hồi văn bản thành công');
+      window.location.reload(); 
     }
   }
 
@@ -1121,7 +1194,7 @@ export class DocumentGoDetailComponent implements OnInit {
         i.statusId === 0
     );
     console.log('return request ' + item);
-    if(item==undefined){
+    if(item === undefined){
       console.log('không tìm thấy phiếu');
       return;
     }
@@ -1131,8 +1204,11 @@ export class DocumentGoDetailComponent implements OnInit {
       StatusID: 1,
       StatusName: 'Đã xử lý',
       TaskTypeID: -1,
-      IsFinished: 0
+      IsFinished: 0,      
     };
+    if(this.currentRoleTask === "PH") {
+      Object.assign(dataTicket, {Content: this.docServices.checkNull(this.content)});
+    }
     this.resService
       .updateListById('ListProcessRequestGo', dataTicket, item.ID)
       .subscribe(
@@ -1157,12 +1233,12 @@ export class DocumentGoDetailComponent implements OnInit {
           let approverId;
           approverId = item.userRequestId;
           let request, approver;
-          request = this.ListUserChoice.find(
+          request = this.ListAllUserChoice.find(
             item =>
               item.Id ===
               this.docServices.CheckNullSetZero(this.currentUserId)
           );
-          approver = this.ListUserChoice.find(
+          approver = this.ListAllUserChoice.find(
             item => item.Id === this.docServices.CheckNullSetZero(approverId)
           );
 
@@ -1231,12 +1307,12 @@ export class DocumentGoDetailComponent implements OnInit {
                     SubjectMail: this.Replace_Field_Mail(
                       this.EmailConfig.FieldMail,
                       this.EmailConfig.ReturnEmailSubject,
-                      approver.DisplayName
+                      approver.DisplayName, this.IndexStep - 1
                     ),
                     BodyMail: this.Replace_Field_Mail(
                       this.EmailConfig.FieldMail,
                       this.EmailConfig.ReturnEmailBody,
-                      approver.DisplayName
+                      approver.DisplayName, this.IndexStep - 1
                     ),
                     SendMailTo: approver.Email
                   };
@@ -1330,12 +1406,12 @@ export class DocumentGoDetailComponent implements OnInit {
               SubjectMail: this.Replace_Field_Mail(
                 this.EmailConfig.FieldMail,
                 this.EmailConfig.ReturnEmailSubject,
-                approver.DisplayName
+                approver.DisplayName, 0
               ),
               BodyMail: this.Replace_Field_Mail(
                 this.EmailConfig.FieldMail,
                 this.EmailConfig.ReturnEmailBody,
-                approver.DisplayName
+                approver.DisplayName, 0
               ),
               SendMailTo: approver.Email
             };
@@ -1402,11 +1478,11 @@ export class DocumentGoDetailComponent implements OnInit {
         this.openCommentPanel();
         //let data: Array<any> = [];
         let request, approver;
-        request = this.ListUserChoice.find(
+        request = this.ListAllUserChoice.find(
           item =>
             item.Id === this.docServices.CheckNullSetZero(this.currentUserId)
         );
-        approver = this.ListUserChoice.find(
+        approver = this.ListAllUserChoice.find(
           item =>
             item.Id ===
             this.docServices.CheckNullSetZero(
@@ -1490,27 +1566,6 @@ export class DocumentGoDetailComponent implements OnInit {
                   console.log('Update user approver name successfully!');
                 }
               );
-
-            // if (this.IndexStep === this.totalStep - 1) {
-            //   const dataTicket = {
-            //     __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
-            //     NumberGo: this.docServices.CheckNullSetZero(this.numberGo),
-            //     NumberSymbol: this.numberOfSymbol
-            //   };
-            //   this.resService
-            //     .updateListById(this.listName, dataTicket, this.ItemId)
-            //     .subscribe(
-            //       item => {},
-            //       error => {
-            //         this.closeCommentPanel();
-            //         console.log(
-            //           'error when update item to list ListDocumentGo: ' +
-            //             error.error.error.message.value
-            //         );
-            //       },
-            //       () => {}
-            //     );
-            // }
             if (this.historyId > 0) {
               const dataTicket = {
                 __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' },
@@ -1544,13 +1599,14 @@ export class DocumentGoDetailComponent implements OnInit {
       this.closeCommentPanel();
     }
   }
+
 //phiếu XL cho người phối hợp
   AddUserCombine() {
     let request, approver;
-    request = this.ListUserChoice.find(
+    request = this.ListAllUserChoice.find(
       item => item.Id === this.docServices.CheckNullSetZero(this.currentUserId)
     );
-    approver = this.ListUserChoice.find(
+    approver = this.ListAllUserChoice.find(
       item =>
         item.Id ===
         this.docServices.CheckNullSetZero(
@@ -1620,10 +1676,10 @@ export class DocumentGoDetailComponent implements OnInit {
 //phiếu XL cho người nhận để biết
   AddUserKnow() {
     let request, approver;
-    request = this.ListUserChoice.find(
+    request = this.ListAllUserChoice.find(
       item => item.Id === this.docServices.CheckNullSetZero(this.currentUserId)
     );
-    approver = this.ListUserChoice.find(
+    approver = this.ListAllUserChoice.find(
       item =>
         item.Id ===
         this.docServices.CheckNullSetZero(
@@ -1822,12 +1878,15 @@ export class DocumentGoDetailComponent implements OnInit {
       }
     }
   }
+
+
   FinishRequest() {
     this.openCommentPanel();
     const data = {
       __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
       StatusID: 1,
-      StatusName: 'Đã xử lý'
+      StatusName: 'Đã xử lý',
+      DateIssued: new Date()
     };
     this.resService.updateListById(this.listName, data, this.ItemId).subscribe(
       item => {},
@@ -1897,7 +1956,7 @@ export class DocumentGoDetailComponent implements OnInit {
         1
       );
     } else {
-     
+      this.notificationService.success('Xử lý văn bản thành công');
       this.closeCommentPanel();
       this.routes.navigate(['/Documents/documentgo-detail/' + idDocument]);
     }
@@ -1908,21 +1967,6 @@ export class DocumentGoDetailComponent implements OnInit {
   }
 
   AddNewComment(template) {
-    // this.ListDocument = this.itemDoc;
-    // console.log(this.itemDoc);
-    // const dialogRef = this.dialog.open(CommentComponent, {
-    //   width: '50%', data: [this.ListDocument, this.ListUserChoice]
-    // });
-
-    // dialogRef.afterClosed().subscribe(result => {
-    //   console.log(`Dialog result: ${result}`);
-    //   //Lấy lại thông tin sau khi đóng diglog
-    //   this.GetItemDetail();
-    //   this.GetHistory();
-    //   this.getComment();
-    //   // this.callbackfunc();
-    // });
-
     this.bsModalRef = this.modalService.show(template, { class: 'modal-md' });
     this.contentComment = '';
     this.outputFileAddComment = [];
@@ -2073,6 +2117,7 @@ export class DocumentGoDetailComponent implements OnInit {
                   }
                 } else {
                   arr = [];
+                  this.notificationService.success('Xử lý văn bản thành công');
                   this.routes.navigate([
                     '/Documents/documentgo-detail/' + this.ItemId
                   ]);
@@ -2366,12 +2411,12 @@ export class DocumentGoDetailComponent implements OnInit {
               SubjectMail: this.Replace_Field_Mail(
                 this.EmailConfig.FieldMail,
                 this.EmailConfig.ReplyCommentSubject,
-                ''
+                '', this.IndexStep + 1
               ),
               BodyMail: this.Replace_Field_Mail(
                 this.EmailConfig.FieldMail,
                 this.EmailConfig.ReplyCommentBody,
-                ''
+                '', this.IndexStep + 1
               ),
               SendMailTo: this.AuthorComment.Email
             };
@@ -2489,11 +2534,15 @@ export class DocumentGoDetailComponent implements OnInit {
                   this.assetFolder +
                   '/img/default-user-image.png';
               } else {
-                // this.assetFolder = this.assetFolder.replace('../', '');
-                // picture = this.assetFolder + '/img/default-user-image.png';
-                picture = this.getUserPicture(
-                  element.UserRequest.Name.split('|')[2]
-                );
+                if(element.TaskTypeCode === 'XLC') {
+                  picture = this.getUserPicture(
+                    element.UserRequest.Name.split('|')[2]
+                  );
+                } else if (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) {
+                  picture = this.getUserPicture(
+                    element.UserApprover.Name.split('|')[2]
+                  );
+                }
               }
               if (element.IndexStep === 1 && element.TypeCode === 'CXL') {
                 return;
@@ -2509,13 +2558,15 @@ export class DocumentGoDetailComponent implements OnInit {
               }
               this.listCommentParent.push({
                 ID: element.ID,
-                Author: element.UserRequest.Title,
+                Author:element.TaskTypeCode === 'XLC' ? element.UserRequest.Title : 
+                    (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) ? element.UserApprover.Title : element.UserRequest.Title,
                 Chat_Comments: this.docServices.checkNull(
                   element.Content === ''
                 )
                   ? 'Chuyển xử lý'
                   : element.Content,
-                Created: moment(element.Created).format('DD/MM/YYYY HH:mm:ss'),
+                Created: element.TaskTypeCode === 'XLC' ? moment(element.Created).format('DD/MM/YYYY HH:mm:ss') :
+                  (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) ? moment(element.Modified).format('DD/MM/YYYY HH:mm:ss') : moment(element.Created).format('DD/MM/YYYY HH:mm:ss'),
                 userPicture: picture,
                 UserApprover: '',
                 XinYKien: '',
@@ -2619,12 +2670,12 @@ export class DocumentGoDetailComponent implements OnInit {
               SubjectMail: this.Replace_Field_Mail(
                 this.EmailConfig.FieldMail,
                 this.EmailConfig.CommentSubject,
-                ''
+                '', this.IndexStep + 1
               ),
               BodyMail: this.Replace_Field_Mail(
                 this.EmailConfig.FieldMail,
                 this.EmailConfig.CommentBody,
-                ''
+                '', this.IndexStep + 1
               ),
               SendMailTo: this.selectedUserComment.split('|')[1]
             };
@@ -2682,6 +2733,7 @@ export class DocumentGoDetailComponent implements OnInit {
       );
     }
   }
+
   addItemSendMail() {
     try {
       if(this.docServices.checkNull(this.selectedApprover) !== '') {
@@ -2694,12 +2746,14 @@ export class DocumentGoDetailComponent implements OnInit {
         SubjectMail: this.Replace_Field_Mail(
           this.EmailConfig.FieldMail,
           this.EmailConfig.AssignEmailSubject,
-          this.selectedApprover.split('|')[2]
+          this.selectedApprover.split('|')[2],
+          this.IndexStep + 1
         ),
         BodyMail: this.Replace_Field_Mail(
           this.EmailConfig.FieldMail,
           this.EmailConfig.AssignEmailBody,
-          this.selectedApprover.split('|')[2]
+          this.selectedApprover.split('|')[2],
+          this.IndexStep + 1
         ),
         SendMailTo: this.selectedApprover.split('|')[1]
       };
@@ -2731,8 +2785,8 @@ export class DocumentGoDetailComponent implements OnInit {
           IndexItem: this.ItemId,
           Step: this.currentStep,
           KeyList: this.listName +  '_' + this.ItemId,
-          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.AuthorDocument.Name),
-          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.AuthorDocument.Name),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.AuthorDocument.Name, this.IndexStep + 1),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.AuthorDocument.Name, this.IndexStep + 1),
           SendMailTo: this.AuthorDocument.Email
         }
         this.resService.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
@@ -2767,12 +2821,12 @@ export class DocumentGoDetailComponent implements OnInit {
       SubjectMail: this.Replace_Field_Mail(
         this.EmailConfig.FieldMail,
         this.EmailConfig.AssignEmailSubject,
-        user.split('|')[2]
+        user.split('|')[2], this.IndexStep + 1
       ),
       BodyMail: this.Replace_Field_Mail(
         this.EmailConfig.FieldMail,
         this.EmailConfig.AssignEmailBody,
-        user.split('|')[2]
+        user.split('|')[2], this.IndexStep + 1
       ),
       SendMailTo: user.split('|')[1]
     };
@@ -2806,12 +2860,12 @@ export class DocumentGoDetailComponent implements OnInit {
       SubjectMail: this.Replace_Field_Mail(
         this.EmailConfig.FieldMail,
         this.EmailConfig.AssignEmailSubject,
-        user.split('|')[2]
+        user.split('|')[2], this.IndexStep + 1
       ),
       BodyMail: this.Replace_Field_Mail(
         this.EmailConfig.FieldMail,
         this.EmailConfig.AssignEmailBody,
-        user.split('|')[2]
+        user.split('|')[2], this.IndexStep + 1
       ),
       SendMailTo: user.split('|')[1]
     };
@@ -2834,7 +2888,7 @@ export class DocumentGoDetailComponent implements OnInit {
       );
   }
 
-  Replace_Field_Mail(FieldMail, ContentMail, UserApprover) {
+  Replace_Field_Mail(FieldMail, ContentMail, UserApprover, indexStep) {
     try {
       if (this.isNotNull(FieldMail) && this.isNotNull(ContentMail)) {
         let strContent = FieldMail.split(',');
@@ -2925,8 +2979,7 @@ export class DocumentGoDetailComponent implements OnInit {
                 window.location.href.split('#/')[0] +
                   '#/Documents/documentgo-detail/' +
                   this.ItemId +
-                  '/' +
-                  (this.IndexStep + 1)
+                  '/' + indexStep
               );
               break;
             case 'HomeUrl':
