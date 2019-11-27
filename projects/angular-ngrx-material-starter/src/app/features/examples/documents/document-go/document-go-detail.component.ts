@@ -183,6 +183,7 @@ export class DocumentGoDetailComponent implements OnInit {
   isRetrieve: boolean;
   isReturn: boolean;
   isCombine: boolean;
+  isApproval=false;
   isExecution: boolean;
   isFinish: boolean;
   ArrCurrentRetrieve = [];
@@ -194,6 +195,7 @@ export class DocumentGoDetailComponent implements OnInit {
   ContentReply;
   NumberGoMax = 0;
   currentRoleTask = '';
+  currentUserRequestId ;
   IsFinishItem = false; IsFlag = false;
   AuthorDocument;
   Retieved = false;
@@ -346,6 +348,7 @@ export class DocumentGoDetailComponent implements OnInit {
           this.isCheckPermission = true;
           if (this.IndexStep > 0) {
             this.currentRoleTask = item[0].TaskTypeCode;
+            this.currentUserRequestId=item[0].UserRequest.Id;
             if (item[0].StatusID === 1) {
               this.routes.navigate([
                 'Documents/documentgo-detail/' + this.ItemId
@@ -627,7 +630,6 @@ export class DocumentGoDetailComponent implements OnInit {
 
   GetItemDetail() {
     try {
-      this.getNumberGo();
       this.ItemAttachments = [];
       this.docServices.getListDocByID(this.ItemId).subscribe(
         items => {
@@ -641,6 +643,12 @@ export class DocumentGoDetailComponent implements OnInit {
               });
             });
           }
+          //kiểm tra số vb đi đã có chưa? chưa có thì cấp số mới
+          this.numberGo= this.docServices.CheckNullSetZero(itemList[0].NumberGo);
+          if(this.numberGo==0){
+            this.getNumberGo();
+          }
+          //lấy tổng số bước của VB
           this.totalStep=itemList[0].TotalStep==null?0:itemList[0].TotalStep;
           this.deadline_VB =
             this.docServices.checkNull(itemList[0].Deadline) === ''
@@ -720,10 +728,10 @@ export class DocumentGoDetailComponent implements OnInit {
               this.isDisplay = true;
             }
             if (this.currentRoleTask === 'XLC') {
-              // if(this.IndexStep==this.totalStep-1){
-              //   this.isCombine = true;
-              // }
-              // else
+              if(this.IndexStep==this.totalStep-1){
+                this.isApproval = true;
+              }
+              else
               this.isExecution = true;
             } else if (this.currentRoleTask === 'PH') {
               this.isExecution = false;
@@ -1536,7 +1544,7 @@ export class DocumentGoDetailComponent implements OnInit {
             console.log(
               'Add item of approval user to list ListProcessRequestGo successfully!'
             );
-            // update user approver
+            // update user approver , số văn bản cho văn bản
             this.UserAppoverName +=
               ';' +
               this.selectedApprover.split('|')[0] +
@@ -1567,6 +1575,7 @@ export class DocumentGoDetailComponent implements OnInit {
                   console.log('Update user approver name successfully!');
                 }
               );
+              //update lịch sử
             if (this.historyId > 0) {
               const dataTicket = {
                 __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' },
@@ -1591,6 +1600,7 @@ export class DocumentGoDetailComponent implements OnInit {
                   () => {}
                 );
             }
+            //update phiếu xl
             this.UpdateStatus(1, 0);
           }
         );
@@ -1879,7 +1889,131 @@ export class DocumentGoDetailComponent implements OnInit {
       }
     }
   }
+// Add phiếu xử lý  : nút ký duyệt
+AddListTicketApproval() {
+  try {
+    if (this.docServices.checkNull(this.content) === '') {
+      this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
+      return ;
+    }
+      this.bsModalRef.hide();
+      this.openCommentPanel();
+      let request, approver;
+      request = this.ListAllUserChoice.find(
+        item =>
+          item.Id === this.docServices.CheckNullSetZero(this.currentUserId)
+      );
+      approver = this.ListAllUserChoice.find(
+        item =>
+          item.Id ===
+          this.docServices.CheckNullSetZero(
+            this.currentUserRequestId
+          )
+      );
+//tạo phiếu XL chính (giám đốc gửi lại cho văn thư)
+      const data = {
+        __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
+        Title: this.itemDoc.NumberGo,
+        DateCreated: new Date(),
+        DocumentGoID: this.ItemId,
+        UserRequestId: this.currentUserId,
+        UserApproverId: this.currentUserRequestId,
+        Deadline:
+          this.docServices.checkNull(this.deadline) === ''
+            ? this.deadline_VB
+            : this.deadline,
+        StatusID: 0,
+        StatusName: 'Chờ xử lý',
+        Source: request === undefined ? '' : request.DeName,
+        Destination: approver === undefined ? '' : approver.DeName,
+        RoleUserRequest: request === undefined ? '' : request.RoleName,
+        RoleUserApprover: approver === undefined ? '' : approver.RoleName,
+        TaskTypeCode: 'XLC',
+        TaskTypeName: 'Xử lý chính',
+        TypeCode: 'CXL',
+        TypeName: 'Chuyển xử lý',
+        Content: this.content,
+        IndexStep: this.IndexStep + 1,
+        Compendium: this.itemDoc.Compendium,
+        DocTypeName: this.itemDoc.DocTypeName,
+        UrgentCode:this.itemDoc.UrgentCode ,
+        SecretCode:this.itemDoc.SecretCode ,
+      };
 
+      this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
+        item => {
+          this.processId = item['d'].Id;
+        },
+        error => {
+          this.closeCommentPanel();
+          console.log(
+            'error when add item to list ListProcessRequestGo: ' +
+              error.error.error.message.value
+          ),
+            this.notificationService.error('Thêm phiếu xử lý thất bại');
+        },
+        () => {
+          console.log(
+            'Add item of approval user to list ListProcessRequestGo successfully!'
+          );
+          // update user approver
+          this.UserAppoverName +=
+            ';' +
+            approver.Id+
+            '_' +
+            approver.DisplayName;
+          const data = {
+            __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
+            ListUserApprover: this.UserAppoverName,
+            Signer:this.currentUserId
+          };
+          this.resService
+            .updateListById('ListDocumentGo', data, this.ItemId)
+            .subscribe(
+              item => {},
+              error => {
+                this.closeCommentPanel();
+                console.log(
+                  'error when update item to list ListDocumentGo: ' +
+                    error.error.error.message.value
+                );
+              },
+              () => {
+                console.log('Update user approver name successfully!');
+              }
+            );
+          if (this.historyId > 0) {
+            const dataTicket = {
+              __metadata: { type: 'SP.Data.ListHistoryRequestGoListItem' },
+              StatusID: 1,
+              StatusName: 'Đã xử lý'
+            };
+            this.resService
+              .updateListById(
+                'ListHistoryRequestGo',
+                dataTicket,
+                this.historyId
+              )
+              .subscribe(
+                item => {},
+                error => {
+                  this.closeCommentPanel();
+                  console.log(
+                    'error when update item to list ListHistoryRequestGo: ' +
+                      error.error.error.message.value
+                  );
+                },
+                () => {}
+              );
+          }
+          this.UpdateStatus(1, 0);
+        }
+      );
+  } catch (err) {
+    console.log('try catch AddListTicket error: ' + err.message);
+    this.closeCommentPanel();
+  }
+}
 
   FinishRequest() {
     this.openCommentPanel();

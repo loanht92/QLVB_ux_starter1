@@ -5,6 +5,7 @@
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddNewComment(modalAddComment)"><i class="material-icons">chat_bubble_outline</i>&nbsp; <span class="Submit1">Xin ý kiến</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="NextApprval(template)" *ngIf="isExecution"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Chuyển xử lý</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(combinerHandle)" *ngIf="isCombine"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Xử lý</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(KyDuyet)" *ngIf="isApproval"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Ký duyệt</span></button>
         <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalReturn)" *ngIf="isReturn"><i class="material-icons">repeat</i>&nbsp; <span class="Reset1">Trả lại</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="FinishRequest()" *ngIf="isFinish"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
         <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalRetrieve)" *ngIf="isRetrieve"><i class="material-icons">reply_all</i>&nbsp; <span class="Reset1">Thu hồi</span></button>
@@ -309,6 +310,7 @@
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddNewComment(modalAddComment)"><i class="material-icons">chat_bubble_outline</i>&nbsp; <span class="Submit1">Xin ý kiến</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="NextApprval(template)" *ngIf="isExecution"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Chuyển xử lý</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(combinerHandle)" *ngIf="isCombine"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Xử lý</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(KyDuyet)" *ngIf="isApproval"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Ký duyệt</span></button>
         <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalReturn)" *ngIf="isReturn"><i class="material-icons">repeat</i>&nbsp; <span class="Reset1">Trả lại</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(modalFinish)" *ngIf="isFinish"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
         <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalRetrieve)" *ngIf="isRetrieve"><i class="material-icons">reply_all</i>&nbsp; <span class="Reset1">Thu hồi</span></button>
@@ -467,7 +469,43 @@
             <button mat-stroked-button color="primary" type="button" class="MR5" (click)="bsModalRef.hide()" style="width: 100px"><i class="material-icons">close</i>&nbsp; Đóng</button>
         </div>
     </ng-template>
-
+    <ng-template #KyDuyet>
+        <div class="modal-header">
+            <h4 class="modal-title pull-left">Ký duyệt</h4>
+            <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" fxLayout="column">
+            <div fxFlex="auto" fxLayout="column" fxLayoutGap="10px">
+                <mat-card fxLayout="column">
+                    <mat-form-field fxFlex="100">
+                        <mat-label>Nội dung ký duyệt <span class="required-field">*</span></mat-label>
+                        <textarea matInput [(ngModel)]="content"></textarea>
+                    </mat-form-field>
+                    <div fxLayout="row" fxLayout.xs="column" fxFlex="100" fxLayoutGap="5px">
+                        <div fxFlex="120px" fxFlex.xs="auto">
+                            <button type="button" mat-stroked-button color="primary" (click)="fileInputHandle.click()">
+                                                    <i class="material-icons">publish</i>&nbsp; <span class="AddfileEdit">Tải tệp</span>
+                                                </button>
+                            <input hidden (change)="addAttachmentFile(1)" #fileInputHandle type="file" id="fileAttachmentHandle">
+                        </div>
+                        <div fxFlex="auto">
+                            <div id="viewAttachment" fxLayout="column" fxLayoutAlign="start start" fxLayoutGap="5px">
+                                <div *ngFor="let items of outputFileHandle">
+                                    <a (click)="removeAttachmentFile(items, 1)"> <i class="material-icons delFile">clear</i>&nbsp;</a> {{items.name}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </mat-card>
+            </div>
+        </div>
+        <div class="modal-footer" fxLayoutAlign="center center">
+            <button mat-stroked-button color="primary" type="button" class="MR5" (click)="AddListTicketApproval()" style="width: 100px"><i class="material-icons">save</i>&nbsp; Lưu</button>
+            <button mat-stroked-button color="primary" type="button" class="MR5" (click)="bsModalRef.hide()" style="width: 100px"><i class="material-icons">close</i>&nbsp; Đóng</button>
+        </div>
+    </ng-template>
     <ng-template #modalReturn>
         <div class="modal-header">
             <h4 class="modal-title pull-left">Gửi trả lại</h4>
