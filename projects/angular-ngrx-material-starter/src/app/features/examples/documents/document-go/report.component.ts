@@ -43,6 +43,7 @@ export class ReportDGComponent implements OnInit {
   dateIssuedTo = new Date();
   ListDocType: ItemSeleted[] = [];
   docType;
+  ListDocumentID = [];
 
   constructor(private fb: FormBuilder, private docTo: DocumentGoService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
@@ -59,7 +60,6 @@ export class ReportDGComponent implements OnInit {
 
   ngOnInit() {
     this.getDocType();
-    this.getAllListRequest();
     this.getCurrentUser();
   }
   
@@ -96,23 +96,25 @@ export class ReportDGComponent implements OnInit {
         let item = itemValue["value"] as Array<any>;     
         this.inDocs$ = []; 
         item.forEach(element => {
-          this.inDocs$.push({
-            STT: this.inDocs$.length + 1,
-            ID: element.ID,
-            numberGo: this.docTo.checkNull(element.NumberGo) !== '' ? this.docTo.formatNumberGo(element.NumberGo) : '',
-            numberSymbol: this.docTo.checkNull(element.NumberSymbol) !== '' ? element.NumberSymbol : '', 
-            docType: this.docTo.checkNull(element.DocTypeName) !== '' ? element.DocTypeName : '', 
-            userRequest: element.Author.Title,
-            userRequestId: element.Author.Id,
-            userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
-            deadline: this.docTo.checkNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
-            status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
-            compendium: this.docTo.checkNull(element.Compendium),
-            note: this.docTo.checkNull(element.Note),
-            created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
-            sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documents/documentgo-detail/' + element.ID
-          })
+          if(this.ListDocumentID.indexOf(element.ID) >= 0) {
+            this.inDocs$.push({
+              STT: this.inDocs$.length + 1,
+              ID: element.ID,
+              numberGo: this.docTo.checkNull(element.NumberGo) !== '' ? this.docTo.formatNumberGo(element.NumberGo) : '',
+              numberSymbol: this.docTo.checkNull(element.NumberSymbol) !== '' ? element.NumberSymbol : '', 
+              docType: this.docTo.checkNull(element.DocTypeName) !== '' ? element.DocTypeName : '', 
+              userRequest: element.Author.Title,
+              userRequestId: element.Author.Id,
+              userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
+              deadline: this.docTo.checkNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+              status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
+              compendium: this.docTo.checkNull(element.Compendium),
+              note: this.docTo.checkNull(element.Note),
+              created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+              sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
+              link: '/Documents/documentgo-detail/' + element.ID
+            })
+          }
         })   
         
         this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.inDocs$);
@@ -153,6 +155,7 @@ export class ReportDGComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
+        this.getAllListProcess();
       }
       );
   }
@@ -190,5 +193,28 @@ export class ReportDGComponent implements OnInit {
       + pad(d.getUTCHours()) + ':'
       + pad(d.getUTCMinutes()) + ':'
       + pad(d.getUTCSeconds()) + 'Z'
+  }
+
+  getAllListProcess() {
+    this.OpenRotiniPanel();
+    let strSelect = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + `')`;   
+    this.docTo.getListRequestTo(strSelect).subscribe((itemValue: any[]) => {
+      let item = itemValue["value"] as Array<any>;
+      this.ListDocumentID = [];
+      item.forEach(element => {
+        if(this.ListDocumentID.indexOf(element.DocumentGoID) < 0) {
+          this.ListDocumentID.push(element.DocumentGoID);
+        }
+      })  
+    },
+    error => { 
+      console.log("error: " + error);
+      this.CloseRotiniPanel();
+    },
+    () => {
+      this.CloseRotiniPanel();
+      this.getAllListRequest();
+    }
+    );   
   }
 }

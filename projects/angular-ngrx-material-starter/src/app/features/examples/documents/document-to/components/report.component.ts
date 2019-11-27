@@ -44,6 +44,7 @@ export class ReportComponent implements OnInit {
   dateFrom = moment().subtract(30,'day').toDate();
   ListDocType: ItemSeleted[] = [];
   numberTo; docType;
+  ListDocumentID = [];
 
   constructor(private fb: FormBuilder, private docTo: IncomingDocService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
@@ -60,7 +61,7 @@ export class ReportComponent implements OnInit {
 
   ngOnInit() {
     this.getDocType();
-    this.getAllListRequest();
+    //this.getAllListRequest();
     this.getCurrentUser();
   }
   
@@ -110,23 +111,25 @@ export class ReportComponent implements OnInit {
         let item = itemValue["value"] as Array<any>;     
         this.inDocs$ = []; 
         item.forEach(element => {
-          this.inDocs$.push({
-            STT: this.inDocs$.length + 1,
-            ID: element.ID,
-            numberTo: this.docTo.formatNumberTo(element.NumberTo), 
-            numberSub: element.NumberToSub,
-            numberSymbol: element.NumberOfSymbol, 
-            userRequest: element.Author.Title,
-            userRequestId: element.Author.Id,
-            userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
-            deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
-            status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
-            compendium: this.docTo.CheckNull(element.Compendium),
-            note: this.docTo.CheckNull(element.Note),
-            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
-            sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: element.StatusID !== -1 ? '/Documents/IncomingDoc/docTo-detail/' + element.ID : ''
-          })
+          if(this.ListDocumentID.indexOf(element.ID) >= 0) {
+            this.inDocs$.push({
+              STT: this.inDocs$.length + 1,
+              ID: element.ID,
+              numberTo: this.docTo.formatNumberTo(element.NumberTo), 
+              numberSub: element.NumberToSub,
+              numberSymbol: element.NumberOfSymbol, 
+              userRequest: element.Author.Title,
+              userRequestId: element.Author.Id,
+              userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
+              deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+              status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
+              compendium: this.docTo.CheckNull(element.Compendium),
+              note: this.docTo.CheckNull(element.Note),
+              created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+              sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
+              link: element.StatusID !== -1 ? '/Documents/IncomingDoc/docTo-detail/' + element.ID : ''
+            })
+          }
         })   
         
         this.dataSource = new MatTableDataSource<IncomingTicket>(this.inDocs$);
@@ -139,7 +142,9 @@ export class ReportComponent implements OnInit {
         console.log("error: " + error);
         this.CloseRotiniPanel();
       },
-      () => {}
+      () => {
+        this.CloseRotiniPanel(); 
+      }
       );   
     } catch(err) {
       console.log("Load all document to error:" + err.message);
@@ -161,6 +166,7 @@ export class ReportComponent implements OnInit {
   }
 
   getCurrentUser(){
+    this.OpenRotiniPanel();
     this.services.getCurrentUser().subscribe(
       itemValue => {
           this.currentUserId = itemValue["Id"];
@@ -172,6 +178,8 @@ export class ReportComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
+        this.CloseRotiniPanel();
+        this.getAllListProcess();
       }
       );
   }
@@ -212,5 +220,28 @@ export class ReportComponent implements OnInit {
       + pad(d.getUTCHours()) + ':'
       + pad(d.getUTCMinutes()) + ':'
       + pad(d.getUTCSeconds()) + 'Z'
+  }
+
+  getAllListProcess() {
+    this.OpenRotiniPanel();
+    let strSelect = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + `')`;   
+    this.docTo.getListRequestTo(strSelect).subscribe((itemValue: any[]) => {
+      let item = itemValue["value"] as Array<any>;
+      this.ListDocumentID = [];
+      item.forEach(element => {
+        if(this.ListDocumentID.indexOf(element.NoteBookID) < 0) {
+          this.ListDocumentID.push(element.NoteBookID);
+        }
+      })  
+    },
+    error => { 
+      console.log("error: " + error);
+      this.CloseRotiniPanel();
+    },
+    () => {
+      this.CloseRotiniPanel();
+      this.getAllListRequest();
+    }
+    );   
   }
 }

@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, Injectable } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ViewRef } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
 import {map, startWith} from 'rxjs/operators';
@@ -19,6 +20,13 @@ import {
 } from '../../../../core/core.module';
 import { any } from 'bluebird';
 import { Router } from '@angular/router';
+
+export class ItemRetrieve {
+  Department: string;
+  UserName: string;
+  TimeRetrieve: string;
+  Reason: string;
+}
 
 @Component({
   selector: 'anms-report-advance',
@@ -47,6 +55,7 @@ export class ReportAdvanceDGComponent implements OnInit {
   dateFrom = moment().subtract(30,'day').toDate();
   showList = false;
   ListIdDoc = [];
+  ListDocumentID = [];
   isFrist = false;
   ListBookType = [
     {id: -1, title: 'Không có sổ'},
@@ -55,12 +64,12 @@ export class ReportAdvanceDGComponent implements OnInit {
   ListDocType: ItemSeleted[] = [];
   ListSecret: ItemSeleted[] = [];
   ListUrgent: ItemSeleted[] = [];
+  displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
+  dataSource2 = new MatTableDataSource<ItemRetrieve>();
+  ListItem: ItemRetrieve[] = [];
+  bsModalRef;
   ListStatus = [
     {id: 0, title: '--- Tất cả ---', code: 'All'},
-    // {id: 1, title: 'Chờ xử lý'},
-    // {id: 2, title: 'Đang xử lý'},
-    // {id: 3, title: 'Đã xử lý'},
-    // {id: 4, title: 'Thu hồi'},
   ];
   bookType; numberTo; docType; numberOfSymbol; singer; source; urgentLevel; secretLevel;
   statusDoc; compendium; isAttachment = false;
@@ -71,7 +80,8 @@ export class ReportAdvanceDGComponent implements OnInit {
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private routes: Router, private location: PlatformLocation
+              private routes: Router, private location: PlatformLocation,
+              private modalService: BsModalService,
     ) {
       this.location.onPopState(() => {
         console.log('Init: pressed back!');
@@ -92,13 +102,50 @@ export class ReportAdvanceDGComponent implements OnInit {
     this.GetAllUser();
     this.getUrgentLevel();
     this.getSecretLevel();
-    this.getAllListRequest();
     this.getCurrentUser();
   }
 
-  ClickItem(row) {
+  ClickItem(row, modalTemp) {
     console.log(row);
-    this.routes.navigate([row.link]);
+    let docId = row.ID;
+    let IsRetrieve = false;
+    this.OpenRotiniPanel();
+    let strSelect = '';
+    strSelect = ` and (UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + `')`;  
+    this.strFilter = `&$filter=DocumentGoID eq '` + docId + `'` + strSelect;
+    this.docTo.getListRequestTo(this.strFilter).subscribe((itemValue: any[]) => {
+      let item = itemValue["value"] as Array<any>;
+      this.ListItem = [];
+      item.forEach(element => {
+        if(element.StatusID === 0 || element.StatusID === 1) {
+          this.CloseRotiniPanel();
+          this.routes.navigate(['/Documents/documentgo-detail/' + docId]);
+        } else if(element.StatusID === -1) {
+          IsRetrieve = true;
+          this.ListItem.push({
+            Department: element.Source,
+            UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
+            TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
+            Reason: element.Content
+          })
+        }
+      })
+    },
+    error => { 
+      console.log("error: " + error);
+      this.CloseRotiniPanel();
+    },
+    () => {
+      if(IsRetrieve === true) {
+        this.dataSource2 = new MatTableDataSource<ItemRetrieve>(this.ListItem);
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();  
+        } 
+        this.dataSource2.paginator = this.paginator;
+        this.bsModalRef = this.modalService.show(modalTemp, {class: 'modal-lg'});
+        this.CloseRotiniPanel();
+      }
+    });     
   }
 
   validateQty(event) {
@@ -255,23 +302,25 @@ export class ReportAdvanceDGComponent implements OnInit {
               return;
             }
           }
-          this.inDocs$.push({
-            STT: this.inDocs$.length + 1,
-            ID: element.ID,
-            numberGo: this.docTo.checkNull(element.NumberGo) === '' ? '' : this.docTo.formatNumberGo(element.NumberGo), 
-            numberSymbol: element.NumberSymbol, 
-            docType:element.DocTypeName,
-            userRequest: element.Author.Title,
-            userRequestId: element.Author.Id,
-            userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
-            deadline: this.docTo.checkNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
-            status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
-            compendium: this.docTo.checkNull(element.Compendium),
-            note: this.docTo.checkNull(element.Note),
-            created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
-            sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-            link: '/Documents/documentgo-detail/' + element.ID
-          })
+          if(this.ListDocumentID.indexOf(element.ID) >= 0) {
+            this.inDocs$.push({
+              STT: this.inDocs$.length + 1,
+              ID: element.ID,
+              numberGo: this.docTo.checkNull(element.NumberGo) === '' ? '' : this.docTo.formatNumberGo(element.NumberGo), 
+              numberSymbol: element.NumberSymbol, 
+              docType:element.DocTypeName,
+              userRequest: element.Author.Title,
+              userRequestId: element.Author.Id,
+              userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
+              deadline: this.docTo.checkNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+              status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
+              compendium: this.docTo.checkNull(element.Compendium),
+              note: this.docTo.checkNull(element.Note),
+              created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+              sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
+              link: '/Documents/documentgo-detail/' + element.ID
+            })
+          }
         })   
         
         this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.inDocs$);
@@ -363,6 +412,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
+        this.getAllListProcess();
       }
       );
   }
@@ -440,6 +490,29 @@ export class ReportAdvanceDGComponent implements OnInit {
       + pad(d.getUTCHours()) + ':'
       + pad(d.getUTCMinutes()) + ':'
       + pad(d.getUTCSeconds()) + 'Z'
+  }
+
+  getAllListProcess() {
+    this.OpenRotiniPanel();
+    let strSelect = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + `')`;   
+    this.docTo.getListRequestTo(strSelect).subscribe((itemValue: any[]) => {
+      let item = itemValue["value"] as Array<any>;
+      this.ListDocumentID = [];
+      item.forEach(element => {
+        if(this.ListDocumentID.indexOf(element.DocumentGoID) < 0) {
+          this.ListDocumentID.push(element.DocumentGoID);
+        }
+      })  
+    },
+    error => { 
+      console.log("error: " + error);
+      this.CloseRotiniPanel();
+    },
+    () => {
+      this.CloseRotiniPanel();
+      this.getAllListRequest();
+    }
+    );   
   }
 
 }
