@@ -67,7 +67,8 @@ export class DocumentGoWaitingComponent implements OnInit {
     'UserCreateName',
     'UserOfHandle',
     'Deadline',
-    'Compendium'
+    'Compendium',
+    'flag'
   ];
   dataSource = new MatTableDataSource<ItemDocumentGo>();
   // selection = new SelectionModel<PeriodicElement>(true, []);
@@ -76,7 +77,7 @@ export class DocumentGoWaitingComponent implements OnInit {
   date = new FormControl(new Date());
   addNew = false;
   showList = true;
-  ListDocumentGo: ItemDocumentGo[] = [];
+  ListDocumentGo= [];
   id = null;
   strFilter = '';
   strFilterUser = '';
@@ -258,8 +259,8 @@ export class DocumentGoWaitingComponent implements OnInit {
                   RecipientsOutName: '',
                   SecretLevelName: '',
                   UrgentLevelName: '',
-                  UrgentCode: '',
-                  SecretCode: '',
+                  UrgentCode:  this.CheckNull(element.UrgentCode),
+                  SecretCode:  this.CheckNull(element.SecretCode),
                   TotalStep: 0,
                   MethodSendName: '',
                   DateIssued: '',
@@ -273,6 +274,7 @@ export class DocumentGoWaitingComponent implements OnInit {
                   ),
                   TypeCode: element.TaskTypeCode,
                   StatusID: element.StatusID,
+                  flag:((this.CheckNull(element.UrgentCode)!='' && this.CheckNull(element.UrgentCode)!='BT')|| (this.CheckNull(element.SecretCode)!='' && this.CheckNull(element.SecretCode)!='BT'))?'flag':''
                 });
               } else if (element.IsFinished === 1) {
                 let index = this.ListDocumentGo.findIndex(
