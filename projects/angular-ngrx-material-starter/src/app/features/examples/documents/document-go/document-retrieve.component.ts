@@ -93,7 +93,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
           Department: element.Source,
           UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
           TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
-          Reason: element.Content
+          Reason: element.ReasonRetrieve
         })
       })
     },
@@ -128,8 +128,8 @@ export class DocumentGoRetrieveComponent implements OnInit {
             DocTypeName: this.docServices.checkNull(element.DocTypeName),
             NumberSymbol:this.docServices.checkNull(element.Title),
             Compendium: this.docServices.checkNull(element.Compendium),
-            AuthorId: element.Author == undefined ? '' : element.Author.Id,
-            UserCreateName: element.Author == undefined ? '' : element.Author.Title,
+            AuthorId: element.UserRequest == undefined ? '' : element.UserRequest.Id,
+            UserCreateName: element.UserRequest == undefined ? '' : element.UserRequest.Title,
             DateCreated: this.formatDateTime(element.DateCreated),
             UserApproverId: element.UserApprover == undefined ? '' : element.UserApprover.Id,
             UserOfHandleName: element.UserApprover == undefined ? '' : element.UserApprover.Title,

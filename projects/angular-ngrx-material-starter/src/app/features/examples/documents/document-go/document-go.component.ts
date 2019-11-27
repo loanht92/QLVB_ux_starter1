@@ -610,20 +610,15 @@ GetTotalStep() {
             let item = itemValue['value'] as Array<any>;
             this.ListAllUser = [];
             item.forEach(element => {
-              if (
-                this.ListAllUser.findIndex(u => u.UserId === element.User.Id) <
-                0
-              ) {
-                this.ListAllUser.push({
-                  UserId: element.User.Id,
-                  UserName: element.User.Title,
-                  UserEmail: element.User.Name.split('|')[2],
-                  Role: element.RoleName,
-                  RoleCode: element.RoleCode,
-                  Department: element.DepartmentName,
-                  DepartmentCode: element.DepartmentCode
-                });
-              }
+              this.ListAllUser.push({
+                UserId: element.User.Id,
+                UserName: element.User.Title,
+                UserEmail: element.User.Name.split('|')[2],
+                Role: element.RoleName,
+                RoleCode: element.RoleCode,
+                Department: element.DepartmentName,
+                DepartmentCode: element.DepartmentCode
+              });              
             });
           },
           error => {
@@ -1197,10 +1192,10 @@ GetTotalStep() {
       DocumentGoID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.userApproverId,
-      Source: request === undefined ? '' : request.DeName,
-      Destination: approver === undefined ? '' : approver.DeName,
-      RoleUserRequest :request === undefined ? '' : request.RoleName,
-      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
+      Source: request === undefined ? '' : request.Department,
+      Destination: approver === undefined ? '' : approver.Department,
+      RoleUserRequest :request === undefined ? '' : request.Role,
+      RoleUserApprover: approver === undefined ? '' : approver.Role,
       Deadline: dataForm.Deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
@@ -1274,10 +1269,10 @@ GetTotalStep() {
       DocumentGoID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.UserOfCombinate,
-      Source: request === undefined ? '' : request.DeName,
-      Destination: approver === undefined ? '' : approver.DeName,
-      RoleUserRequest :request === undefined ? '' : request.RoleName,
-      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
+      Source: request === undefined ? '' : request.Department,
+      Destination: approver === undefined ? '' : approver.Department,
+      RoleUserRequest :request === undefined ? '' : request.Role,
+      RoleUserApprover: approver === undefined ? '' : approver.Role,
       Deadline: dataForm.Deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
@@ -1328,10 +1323,10 @@ GetTotalStep() {
       DocumentGoID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.UserOfKnow,
-      Source: request === undefined ? '' : request.DeName,
-      Destination: approver === undefined ? '' : approver.DeName,
-      RoleUserRequest :request === undefined ? '' : request.RoleName,
-      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
+      Source: request === undefined ? '' : request.Department,
+      Destination: approver === undefined ? '' : approver.Department,
+      RoleUserRequest :request === undefined ? '' : request.Role,
+      RoleUserApprover: approver === undefined ? '' : approver.Role,
       Deadline: dataForm.Deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',

@@ -863,7 +863,7 @@ export class DocumentGoDetailComponent implements OnInit {
             this.ref.detectChanges();
           }
           this.ArrayItemId = this.ListItem.filter(
-            e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK"
+            e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK" && e.statusId !== -1
           );
           if(this.IndexStep < 1 && retrieveInValid === false && retrieveValid) {
             this.isRetrieve = true;
@@ -1004,7 +1004,8 @@ export class DocumentGoDetailComponent implements OnInit {
           //   this.docServices.checkNull(this.content) === ''
           //     ? ''
           //     : this.content,
-          UserRetrieveId: this.currentUserId
+          UserRetrieveId: this.currentUserId,
+          ReasonRetrieve: this.docServices.checkNull(this.content),
         };
         if (request !== undefined) {
           Object.assign(dataTicket, { Source: request.DeName });
@@ -2669,11 +2670,12 @@ AddListTicketApproval() {
                   this.assetFolder +
                   '/img/default-user-image.png';
               } else {
-                if(element.TaskTypeCode === 'XLC') {
+                if(element.TaskTypeCode === 'XLC' && element.TypeCode === 'CXL') {
                   picture = this.getUserPicture(
                     element.UserRequest.Name.split('|')[2]
                   );
-                } else if (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) {
+                } else if ((element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1))
+                          || element.TypeCode === 'TH') {
                   picture = this.getUserPicture(
                     element.UserApprover.Name.split('|')[2]
                   );
@@ -2693,8 +2695,9 @@ AddListTicketApproval() {
               }
               this.listCommentParent.push({
                 ID: element.ID,
-                Author:element.TaskTypeCode === 'XLC' ? element.UserRequest.Title : 
-                    (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) ? element.UserApprover.Title : element.UserRequest.Title,
+                Author:element.TaskTypeCode === 'XLC' && element.TypeCode === 'CXL' ? element.UserRequest.Title : 
+                    ((element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1))
+                    || element.TypeCode === 'TH') ? element.UserApprover.Title : element.UserRequest.Title,
                 Chat_Comments: this.docServices.checkNull(
                   element.Content === ''
                 )

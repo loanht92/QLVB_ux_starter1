@@ -538,7 +538,7 @@ export class DocumentDetailComponent implements OnInit {
         });
         this.dataSource = new MatTableDataSource<IncomingTicket>(this.ListItem);     
         this.dataSource.paginator = this.paginator;
-        this.ArrayItemId = this.ListItem.filter(e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK");
+        this.ArrayItemId = this.ListItem.filter(e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK" && e.statusId !== -1);
         if(this.IndexStep < 1 && retrieveInValid === false && retrieveValid) {
           this.isRetrieve = true;
           this.currentStep = indexValid;
@@ -958,7 +958,8 @@ export class DocumentDetailComponent implements OnInit {
           __metadata: { type: 'SP.Data.ListProcessRequestToListItem' },
           StatusID: -1, StatusName: "Đã thu hồi",
           DateRetrieve: new Date(),   //  Content: this.docTo.CheckNull(this.content) === '' ? '' : this.content
-          UserRetrieveId: this.currentUserId
+          UserRetrieveId: this.currentUserId,
+          ReasonRetrieve: this.docTo.CheckNull(this.content),
         };
         if(request !== undefined) {
           Object.assign(dataTicket, { Source: request.DeName});
@@ -2346,11 +2347,12 @@ export class DocumentDetailComponent implements OnInit {
           if(environment.usingMockData) {
             picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';
           } else {
-            if(element.TaskTypeCode === 'XLC') {
+            if(element.TaskTypeCode === 'XLC' && element.TypeCode === "CXL") {
               picture = this.getUserPicture(
                 element.UserRequest.Name.split('|')[2]
               );
-            } else if (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) {
+            } else if ((element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) 
+                      || element.TypeCode === 'TH') {
               picture = this.getUserPicture(
                 element.UserApprover.Name.split('|')[2]
               );
@@ -2368,8 +2370,9 @@ export class DocumentDetailComponent implements OnInit {
           }
           this.listCommentParent.push({
             ID: element.ID,
-            Author: element.TaskTypeCode === 'XLC' ? element.UserRequest.Title : 
-                  (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) ? element.UserApprover.Title : element.UserRequest.Title,
+            Author:(element.TaskTypeCode === 'XLC' && element.TypeCode === "CXL") ? element.UserRequest.Title : 
+                  ((element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1))
+                  || element.TypeCode === 'TH') ? element.UserApprover.Title : element.UserRequest.Title,
             Chat_Comments: this.docTo.CheckNull(element.Content === '') ? 'Chuyển xử lý' : element.Content,
             Created: element.TaskTypeCode === 'XLC' ? moment(element.Created).format('DD/MM/YYYY HH:mm:ss') :
                 (element.TaskTypeCode === 'PH' && (element.TaskTypeID === 1 || element.TaskTypeID === -1)) ? moment(element.Modified).format('DD/MM/YYYY HH:mm:ss') : moment(element.Created).format('DD/MM/YYYY HH:mm:ss'),
