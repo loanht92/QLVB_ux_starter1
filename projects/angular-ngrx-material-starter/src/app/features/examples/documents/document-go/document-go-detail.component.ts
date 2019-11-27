@@ -195,7 +195,7 @@ export class DocumentGoDetailComponent implements OnInit {
   ContentReply;
   NumberGoMax = 0;
   currentRoleTask = '';
-  currentUserRequestId ;
+  UserRequestId ;
   IsFinishItem = false; IsFlag = false;
   AuthorDocument;
   Retieved = false;
@@ -348,7 +348,7 @@ export class DocumentGoDetailComponent implements OnInit {
           this.isCheckPermission = true;
           if (this.IndexStep > 0) {
             this.currentRoleTask = item[0].TaskTypeCode;
-            this.currentUserRequestId=item[0].UserRequest.Id;
+            this.UserRequestId=item[0].UserRequest.Id;
             if (item[0].StatusID === 1) {
               this.routes.navigate([
                 'Documents/documentgo-detail/' + this.ItemId
@@ -1907,7 +1907,7 @@ AddListTicketApproval() {
         item =>
           item.Id ===
           this.docServices.CheckNullSetZero(
-            this.currentUserRequestId
+            this.UserRequestId
           )
       );
 //tạo phiếu XL chính (giám đốc gửi lại cho văn thư)
@@ -1917,7 +1917,7 @@ AddListTicketApproval() {
         DateCreated: new Date(),
         DocumentGoID: this.ItemId,
         UserRequestId: this.currentUserId,
-        UserApproverId: this.currentUserRequestId,
+        UserApproverId: this.UserRequestId,
         Deadline:
           this.docServices.checkNull(this.deadline) === ''
             ? this.deadline_VB
