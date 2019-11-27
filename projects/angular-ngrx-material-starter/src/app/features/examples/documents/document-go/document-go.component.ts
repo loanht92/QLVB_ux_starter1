@@ -1163,6 +1163,9 @@ GetTotalStep() {
       this.ListDocType,
       dataForm.DocType
     );
+    let request, approver;
+    request = this.ListAllUser.find(item => item.UserId === this.docServices.CheckNullSetZero(this.currentUserId) && (item.RoleCode === "TP" || item.RoleCode === "NV"));
+    approver = this.ListAllUser.find(item => item.UserId === this.docServices.CheckNullSetZero(this.userApproverId));
     //phiếu xử lý cho người tạo
     // const data = {
     //   __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
@@ -1194,6 +1197,10 @@ GetTotalStep() {
       DocumentGoID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.userApproverId,
+      Source: request === undefined ? '' : request.DeName,
+      Destination: approver === undefined ? '' : approver.DeName,
+      RoleUserRequest :request === undefined ? '' : request.RoleName,
+      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
       Deadline: dataForm.Deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
@@ -1256,6 +1263,9 @@ GetTotalStep() {
       this.ListDocType,
       dataForm.DocType
     );
+    let request, approver;
+    request = this.ListAllUser.find(item => item.UserId === this.docServices.CheckNullSetZero(this.currentUserId) && (item.RoleCode === "TP" || item.RoleCode === "NV"));
+    approver = this.ListAllUser.find(item => item.UserId === this.docServices.CheckNullSetZero(this.UserOfCombinate));
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
       // Title:dataForm.NumberSymbol,
@@ -1264,6 +1274,10 @@ GetTotalStep() {
       DocumentGoID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.UserOfCombinate,
+      Source: request === undefined ? '' : request.DeName,
+      Destination: approver === undefined ? '' : approver.DeName,
+      RoleUserRequest :request === undefined ? '' : request.RoleName,
+      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
       Deadline: dataForm.Deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
@@ -1303,6 +1317,9 @@ GetTotalStep() {
       this.ListDocType,
       dataForm.DocType
     );
+    let request, approver;
+    request = this.ListAllUser.find(item => item.UserId === this.docServices.CheckNullSetZero(this.currentUserId) && (item.RoleCode === "TP" || item.RoleCode === "NV"));
+    approver = this.ListAllUser.find(item => item.UserId === this.docServices.CheckNullSetZero(this.UserOfKnow));
     const data = {
       __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },
       // Title:dataForm.NumberSymbol,
@@ -1311,6 +1328,10 @@ GetTotalStep() {
       DocumentGoID: this.DocumentID,
       UserRequestId: this.currentUserId,
       UserApproverId: this.UserOfKnow,
+      Source: request === undefined ? '' : request.DeName,
+      Destination: approver === undefined ? '' : approver.DeName,
+      RoleUserRequest :request === undefined ? '' : request.RoleName,
+      RoleUserApprover: approver === undefined ? '' : approver.RoleName,
       Deadline: dataForm.Deadline,
       StatusID: 0,
       StatusName: 'Chờ xử lý',
