@@ -84,13 +84,13 @@
                 <mat-form-field fxFlex="50">
                     <mat-label>Độ mật</mat-label>
                     <mat-select formControlName="secretLevel">
-                        <mat-option *ngFor="let item of ListSecret" value={{item.id}}>{{item.title}}</mat-option>
+                        <mat-option *ngFor="let item of ListSecret" value={{item.code}}>{{item.title}}</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field fxFlex="50">
                     <mat-label>Độ khẩn</mat-label>
                     <mat-select formControlName="urgentLevel">
-                        <mat-option *ngFor="let item of ListUrgent" value={{item.id}}>{{item.title}}</mat-option>
+                        <mat-option *ngFor="let item of ListUrgent" value={{item.code}}>{{item.title}}</mat-option>
                     </mat-select>
                 </mat-form-field>
             </div>

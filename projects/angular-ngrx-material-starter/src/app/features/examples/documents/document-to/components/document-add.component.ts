@@ -421,7 +421,7 @@ export class DocumentAddComponent implements OnInit {
         this.ListSecret.push({
           id: element.ID,
           title: element.Title,
-          code: ''
+          code: element.Code
         });
       });
     });
@@ -434,7 +434,7 @@ export class DocumentAddComponent implements OnInit {
         this.ListUrgent.push({
           id: element.ID,
           title: element.Title,
-          code: ''
+          code: element.Code
         });
       });
     });
@@ -470,6 +470,8 @@ export class DocumentAddComponent implements OnInit {
             AssignEmailBody: element.AssignRequestBody,
             FinishEmailSubject: element.FinishRequestSubject,
             FinishEmailBody: element.FinishRequestBody,
+            OutOfDateSubject: element.OutOfDateSubject,
+            OutOfDateBody:element.OutOfDateBody,
           }
       })
       }
@@ -596,9 +598,11 @@ export class DocumentAddComponent implements OnInit {
           DateTo: this.docTo.CheckNull(dataForm.dateTo) === '' ? null : moment(dataForm.dateTo).toDate(),
           DateCreated: new Date(),
           Compendium: dataForm.compendium,
-          SecretLevelID: this.docTo.CheckNullSetZero(dataForm.secretLevel),
+          //SecretLevelID: this.docTo.CheckNull(dataForm.secretLevel),
+          SecretCode: this.docTo.CheckNull(dataForm.secretLevel),
           SecretLevelName: secretL === undefined ? '' : secretL.title,
-          UrgentLevelID: this.docTo.CheckNullSetZero(dataForm.urgentLevel),
+          //UrgentLevelID: this.docTo.CheckNull(dataForm.urgentLevel),
+          UrgentCode: this.docTo.CheckNull(dataForm.urgentLevel),
           UrgentLevelName: urgentL === undefined ? '' : urgentL.title,
           Deadline: this.docTo.CheckNull(dataForm.deadline) === '' ? null : moment(dataForm.deadline).toDate(),
           NumOfCopies: this.docTo.CheckNullSetZero(dataForm.numberOfCopies),
@@ -704,7 +708,13 @@ export class DocumentAddComponent implements OnInit {
       Content: dataForm.note,
       IndexStep: 2,
       Compendium: dataForm.compendium,
-      Flag: this.CurrentItem.SecretLevelID > 1 || this.CurrentItem.UrgentLevelID > 1 ? 1 : 0
+      SecretCode: this.CurrentItem.SecretCode,
+      UrgentCode: this.CurrentItem.UrgentCode,
+      DateDealine: this.docTo.CheckNull(dataForm.deadline) === '' ? moment().add(120, 'days').toDate() : moment(dataForm.deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailStepConfig.FieldMail, this.EmailStepConfig.OutOfDateSubject),
+      BodyMail: this.Replace_Field_Mail(this.EmailStepConfig.FieldMail, this.EmailStepConfig.OutOfDateBody),
+      SendMailTo: this.userApproverEmail
+      //Flag: this.CurrentItem.SecretLevelID > 1 || this.CurrentItem.UrgentLevelID > 1 ? 1 : 0
     };
 
     let sourceT = this.docTo.FindItemById(this.ListSource, dataForm.source);
@@ -729,7 +739,9 @@ export class DocumentAddComponent implements OnInit {
       Content: dataForm.note,
       IndexStep: 1,
       Compendium: dataForm.compendium,
-      Flag: this.CurrentItem.SecretLevelID > 1 || this.CurrentItem.UrgentLevelID > 1 ? 1 : 0
+      //Flag: this.CurrentItem.SecretLevelID > 1 || this.CurrentItem.UrgentLevelID > 1 ? 1 : 0
+      SecretCode: this.CurrentItem.SecretCode,
+      UrgentCode: this.CurrentItem.UrgentCode,
     };
 
     this.services.AddItemToList('ListProcessRequestTo', data2).subscribe(
@@ -1113,8 +1125,8 @@ export class DocumentAddComponent implements OnInit {
               ? ''
               : itemList[0].DateTo,
           compendium: itemList[0].Compendium,
-          secretLevel: itemList[0].SecretLevelID,
-          urgentLevel: itemList[0].UrgentLevelID,
+          secretLevel: itemList[0].SecretCode,
+          urgentLevel: itemList[0].UrgentCode,
           deadline:
             this.docTo.CheckNull(itemList[0].Deadline) === ''
               ? ''

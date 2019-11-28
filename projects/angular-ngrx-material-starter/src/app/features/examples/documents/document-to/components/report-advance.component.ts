@@ -323,7 +323,8 @@ export class ReportAdvanceComponent implements OnInit {
               created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
               stsClass: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
               link: element.StatusID === -1 ? '' : '/Documents/IncomingDoc/docTo-detail/' + element.ID,
-              flag: element.Flag === 0 ? '' : 'flag',            
+              flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''
+              // flag: element.Flag === 0 ? '' : 'flag',            
             })
           }
         })   

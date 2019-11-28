@@ -1138,6 +1138,10 @@ export class DocumentGoDetailComponent implements OnInit {
         DocTypeName: this.itemDoc.DocTypeName,
         UrgentCode: this.itemDoc.UrgentCode,
         SecretCode: this.itemDoc.SecretCode,
+        DateDealine: this.docServices.checkNull(this.deadline) === '' ? (this.docServices.checkNull(this.itemDoc.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.Deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+        SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, this.currentUserName, this.currentStep),
+        BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, this.currentUserName, this.currentStep),
+        SendMailTo: this.currentUserEmail
         // Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
       };
 
@@ -1278,11 +1282,10 @@ export class DocumentGoDetailComponent implements OnInit {
               IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
               UrgentCode:this.itemDoc.UrgentCode ,
               SecretCode:this.itemDoc.SecretCode ,
-              // Flag:
-              //  (this.itemDoc.UrgentCode !='' && this.itemDoc.UrgentCode !='BT' )||
-              //  (this.itemDoc.SecretCode !='' && this.itemDoc.SecretCode !='BT')
-              //     ? 1
-              //     : 0,
+              DateDealine: this.docServices.checkNull(this.deadline) === '' ? (this.docServices.checkNull(this.itemDoc.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.Deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+              SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep - 1),
+              BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep - 1),
+              SendMailTo: approver.Email,
               DocTypeName: this.itemDoc.DocTypeName
             };
             this.resService
@@ -1527,6 +1530,10 @@ export class DocumentGoDetailComponent implements OnInit {
           DocTypeName: this.itemDoc.DocTypeName,
           UrgentCode:this.itemDoc.UrgentCode ,
           SecretCode:this.itemDoc.SecretCode ,
+          DateDealine: this.docServices.checkNull(this.deadline) === '' ? (this.docServices.checkNull(this.itemDoc.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.Deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, this.selectedApprover.split('|')[2], this.IndexStep + 1),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, this.selectedApprover.split('|')[2], this.IndexStep + 1),
+          SendMailTo: this.selectedApprover.split('|')[1],
         };
 
         this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
@@ -1650,6 +1657,10 @@ export class DocumentGoDetailComponent implements OnInit {
       DocTypeName: this.itemDoc.DocTypeName,
       UrgentCode:this.itemDoc.UrgentCode ,
       SecretCode:this.itemDoc.SecretCode ,
+      DateDealine: this.docServices.checkNull(this.deadline) === '' ? (this.docServices.checkNull(this.itemDoc.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.Deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep + 1),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep + 1),
+      SendMailTo: approver.Email,
     };
     
     this.resService.AddItemToList('ListProcessRequestGo', dataCombiner).subscribe(
@@ -1724,6 +1735,10 @@ export class DocumentGoDetailComponent implements OnInit {
       DocTypeName: this.itemDoc.DocTypeName,
       UrgentCode:this.itemDoc.UrgentCode ,
       SecretCode:this.itemDoc.SecretCode ,
+      DateDealine: this.docServices.checkNull(this.deadline) === '' ? (this.docServices.checkNull(this.itemDoc.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.Deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep + 1),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep + 1),
+      SendMailTo: approver.Email,
     };
     this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
@@ -1939,6 +1954,10 @@ AddListTicketApproval() {
         DocTypeName: this.itemDoc.DocTypeName,
         UrgentCode:this.itemDoc.UrgentCode ,
         SecretCode:this.itemDoc.SecretCode ,
+        DateDealine: this.docServices.checkNull(this.deadline) === '' ? (this.docServices.checkNull(this.itemDoc.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.Deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+        SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep + 1),
+        BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep + 1),
+        SendMailTo: approver.Email,
       };
 
       this.resService.AddItemToList('ListProcessRequestGo', data).subscribe(

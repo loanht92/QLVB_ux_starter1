@@ -233,7 +233,7 @@ export class DocumentWaitingComponent implements OnInit {
           numberTo: element.Title,
           link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
           stsClass: '',
-          flag: element.Flag === 0 ? '' : 'flag'
+          flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''
         })
         //} 
         // if(element.IsFinished === 1) {

@@ -358,8 +358,10 @@ export class DocumentDetailComponent implements OnInit {
           compendium: itemList[0].Compendium,
           secretLevel: itemList[0].SecretLevelName,
           urgentLevel: itemList[0].UrgentLevelName,
-          secretLevelId: itemList[0].SecretLevelID,
-          urgentLevelId: itemList[0].UrgentLevelID,
+          // secretLevelId: itemList[0].SecretLevelID,
+          // urgentLevelId: itemList[0].UrgentLevelID,
+          secretCode: itemList[0].SecretCode,
+          urgentCode: itemList[0].urgentCode,
           deadline: this.docTo.CheckNull(itemList[0].Deadline) === ''
           ? null
           : itemList[0].Deadline,
@@ -1077,7 +1079,13 @@ export class DocumentDetailComponent implements OnInit {
         Content: this.docTo.CheckNull(this.content),
         IndexStep: this.currentStep,
         Compendium: this.itemDoc.compendium,
-        Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
+        SecretCode: this.itemDoc.secretCode,
+        UrgentCode: this.itemDoc.urgentCode,
+        DateDealine: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+        SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, this.currentUserName, this.currentStep),
+        BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, this.currentUserName, this.currentStep),
+        SendMailTo: this.currentUserEmail
+        //Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
       };   
 
       this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
@@ -1176,7 +1184,7 @@ export class DocumentDetailComponent implements OnInit {
               NoteBookID: this.IncomingDocID,
               UserRequestId: this.currentUserId,
               UserApproverId: approverId,
-              Deadline: this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline,
+              Deadline: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? null : this.itemDoc.deadline) : this.deadline,
               StatusID: 0,
               StatusName: 'Chờ xử lý',
               Source: request === undefined ? '' : request.DeName,
@@ -1191,7 +1199,13 @@ export class DocumentDetailComponent implements OnInit {
               IndexStep: this.IndexStep - 1,
               Compendium: this.itemDoc.compendium,
               IndexReturn: this.IndexStep + '_' + (this.IndexStep - 1),
-              Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
+              SecretCode: this.itemDoc.secretCode,
+              UrgentCode: this.itemDoc.urgentCode,
+              DateDealine: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+              SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep - 1),
+              BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep - 1),
+              SendMailTo: approver.Email
+              //Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
             };
             this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
               item => {this.processId = item['d'].Id},
@@ -1431,7 +1445,13 @@ export class DocumentDetailComponent implements OnInit {
           Content: this.content,
           IndexStep: this.IndexStep + 1,
           Compendium: this.itemDoc.compendium,
-          Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
+          SecretCode: this.itemDoc.secretCode,
+          UrgentCode: this.itemDoc.urgentCode,
+          DateDealine: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep + 1),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep + 1),
+          SendMailTo: approver.Email
+          //Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
         };
       
         this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
@@ -1524,7 +1544,13 @@ export class DocumentDetailComponent implements OnInit {
       Content: this.content,
       IndexStep: this.IndexStep + 1,
       Compendium: this.itemDoc.compendium,
-      Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
+      SecretCode: this.itemDoc.secretCode,
+      UrgentCode: this.itemDoc.urgentCode,
+      DateDealine: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep + 1),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep + 1),
+      SendMailTo: approver.Email
+      //Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
     };
     this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
       item => {},
@@ -1583,7 +1609,13 @@ export class DocumentDetailComponent implements OnInit {
       Content: this.content,
       IndexStep: this.IndexStep + 1,
       Compendium: this.itemDoc.compendium,
-      Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
+      SecretCode: this.itemDoc.secretCode,
+      UrgentCode: this.itemDoc.urgentCode,
+      DateDealine: this.docTo.CheckNull(this.deadline) === '' ? (this.docTo.CheckNull(this.itemDoc.deadline) === '' ? moment().add(120, 'days').toDate() : moment(this.itemDoc.deadline).subtract(1, 'day').toDate()) :  moment(this.deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.DisplayName, this.IndexStep + 1),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.DisplayName, this.IndexStep + 1),
+      SendMailTo: approver.Email
+      //Flag: this.itemDoc.urgentLevelId > 1 || this.itemDoc.secretLevelId > 1 ? 1 : 0
     };
     this.services.AddItemToList('ListProcessRequestTo', data).subscribe(
       item => {},
@@ -1593,7 +1625,7 @@ export class DocumentDetailComponent implements OnInit {
           'error when add item to list ListProcessRequestTo: ' +
             error.error.error.message.value
         ),
-          this.notificationService.error('Them phiếu xử lý thất bại');
+          this.notificationService.error('Thêm phiếu xử lý thất bại');
       },
       () => {
         console.log(

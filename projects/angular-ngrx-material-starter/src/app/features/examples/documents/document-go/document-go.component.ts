@@ -1208,6 +1208,10 @@ GetTotalStep() {
       Compendium: dataForm.Compendium,
       SecretCode: dataForm.SecretLevel,
       UrgentCode: dataForm.UrgentLevel,
+      DateDealine: this.docServices.checkNull(dataForm.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(dataForm.Deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, this.currentUserName),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, this.currentUserName),
+      SendMailTo: this.userApproverEmail
     };
     // this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
     //   item => {},
