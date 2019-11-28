@@ -39,7 +39,7 @@ export class ReportComponent implements OnInit {
   strFilter = '';
   overlayRef;
   deadlineFrom = moment().subtract(30,'day').toDate();
-  deadlineTo = new Date();
+  deadlineTo;
   dateTo = new Date();
   dateFrom = moment().subtract(30,'day').toDate();
   ListDocType: ItemSeleted[] = [];
