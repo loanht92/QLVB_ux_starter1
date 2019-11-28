@@ -126,7 +126,7 @@ export class ReportAdvanceDGComponent implements OnInit {
             Department: element.Source,
             UserName: element.UserRetrieve !== undefined ? element.UserRetrieve.Title : '',
             TimeRetrieve: moment(element.DateRetrieve).format('DD/MM/YYYY'),
-            Reason: element.Content
+            Reason: element.ReasonRetrieve
           })
         }
       })
