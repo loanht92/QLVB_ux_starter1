@@ -173,7 +173,7 @@ export class DocumentGoDetailComponent implements OnInit {
   idItemProcess;
   ArrayUserPofile: UserProfilePropertiesObject[] = [];
   dataSource_Ticket = new MatTableDataSource<DocumentGoTicket>();
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   ListDocument: ItemDocumentGo;
   displayedColumns2 = ['person', 'role', 'process', 'combine', 'know'];
   displayedColumns3: string[] = ['stt', 'select', 'department', 'role', 'name', 'type']; // 'userId'

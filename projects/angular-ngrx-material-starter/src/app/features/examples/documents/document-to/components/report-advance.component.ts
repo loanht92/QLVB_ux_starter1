@@ -39,7 +39,7 @@ export class ReportAdvanceComponent implements OnInit {
   displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts', 'flag']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   date = new FormControl(new Date());
   DocumentID = 0;
@@ -311,7 +311,7 @@ export class ReportAdvanceComponent implements OnInit {
               ID: element.ID,
               documentID: element.ID,
               numberTo: this.docTo.formatNumberTo(element.NumberTo),
-              numberOfSymbol: element.NumberOfSymbol, 
+              numberSymbol: element.NumberOfSymbol, 
               userRequest: element.Author.Title,
               userRequestId: element.Author.Id,
               userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',

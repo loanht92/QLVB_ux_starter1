@@ -102,7 +102,7 @@ export class DocumentGoComponent implements OnInit {
   listTitle = 'ListDocumentGo';
   dataSource = new MatTableDataSource<ItemDocumentGo>();
   // selection = new SelectionModel<PeriodicElement>(true, []);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   date = new FormControl(new Date());
   addNew = false;

@@ -51,7 +51,7 @@ export class DataListComponent implements OnInit {
   dataSource2 = new MatTableDataSource<ItemListEmp>();
   displayedColumns2: string[] = ['stt', 'name' ,'department', 'role']; //'select', 'userApprover'
   selection = new SelectionModel<ItemList>(true, []);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   selectedType;
   ListAllItem: ItemList[] = [];

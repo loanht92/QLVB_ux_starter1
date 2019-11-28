@@ -158,13 +158,7 @@ export class DocumentDetailComponent implements OnInit {
   ]; //'select'
   ListItem = [];
   dataSource = new MatTableDataSource<IncomingTicket>();
-  // @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  private paginator: MatPaginator;
-
-  @ViewChild(MatPaginator, { static: true }) set matPaginator(mp: MatPaginator) {
-    this.paginator = mp;
-    this.dataSource.paginator = this.paginator;
-  }
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
 
   displayedColumns2 = ['person', 'role', 'process', 'combine', 'know'];
   displayedColumns3: string[] = ['stt', 'select', 'department', 'role', 'name', 'type']; // 'userId'

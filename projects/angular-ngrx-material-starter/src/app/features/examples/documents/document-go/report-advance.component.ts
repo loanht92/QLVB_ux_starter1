@@ -40,7 +40,7 @@ export class ReportAdvanceDGComponent implements OnInit {
   displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','compendium', 'sts','flag']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   date = new FormControl(new Date());
   DocumentID = 0;
@@ -324,7 +324,8 @@ export class ReportAdvanceDGComponent implements OnInit {
           }
         })   
         
-        this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.inDocs$);
+        this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.inDocs$);        
+        this.dataSource.paginator = this.paginator;
         this.ref.detectChanges();
         this.isFrist = false;
         this.CloseRotiniPanel();     

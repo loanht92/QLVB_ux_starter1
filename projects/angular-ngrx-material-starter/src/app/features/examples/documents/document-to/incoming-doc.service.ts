@@ -101,7 +101,7 @@ export class IncomingDocService {
   }
 
   urlDocumentTo =
-    "/_api/web/lists/getbytitle('ListDocumentTo')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,Author/Name,AttachmentFiles&$expand=UserOfHandle,Author,AttachmentFiles&$orderby=ID desc";
+    "/_api/web/lists/getbytitle('ListDocumentTo')/items?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,Author/Name,AttachmentFiles&$expand=UserOfHandle,Author,AttachmentFiles&$orderby=ID desc&$top=1000";
   getListDocumentTo(userId): Observable<any> {
     return this.http.get(
       `${this.restUrl}${this.urlDocumentTo}&$filter=Author/Id eq ` +
@@ -124,7 +124,7 @@ export class IncomingDocService {
   }
 
   urlRequestTo =
-    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserRequest/Name,UserApprover/Title,UserApprover/Id,UserApprover/Name,UserRetrieve/Id,UserRetrieve/Title&$orderby=ID desc&$expand=UserApprover,UserRequest,UserRetrieve";
+    "/_api/web/lists/getbytitle('ListProcessRequestTo')/items?$select=*,UserRequest/Title,UserRequest/Id,UserRequest/Name,UserApprover/Title,UserApprover/Id,UserApprover/Name,UserRetrieve/Id,UserRetrieve/Title&$orderby=ID desc&$top=1000&$expand=UserApprover,UserRequest,UserRetrieve";
   getListRequestTo(strFilter): Observable<any> {
     return this.http.get(`${this.restUrl}${this.urlRequestTo}` + strFilter);
   }

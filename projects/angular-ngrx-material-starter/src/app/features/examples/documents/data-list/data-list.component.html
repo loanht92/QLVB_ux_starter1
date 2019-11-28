@@ -60,7 +60,7 @@
             <tr mat-row *matRowDef="let row; columns: displayedColumns2;" (click)="selection.toggle(row)">
             </tr>
         </table>
-        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
     </div>
 
     <ng-template #modalAdd>
