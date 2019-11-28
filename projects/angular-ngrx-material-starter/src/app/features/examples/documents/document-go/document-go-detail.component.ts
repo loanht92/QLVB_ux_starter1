@@ -1926,7 +1926,7 @@ AddListTicketApproval() {
             this.UserRequestId
           )
       );
-      this.selectedApprover=approver.Id+"|"+ approver.DisplayName + "|" + approver.Email;
+      this.selectedApprover=approver.Id+"|"+ approver.Email  + "|" + approver.DisplayName;
       this.selectedCombiner=[];
       this.selectedKnower=[];
 //tạo phiếu XL chính (giám đốc gửi lại cho văn thư)
