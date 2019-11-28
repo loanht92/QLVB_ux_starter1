@@ -1985,7 +1985,7 @@ AddListTicketApproval() {
           const data = {
             __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
             ListUserApprover: this.UserAppoverName,
-            Signer:this.currentUserId
+            SignerId:this.currentUserId,
           };
           this.resService
             .updateListById('ListDocumentGo', data, this.ItemId)

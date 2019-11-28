@@ -68,6 +68,7 @@ export class DocumentGoWaitingComponent implements OnInit {
     'UserOfHandle',
     'Deadline',
     'Compendium',
+    'TaskTypeName',
     'flag'
   ];
   dataSource = new MatTableDataSource<ItemDocumentGo>();
@@ -274,6 +275,7 @@ export class DocumentGoWaitingComponent implements OnInit {
                   ),
                   TypeCode: element.TaskTypeCode,
                   StatusID: element.StatusID,
+                  TaskTypeName:element.TaskTypeName,
                   flag:((this.CheckNull(element.UrgentCode)!='' && this.CheckNull(element.UrgentCode)!='BT')|| (this.CheckNull(element.SecretCode)!='' && this.CheckNull(element.SecretCode)!='BT'))?'flag':''
                 });
               } else if (element.IsFinished === 1) {
