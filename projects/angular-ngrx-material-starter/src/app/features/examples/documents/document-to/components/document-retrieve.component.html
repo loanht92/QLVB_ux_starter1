@@ -38,7 +38,7 @@
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(modalTemp, row)" class="example-element-row"></tr>
         </table>
-        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+        <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
     </div>
 
     <ng-template #modalTemp>
@@ -70,6 +70,7 @@
                     <tr mat-header-row *matHeaderRowDef="displayedColumns2; sticky: true"></tr>
                     <tr mat-row *matRowDef="let row; columns: displayedColumns2;"></tr>
                 </table>
+                <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
             </div>
         </div>
         <div class="modal-footer" fxLayoutAlign="center center">

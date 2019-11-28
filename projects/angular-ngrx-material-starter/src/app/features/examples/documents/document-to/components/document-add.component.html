@@ -84,13 +84,13 @@
                 <mat-form-field fxFlex="50">
                     <mat-label>Độ mật</mat-label>
                     <mat-select formControlName="secretLevel">
-                        <mat-option *ngFor="let item of ListSecret" value={{item.code}}>{{item.title}}</mat-option>
+                        <mat-option *ngFor="let item of ListSecret" value={{item.code}}_{{item.id}}>{{item.title}}</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field fxFlex="50">
                     <mat-label>Độ khẩn</mat-label>
                     <mat-select formControlName="urgentLevel">
-                        <mat-option *ngFor="let item of ListUrgent" value={{item.code}}>{{item.title}}</mat-option>
+                        <mat-option *ngFor="let item of ListUrgent" value={{item.code}}_{{item.id}}>{{item.title}}</mat-option>
                     </mat-select>
                 </mat-form-field>
             </div>
@@ -216,7 +216,8 @@
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(row)" class="example-element-row">
             </tr>
         </table>
-        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+        <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]"></mat-paginator>
+        <!-- <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator> -->
     </div>
 </div>
 

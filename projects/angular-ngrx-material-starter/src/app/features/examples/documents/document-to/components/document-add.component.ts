@@ -77,7 +77,7 @@ export class DocumentAddComponent implements OnInit {
   ]; //'select'
   dataSource = new MatTableDataSource<IncomingDoc>();
   selection = new SelectionModel<IncomingDoc>(true, []);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   date = new FormControl(new Date());
   addNew = false;
@@ -559,6 +559,11 @@ export class DocumentAddComponent implements OnInit {
     }
     else if(this.validation()) {
       const dataForm = this.IncomingDocform.getRawValue();  
+      let secret = dataForm.secretLevel;
+      let urgent =  dataForm.urgentLevel;
+      let secretL;
+      let urgentL;
+
       if (this.IncomingDocform.valid) {
         this.OpenRotiniPanel();      
         let bookT = this.docTo.FindItemByCode(
@@ -566,14 +571,18 @@ export class DocumentAddComponent implements OnInit {
           dataForm.bookType
         );
         let docT = this.docTo.FindItemById(this.ListDocType, dataForm.docType);
-        let secretL = this.docTo.FindItemById(
-          this.ListSecret,
-          dataForm.secretLevel
-        );
-        let urgentL = this.docTo.FindItemById(
-          this.ListUrgent,
-          dataForm.urgentLevel
-        );
+        if(this.docTo.CheckNull(secret) !== '') {
+          secretL = this.docTo.FindItemById(
+            this.ListSecret,
+            secret.split('_')[1]
+          );
+        } 
+        if(this.docTo.CheckNull(urgent) !== '') {
+          urgentL = this.docTo.FindItemById(
+            this.ListUrgent,
+            urgent.split('_')[1]
+          );
+        }
         let method = this.docTo.FindItemById(
           this.ListMethodReceipt,
           dataForm.methodReceipt
@@ -598,10 +607,10 @@ export class DocumentAddComponent implements OnInit {
           DateCreated: new Date(),
           Compendium: dataForm.compendium,
           //SecretLevelID: this.docTo.CheckNull(dataForm.secretLevel),
-          SecretCode: this.docTo.CheckNull(dataForm.secretLevel),
+          SecretCode: this.docTo.CheckNull(secret) !== '' ? secret.split('_')[0] : '',
           SecretLevelName: secretL === undefined ? '' : secretL.title,
           //UrgentLevelID: this.docTo.CheckNull(dataForm.urgentLevel),
-          UrgentCode: this.docTo.CheckNull(dataForm.urgentLevel),
+          UrgentCode: this.docTo.CheckNull(urgent) !== '' ? urgent.split('_')[0] : '',
           UrgentLevelName: urgentL === undefined ? '' : urgentL.title,
           Deadline: this.docTo.CheckNull(dataForm.deadline) === '' ? null : moment(dataForm.deadline).toDate(),
           NumOfCopies: this.docTo.CheckNullSetZero(dataForm.numberOfCopies),

@@ -30,7 +30,7 @@ export class ReportComponent implements OnInit {
   displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   date = new FormControl(new Date());
   DocumentID = 0;
@@ -136,6 +136,7 @@ export class ReportComponent implements OnInit {
         if (!(this.ref as ViewRef).destroyed) {
           this.ref.detectChanges();  
         }  
+        this.dataSource.paginator = this.paginator;
         this.CloseRotiniPanel();     
       },
       error => { 

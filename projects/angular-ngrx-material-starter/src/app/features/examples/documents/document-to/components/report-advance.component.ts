@@ -334,6 +334,7 @@ export class ReportAdvanceComponent implements OnInit {
           this.ref.detectChanges();  
         }  
         this.isFrist = false;
+        this.dataSource.paginator = this.paginator;
         this.CloseRotiniPanel();     
       },
       error => { 

@@ -125,7 +125,7 @@ export class DocumentWaitingComponent implements OnInit {
   displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium', 'taskType', 'flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   date = new FormControl(new Date());
   DocumentID = 0;

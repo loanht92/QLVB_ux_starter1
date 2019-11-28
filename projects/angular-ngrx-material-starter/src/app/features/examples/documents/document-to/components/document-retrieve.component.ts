@@ -39,7 +39,7 @@ export class DocumentRetrieveComponent implements OnInit {
   displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
   dataSource2 = new MatTableDataSource<ItemRetrieve>();
   ListItem: ItemRetrieve[] = [];
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
   date = new FormControl(new Date());
   DocumentID = 0;
