@@ -36,8 +36,8 @@ export class ItemRetrieve {
 })
 export class DocumentGoRetrieveComponent implements OnInit {
   listTitle = "ListProcessRequestGo";
-  inDocs$: ItemDocumentGo[]= [];
-  displayedColumns: string[] = ['numberGo', 'DocTypeName', 'created', 'userRequest', 'userApprover', 'deadline','compendium']; //'select', 'userApprover'
+  inDocs$= [];
+  displayedColumns: string[] = ['numberGo', 'DocTypeName', 'created', 'userRequest', 'userApprover', 'deadline','compendium','flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<ItemDocumentGo>();
   displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
   dataSource2 = new MatTableDataSource<ItemRetrieve>();
@@ -153,7 +153,8 @@ export class DocumentGoRetrieveComponent implements OnInit {
             NumOfPaper :'',
             link: '',
             TypeCode: element.TypeCode,
-            StatusID: element.StatusID
+            StatusID: element.StatusID,
+            flag:((this.docServices.checkNull(element.UrgentCode)!='' && this.docServices.checkNull(element.UrgentCode)!='BT')|| (this.docServices.checkNull(element.SecretCode)!='' && this.docServices.checkNull(element.SecretCode)!='BT'))?'flag':''
           })
         } 
         else if(element.IsFinished === 1) {

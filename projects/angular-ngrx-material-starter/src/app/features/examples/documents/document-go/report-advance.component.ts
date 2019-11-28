@@ -37,7 +37,7 @@ export class ItemRetrieve {
 export class ReportAdvanceDGComponent implements OnInit {
   listTitle = "ListProcessRequestGo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover', 'content'
+  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','compendium', 'sts','flag']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -318,7 +318,8 @@ export class ReportAdvanceDGComponent implements OnInit {
               note: this.docTo.checkNull(element.Note),
               created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
               sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
-              link: '/Documents/documentgo-detail/' + element.ID
+              link: '/Documents/documentgo-detail/' + element.ID,
+              flag:((this.docTo.checkNull(element.UrgentCode)!='' && this.docTo.checkNull(element.UrgentCode)!='BT')|| (this.docTo.checkNull(element.SecretCode)!='' && this.docTo.checkNull(element.SecretCode)!='BT'))?'flag':''
             })
           }
         })   
