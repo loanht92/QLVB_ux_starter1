@@ -61,7 +61,7 @@ export class DocumentGoWaitingComponent implements OnInit {
   }
 
   displayedColumns: string[] = [
-    'ID',
+    'DocumentID',
     'DocTypeName',
     'DateCreated',
     'UserCreateName',

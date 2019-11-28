@@ -7,7 +7,7 @@
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(combinerHandle)" *ngIf="isCombine"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Xử lý</span></button>
         <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(KyDuyet)" *ngIf="isApproval"><i class="material-icons">redo</i>&nbsp; <span class="Submit1">Ký duyệt</span></button>
         <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalReturn)" *ngIf="isReturn"><i class="material-icons">repeat</i>&nbsp; <span class="Reset1">Trả lại</span></button>
-        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="FinishRequest()" *ngIf="isFinish"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
+        <button mat-stroked-button color="primary" type="button" class="MR5" (click)="ReturnRequest(modalFinish)" *ngIf="isFinish"><i class="material-icons">done</i>&nbsp; <span class="Reset1">Hoàn thành</span></button>
         <button mat-stroked-button color="warn" type="button" class="MR5" (click)="ReturnRequest(modalRetrieve)" *ngIf="isRetrieve"><i class="material-icons">reply_all</i>&nbsp; <span class="Reset1">Thu hồi</span></button>
     </div>
     <div fxLayout="row" fxFlexFill fxLayoutGap="15px">
