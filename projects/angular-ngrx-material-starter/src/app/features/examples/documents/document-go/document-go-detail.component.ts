@@ -1926,6 +1926,9 @@ AddListTicketApproval() {
             this.UserRequestId
           )
       );
+      this.selectedApprover=approver.Id+"|"+ approver.DisplayName + "|" + approver.Email;
+      this.selectedCombiner=[];
+      this.selectedKnower=[];
 //tạo phiếu XL chính (giám đốc gửi lại cho văn thư)
       const data = {
         __metadata: { type: 'SP.Data.ListProcessRequestGoListItem' },

@@ -66,9 +66,9 @@ export class DocumentGoWaitingComponent implements OnInit {
     'DateCreated',
     'UserCreateName',
     'UserOfHandle',
+    'TaskTypeName',
     'Deadline',
     'Compendium',
-    'TaskTypeName',
     'flag'
   ];
   dataSource = new MatTableDataSource<ItemDocumentGo>();
