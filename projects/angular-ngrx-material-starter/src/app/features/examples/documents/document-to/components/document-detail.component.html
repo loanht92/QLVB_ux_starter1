@@ -111,7 +111,7 @@
                                 <div id="viewAttachment" fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="10px" *ngFor="let item of ItemAttachments">
                                     <!-- <div fxLayout="row" fxLayoutGap="10px" fxLayout="100"> -->
                                     <a href="{{item.urlFile}}" target="_blank" class="urlFile">{{item.name}}</a>
-                                    <a mat-icon-button aria-label="download" href="{{item.linkdown}}">
+                                    <a mat-icon-button aria-label="download" href="{{item.linkdown}}" *ngIf="itemDoc.secretCode !== 'MAT'">
                                         <mat-icon style="margin-bottom: 20px; font-size: 25px !important;">vertical_align_bottom</mat-icon>
                                     </a>
                                     <!-- </div> -->

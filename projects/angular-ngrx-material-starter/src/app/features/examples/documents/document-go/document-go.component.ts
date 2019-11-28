@@ -1083,6 +1083,18 @@ GetTotalStep() {
                 author
               );
               break;
+            case 'UserRequest':
+              ContentMail = ContentMail.replace(
+                '{' + strContent[i] + '}',
+                UserApprover
+              );
+              break;
+            case 'userStep':
+              ContentMail = ContentMail.replace(
+                '{' + strContent[i] + '}',
+                author
+              );
+              break;
             case 'UserApprover':
               ContentMail = ContentMail.replace(
                 '{' + strContent[i] + '}',

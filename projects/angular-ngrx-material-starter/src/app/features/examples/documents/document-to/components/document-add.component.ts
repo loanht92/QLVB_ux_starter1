@@ -113,7 +113,6 @@ export class DocumentAddComponent implements OnInit {
   IdDelete = 0;
   Title = '';
   IsClerical = true;
-  EmailStepConfig;
   _numberTo;
   constructor(
     private fb: FormBuilder,
@@ -711,8 +710,8 @@ export class DocumentAddComponent implements OnInit {
       SecretCode: this.CurrentItem.SecretCode,
       UrgentCode: this.CurrentItem.UrgentCode,
       DateDealine: this.docTo.CheckNull(dataForm.deadline) === '' ? moment().add(120, 'days').toDate() : moment(dataForm.deadline).subtract(1, 'day').toDate(),
-      SubjectMail: this.Replace_Field_Mail(this.EmailStepConfig.FieldMail, this.EmailStepConfig.OutOfDateSubject),
-      BodyMail: this.Replace_Field_Mail(this.EmailStepConfig.FieldMail, this.EmailStepConfig.OutOfDateBody),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody),
       SendMailTo: this.userApproverEmail
       //Flag: this.CurrentItem.SecretLevelID > 1 || this.CurrentItem.UrgentLevelID > 1 ? 1 : 0
     };
