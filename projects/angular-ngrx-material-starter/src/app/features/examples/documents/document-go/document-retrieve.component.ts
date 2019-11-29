@@ -37,7 +37,7 @@ export class ItemRetrieve {
 export class DocumentGoRetrieveComponent implements OnInit {
   listTitle = "ListProcessRequestGo";
   inDocs$= [];
-  displayedColumns: string[] = ['numberGo', 'DocTypeName', 'created', 'userRequest', 'userApprover', 'deadline','dateIssued','compendium','flag']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberGo', 'DocTypeName', 'created', 'userRequest', 'userApprover', 'deadline','compendium','flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<ItemDocumentGo>();
   displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
   dataSource2 = new MatTableDataSource<ItemRetrieve>();
@@ -153,7 +153,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
             link: '',
             TypeCode: element.TypeCode,
             StatusID: element.StatusID,
-            dateIssued:this.docServices.checkNull(element.DateIssued)==''?'':moment(element.DateIssued).format('DD/MM/YYYY'),
+            
             flag:((this.docServices.checkNull(element.UrgentCode)!='' && this.docServices.checkNull(element.UrgentCode)!='BT')|| (this.docServices.checkNull(element.SecretCode)!='' && this.docServices.checkNull(element.SecretCode)!='BT'))?'flag':''
           })
         } 

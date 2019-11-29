@@ -28,7 +28,7 @@ import {
 export class ReportDGComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover','content',
+  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','dateIssued','compendium', 'sts']; //'select', 'userApprover','content',
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -111,6 +111,7 @@ export class ReportDGComponent implements OnInit {
               compendium: this.docTo.checkNull(element.Compendium),
               note: this.docTo.checkNull(element.Note),
               created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+              dateIssued:this.docTo.checkNull(element.DateIssued)==''?'':moment(element.DateIssued).format('DD/MM/YYYY'),
               sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
               link: '/Documents/documentgo-detail/' + element.ID
             })

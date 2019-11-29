@@ -35,16 +35,16 @@
     <div fxFlexFill class="form-input">
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
             <ng-container matColumnDef="numberGo">
-                <th mat-header-cell *matHeaderCellDef style="width: 70px;"> Số đi </th>
+                <th mat-header-cell *matHeaderCellDef style="width: 80px;"> Số đi </th>
                 <!-- <td mat-cell *matCellDef="let element"><a routerLink="{{element.link}}">{{element.numberGo}}</a></td> -->
                 <td mat-cell *matCellDef="let element">{{element.numberGo}}</td>
             </ng-container>
             <ng-container matColumnDef="numberSymbol">
-                <th mat-header-cell *matHeaderCellDef style="min-width: 100px;"> Số ký hiệu </th>
+                <th mat-header-cell *matHeaderCellDef style="width: 100px;"> Số ký hiệu </th>
                 <td mat-cell *matCellDef="let element">{{element.numberSymbol}}</td>
             </ng-container>
             <ng-container matColumnDef="docType">
-                <th mat-header-cell *matHeaderCellDef style="min-width: 100px;"> Loại văn bản </th>
+                <th mat-header-cell *matHeaderCellDef style="width: 100px;"> Loại văn bản </th>
                 <td mat-cell *matCellDef="let element">{{element.docType}}</td>
             </ng-container>
             <ng-container matColumnDef="created">
@@ -52,16 +52,20 @@
                 <td mat-cell *matCellDef="let element">{{element.created}}</td>
             </ng-container>
             <ng-container matColumnDef="userRequest">
-                <th mat-header-cell *matHeaderCellDef style="min-width: 130px;"> Người tạo </th>
+                <th mat-header-cell *matHeaderCellDef style="width: 150px;"> Người tạo </th>
                 <td mat-cell *matCellDef="let element">{{element.userRequest}}</td>
             </ng-container>
-            <ng-container matColumnDef="userApprover" style="min-width: 130px;">
+            <ng-container matColumnDef="userApprover" style="width: 150px;">
                 <th mat-header-cell *matHeaderCellDef> Người xử lý </th>
                 <td mat-cell *matCellDef="let element">{{element.userApprover}}</td>
             </ng-container>
             <ng-container matColumnDef="deadline">
                 <th mat-header-cell *matHeaderCellDef style="width: 100px;"> Hạn xử lý </th>
                 <td mat-cell *matCellDef="let element">{{element.deadline}}</td>
+            </ng-container>
+            <ng-container matColumnDef="dateIssued">
+                <th mat-header-cell *matHeaderCellDef style="width: 100px;"> Ngày phát hành </th>
+                <td mat-cell *matCellDef="let element">{{element.dateIssued}}</td>
             </ng-container>
             <ng-container matColumnDef="compendium">
                 <th mat-header-cell *matHeaderCellDef style="max-width: 500px;"> Trích yếu </th>
