@@ -2037,8 +2037,12 @@ AddListTicketApproval() {
     this.closeCommentPanel();
   }
 }
-
+//Văn thư: lưu trong hoàn thành văn bản
   FinishRequest() {
+    if (this.docServices.checkNull(this.content) === '') {
+      this.notificationService.warn("Bạn chưa nhập Nội dung xử lý! Vui lòng kiểm tra lại");
+      return ;
+    }
     this.openCommentPanel();
     const data = {
       __metadata: { type: 'SP.Data.ListDocumentGoListItem' },

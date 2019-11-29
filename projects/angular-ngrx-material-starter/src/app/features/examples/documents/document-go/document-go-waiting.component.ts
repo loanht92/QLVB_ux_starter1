@@ -223,7 +223,7 @@ export class DocumentGoWaitingComponent implements OnInit {
           itemValue => {
             let item = itemValue['value'] as Array<any>;
             item.forEach(element => {
-              if (this.ListDocumentGo.findIndex(e => e.DocumentGoID === element.DocumentGoID ) < 0 ) {
+              if (this.ListDocumentGo.findIndex(e => e.DocumentID === element.DocumentID ) < 0 ) {
                 this.ListDocumentGo.push({
                   ID: element.ID,
                   DocumentID: element.DocumentGoID,

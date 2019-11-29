@@ -56,6 +56,8 @@ export class ReportAdvanceDGComponent implements OnInit {
   showList = false;
   ListIdDoc = [];
   ListDocumentID = [];
+  ListUserSigner=[];
+  Signer='';
   isFrist = false;
   ListBookType = [
     {id: -1, title: 'Không có sổ'},
@@ -99,6 +101,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       );
     this.getDocType();
     this.getListStatus();
+    this. getUserSigner();
     this.GetAllUser();
     this.getUrgentLevel();
     this.getSecretLevel();
@@ -193,7 +196,24 @@ export class ReportAdvanceDGComponent implements OnInit {
       () =>{
       })
   }
-  
+  //danh sách người ký
+  getUserSigner() {
+    let strFilterUser = `&$filter=RoleCode eq 'GĐ'`;
+    this.docTo.getUser(strFilterUser).subscribe(items => {
+      let itemUserMember = items['value'] as Array<any>;
+      itemUserMember.forEach(element => {
+        this.ListUserSigner.push({
+          UserId: element.User.Id,
+          UserName: element.User.Title,
+          UserEmail: element.User.Name.split('|')[2],
+          Role: element.RoleName,
+          RoleCode: element.RoleCode,
+          Department: element.DepartmentName,
+          DepartmentCode: element.DepartmentCode
+        });
+      });
+    });
+  }
   getAllListRequest() {
     try {
       this.OpenRotiniPanel();
@@ -244,9 +264,9 @@ export class ReportAdvanceDGComponent implements OnInit {
         this.strFilter += ` and DateCreated le '` + this.ISODateStringUTC(this.dateTo) + `'`;
       }
 
-      if(this.docTo.checkNull(this.singer) !== '') {
+      if(this.docTo.checkNull(this.Signer) !== '') {
         // this.strFilter += ` and substringof('` + this.singer + `',Signer)`;
-        this.strFilter += ` and substringof('` + this.singer + `',Signer)`;
+        this.strFilter += ` and SignerId eq'` + this.Signer + `'`;
       }
 
       if(this.docTo.checkNull(this.source) !== '') {
@@ -393,7 +413,7 @@ export class ReportAdvanceDGComponent implements OnInit {
     this.promulgatedTo;
     this.dateTo = new Date();
     this.dateFrom = moment().subtract(30,'day').toDate();
-    this.singer = null;
+    this.Signer = null;
     this.source = null;
     this.urgentLevel = null;
     this.secretLevel = null;
