@@ -93,7 +93,7 @@ export class DocumentGoComponent implements OnInit {
   ListUserCreate: ItemUser[] = [];
   SelectUserKnower;
   SelectUserCombiner;
-  // BookType = 'DG';
+  selectedBookType = 'DG';
   selectedDocType;
   idStatus = '';
   strFilter = '';
@@ -174,7 +174,7 @@ export class DocumentGoComponent implements OnInit {
     ],
     UnitCreate: null,
     UserCreate: null,
-    BookType: ['', [Validators.required]],
+  //  BookType: ['', [Validators.required]],
     // NumberGo: null,
     NumberSymbol: '',
     DocType: 2,
@@ -696,7 +696,7 @@ GetTotalStep() {
         this.OpenDocumentGoPanel();
         let itemBookType = this.docServices.FindItemByCode(
           this.ListBookType,
-          this.form.get('BookType').value
+          'DG'
         );
         let itemDocType = this.docServices.FindItemById(
           this.ListDocType,
@@ -764,7 +764,7 @@ GetTotalStep() {
           __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
           Title: 'Văn bản đi',
           BookTypeName: itemBookType == undefined ? '' : itemBookType.Title,
-          BookTypeCode: this.form.get('BookType').value,
+          BookTypeCode: 'DG',
           DocTypeID: this.form.get('DocType').value,
           Compendium: this.form.get('Compendium').value,
           RecipientsInID: this.form.get('RecipientsIn').value,
@@ -1555,47 +1555,15 @@ GetTotalStep() {
   }
 
   reset() {
-   // this.form.reset();
-    // this.form.clearValidators();
-    // this.form.clearAsyncValidators();
+   this.form.reset();
+    this.form.clearValidators();
+    this.form.clearAsyncValidators();
  //   this.form.controls['BookType'].setValue('DG');
-// this.form.get('BookType').setValue('DG');
+//this.selectedBookType ='DG';
 //this.form.controls.BookType.setValue('DG');
-   // this.form.controls['DocType'].setValue(2);
-    this.form.setValue({Note:'Nội dung xử lý'});
- //   this.selectedDocType=new FormControl(2);
-    // this.ItemAttachments = [];
-    // this.form = this.fb.group({
-    //   Compendium: [
-    //     '',
-    //     [
-    //       Validators.required
-    //       // Validators.minLength(2),
-    //       // Validators.maxLength(1000)
-    //     ]
-    //   ],
-    //   UnitCreate: null,
-    //   UserCreate: null,
-    //   BookType: ['DG', [Validators.required]],
-    //   // NumberGo: null,
-    //   NumberSymbol: '',
-    //   DocType: 2,
-    //   RecipientsIn: null,
-    //   RecipientsOut: null,
-    //   UserOfHandle: ['', [Validators.required]],
-    //   UserOfCombinate: null,
-    //   UserOfKnow: null,
-    //   SecretLevel: null,
-    //   UrgentLevel: null,
-    //   MethodSend: null,
-    //   //Signer: null,
-    //   Note: '',
-    //   NumOfPaper: null,
-    //   Deadline: null,
-    //   // DateIssued: null,
-    //   isRespinse: false,
-    //   isSendMail: false
-    // });
+  
+  //  this.form.setValue({Note:'Nội dung xử lý'});
+     this.ItemAttachments = [];
   }
 
   addAttachmentFile() {
