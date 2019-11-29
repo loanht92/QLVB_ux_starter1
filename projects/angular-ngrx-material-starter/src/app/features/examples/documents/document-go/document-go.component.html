@@ -27,26 +27,31 @@
                             </mat-select>
                         </mat-form-field>
                     </div>
-                    <div class="row">
-                        <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                    <!-- <div class="row"> -->
+                    <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Sổ văn bản" formControlName="BookType" disabled>
                                 <mat-option *ngFor="let item of ListBookType" value={{item.Code}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field> -->
-                        <!-- <mat-form-field fxFlex="50">
+                    <!-- <mat-form-field fxFlex="50">
                             <mat-label>Sổ văn bản <span class="required-field">*</span></mat-label>
                             <mat-select [(ngModel)]="selectedBookType" formControlName="BookType" disabled>
                                 <mat-option *ngFor="let item of ListBookType" value={{item.Code}}>{{item.Title}}</mat-option>
                             </mat-select>
                             <mat-error *ngIf="form.get('BookType').hasError('required')">Chọn sổ văn bản</mat-error>
                         </mat-form-field> -->
+                    <!-- <mat-form-field class="col">
+                            <mat-select placeholder="Loại văn bản" [(ngModel)]="selectedDocType" formControlName="DocType">
+                                <mat-option *ngFor="let item of ListDocType" value={{item.ID}}>{{item.Title}}</mat-option>
+                            </mat-select>
+                        </mat-form-field> -->
+                    <!-- </div> -->
+                    <div class="row">
                         <mat-form-field class="col">
                             <mat-select placeholder="Loại văn bản" [(ngModel)]="selectedDocType" formControlName="DocType">
                                 <mat-option *ngFor="let item of ListDocType" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
-                    </div>
-                    <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-label>Trích yếu <span class="required-field">*</span></mat-label>
                             <textarea matInput formControlName="Compendium" minlength="2" maxlength="1000" cdkTextareaAutosize #autosize="cdkTextareaAutosize" rows="1" cdkAutosizeMaxRows="10"></textarea>
