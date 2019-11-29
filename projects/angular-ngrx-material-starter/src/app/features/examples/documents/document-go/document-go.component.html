@@ -27,26 +27,24 @@
                             </mat-select>
                         </mat-form-field>
                     </div>
-                    <!-- <div class="row DN">
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <input matInput placeholder="Số đi" formControlName="NumberGo">
-                        </mat-form-field>
-                    </div> -->
                     <div class="row">
-                        <mat-form-field class="col" [ngClass]="routeAnimationsElements">
+                        <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Sổ văn bản" formControlName="BookType" disabled>
                                 <mat-option *ngFor="let item of ListBookType" value={{item.Code}}>{{item.Title}}</mat-option>
                             </mat-select>
+                        </mat-form-field> -->
+                        <mat-form-field fxFlex="50">
+                            <mat-label>Sổ văn bản <span class="required-field">*</span></mat-label>
+                            <mat-select formControlName="BookType" disabled>
+                                <mat-option *ngFor="let item of ListBookType" value={{item.Code}}>{{item.Title}}</mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="form.get('BookType').hasError('required')">Chọn sổ văn bản</mat-error>
                         </mat-form-field>
-
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">
                             <mat-select placeholder="Loại văn bản" [(ngModel)]="selectedDocType" formControlName="DocType">
                                 <mat-option *ngFor="let item of ListDocType" value={{item.ID}}>{{item.Title}}</mat-option>
                             </mat-select>
                         </mat-form-field>
-                        <!-- <mat-form-field class="col" [ngClass]="routeAnimationsElements">
-                            <input matInput placeholder="Số ký hiệu" formControlName="NumberSymbol">
-                        </mat-form-field> -->
                     </div>
                     <div class="row">
                         <mat-form-field class="col" [ngClass]="routeAnimationsElements">

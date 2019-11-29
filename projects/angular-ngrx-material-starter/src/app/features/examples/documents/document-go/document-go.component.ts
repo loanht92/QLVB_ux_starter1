@@ -1,3 +1,4 @@
+
 import {
   Component,
   OnInit,
@@ -8,7 +9,7 @@ import {
   ViewRef
 } from '@angular/core';
 import { Observable, from } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router,RoutesRecognized } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material';
 import {
@@ -19,6 +20,7 @@ import {
   Validators,
   NgForm
 } from '@angular/forms';
+import { SelectionModel } from '@angular/cdk/collections';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import * as moment from 'moment';
 
@@ -55,37 +57,7 @@ import { RegExp } from 'core-js';
 })
 export class DocumentGoComponent implements OnInit {
   bsModalRef: BsModalRef;
-  form = this.fb.group({
-    Compendium: [
-      '',
-      [
-        Validators.required
-        // Validators.minLength(2),
-        // Validators.maxLength(1000)
-      ]
-    ],
-    UnitCreate: null,
-    UserCreate: null,
-    BookType: ['DG', [Validators.required]],
-    // NumberGo: null,
-    NumberSymbol: '',
-    DocType: null,
-    RecipientsIn: null,
-    RecipientsOut: null,
-    UserOfHandle: ['', [Validators.required]],
-    UserOfCombinate: null,
-    UserOfKnow: null,
-    SecretLevel: null,
-    UrgentLevel: null,
-    MethodSend: null,
-    //Signer: null,
-    Note: '',
-    NumOfPaper: null,
-    Deadline: null,
-    // DateIssued: null,
-    isRespinse: false,
-    isSendMail: false
-  });
+  form :FormGroup;
   formValueChanges$: Observable<ItemDocumentGo>;
   displayedColumns: string[] = [
     'ID',
@@ -121,7 +93,8 @@ export class DocumentGoComponent implements OnInit {
   ListUserCreate: ItemUser[] = [];
   SelectUserKnower;
   SelectUserCombiner;
-  BookType = 'DG';
+  // BookType = 'DG';
+  selectedDocType;
   idStatus = '';
   strFilter = '';
   strFilterUser = '';
@@ -171,6 +144,7 @@ export class DocumentGoComponent implements OnInit {
   }
 
   ngOnInit() {
+   
     console.log('DocumentToId=' + this.DocumentToId);
     this.route.paramMap.subscribe(parames => {
       this.DocumentToId = this.docServices.checkNull(parames.get('value'));
@@ -189,6 +163,37 @@ export class DocumentGoComponent implements OnInit {
     this.getUserCreate();
    // this.getListEmailConfig();
    this.GetTotalStep();
+   this.form = this.fb.group({
+    Compendium: [
+      '',
+      [
+        Validators.required
+        // Validators.minLength(2),
+        // Validators.maxLength(1000)
+      ]
+    ],
+    UnitCreate: null,
+    UserCreate: null,
+    BookType: ['', [Validators.required]],
+    // NumberGo: null,
+    NumberSymbol: '',
+    DocType: 2,
+    RecipientsIn: null,
+    RecipientsOut: null,
+    UserOfHandle: ['', [Validators.required]],
+    UserOfCombinate: null,
+    UserOfKnow: null,
+    SecretLevel: null,
+    UrgentLevel: null,
+    MethodSend: null,
+    //Signer: null,
+    Note: '',
+    NumOfPaper: null,
+    Deadline: null,
+    // DateIssued: null,
+    isRespinse: false,
+    isSendMail: false
+  });
   }
 
   ClickItem(row) {
@@ -1550,11 +1555,47 @@ GetTotalStep() {
   }
 
   reset() {
-    this.form.reset();
-    this.form.clearValidators();
-    this.form.clearAsyncValidators();
-    this.form.controls['BookType'].setValue('DG');
-    this.ItemAttachments = [];
+   // this.form.reset();
+    // this.form.clearValidators();
+    // this.form.clearAsyncValidators();
+ //   this.form.controls['BookType'].setValue('DG');
+// this.form.get('BookType').setValue('DG');
+//this.form.controls.BookType.setValue('DG');
+   // this.form.controls['DocType'].setValue(2);
+    this.form.setValue({Note:'Nội dung xử lý'});
+ //   this.selectedDocType=new FormControl(2);
+    // this.ItemAttachments = [];
+    // this.form = this.fb.group({
+    //   Compendium: [
+    //     '',
+    //     [
+    //       Validators.required
+    //       // Validators.minLength(2),
+    //       // Validators.maxLength(1000)
+    //     ]
+    //   ],
+    //   UnitCreate: null,
+    //   UserCreate: null,
+    //   BookType: ['DG', [Validators.required]],
+    //   // NumberGo: null,
+    //   NumberSymbol: '',
+    //   DocType: 2,
+    //   RecipientsIn: null,
+    //   RecipientsOut: null,
+    //   UserOfHandle: ['', [Validators.required]],
+    //   UserOfCombinate: null,
+    //   UserOfKnow: null,
+    //   SecretLevel: null,
+    //   UrgentLevel: null,
+    //   MethodSend: null,
+    //   //Signer: null,
+    //   Note: '',
+    //   NumOfPaper: null,
+    //   Deadline: null,
+    //   // DateIssued: null,
+    //   isRespinse: false,
+    //   isSendMail: false
+    // });
   }
 
   addAttachmentFile() {
