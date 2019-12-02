@@ -395,7 +395,9 @@ GetTotalStep() {
                 AssignEmailSubject: element.AssignRequestSubject,
                 AssignEmailBody: element.AssignRequestBody,
                 FinishEmailSubject: element.FinishRequestSubject,
-                FinishEmailBody: element.FinishRequestBody
+                FinishEmailBody: element.FinishRequestBody,
+                OutOfDateSubject: element.OutOfDateSubject,
+                OutOfDateBody:element.OutOfDateBody,
               };
             } else if (element.Title === 'DT') {
               this.EmailConfigDT = {
@@ -1306,6 +1308,10 @@ GetTotalStep() {
       Compendium: dataForm.Compendium,
       SecretCode: dataForm.SecretLevel,
       UrgentCode: dataForm.UrgentLevel,
+      DateDealine: this.docServices.checkNull(dataForm.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(dataForm.Deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.UserName),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.UserName),
+      SendMailTo: approver.UserEmail
     };
     this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
@@ -1360,6 +1366,10 @@ GetTotalStep() {
       Compendium: dataForm.Compendium,
       SecretCode: dataForm.SecretLevel,
       UrgentCode: dataForm.UrgentLevel,
+      DateDealine: this.docServices.checkNull(dataForm.Deadline) === '' ? moment().add(120, 'days').toDate() : moment(dataForm.Deadline).subtract(1, 'day').toDate(),
+      SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateSubject, approver.UserName),
+      BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.OutOfDateBody, approver.UserName),
+      SendMailTo: approver.UserEmail
     };
     this.services.AddItemToList('ListProcessRequestGo', data).subscribe(
       item => {},
