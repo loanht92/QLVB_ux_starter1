@@ -88,6 +88,10 @@ export class DocumentGoWaitingComponent implements OnInit {
   currentUserName = '';
   currentUserEmail = '';
   overlayRef;
+  pageIndex = 0;
+  pageLimit:number[] = [5, 10, 20] ;
+  nextLink = '';
+  previousLink = '';
 
   ngOnInit() {
     // lấy tham số truyền vào qua url
@@ -98,6 +102,29 @@ export class DocumentGoWaitingComponent implements OnInit {
     });
     this.getCurrentUser();
     //this.documentGo.isAuthenticated$ = false;
+  }
+
+  nextPage(event) {
+    console.log(event);
+    console.log("page index: " + this.pageIndex);
+    if(this.pageIndex < event.pageIndex) {
+      console.log("Next page");
+      this.pageIndex = event.pageIndex;
+      this.shareServices
+      .getItemList2(this.nextLink)
+      .subscribe(
+        itemValue => {
+          if(this.docServices.checkNull(itemValue['odata.nextLink']) !== '') {
+            this.nextLink = itemValue['odata.nextLink'];
+          }
+          this.previousLink = itemValue['odata.metadata'];
+          let item = itemValue['value'] as Array<any>;
+        });
+    } else if(this.pageIndex > event.pageIndex) {
+      console.log("Previous page");
+    } else {
+      console.log("No change");
+    }
   }
 
   isNotNull(str) {
@@ -213,7 +240,7 @@ export class DocumentGoWaitingComponent implements OnInit {
     }
     this.openCommentPanel();
     let strFilter1 =
-      `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover` + this.strFilter+`&$orderby=Created desc`;
+      `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover` + this.strFilter+`&$orderby=Created desc&$top=12`;
     console.log('strSelect=' + strFilter1);
     try {
       this.ListDocumentGo = [];
@@ -221,6 +248,10 @@ export class DocumentGoWaitingComponent implements OnInit {
         .getItemList('ListProcessRequestGo', strFilter1)
         .subscribe(
           itemValue => {
+            if(this.docServices.checkNull(itemValue['odata.nextLink']) !== '') {
+             this.nextLink = itemValue['odata.nextLink'];
+            }
+            this.previousLink = itemValue['odata.metadata'];
             let item = itemValue['value'] as Array<any>;
             item.forEach(element => {
               if (this.ListDocumentGo.findIndex(e => e.DocumentID === element.DocumentGoID ) < 0 ) {

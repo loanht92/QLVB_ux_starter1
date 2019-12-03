@@ -5,7 +5,7 @@ export const environment = {
   envName: 'PROD',
   production: true,
   test: false,
-  i18nPrefix: '/sites/dev/dtdemo1/AppsLibraries/ux-starter/QLVB_Loan/angular-ngrx-material-starter',
+  i18nPrefix: 'https://tsgvietnam.sharepoint.com/sites/dev/dtdemo1/AppsLibraries/ux-starter/QLVB_Loan/angular-ngrx-material-starter',
   versions: {
     app: packageJson.version,
     angular: packageJson.dependencies['@angular/core'],

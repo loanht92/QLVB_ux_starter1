@@ -113,6 +113,10 @@ export class SharedService {
     return this.http.get(`${this.restUrl}${this.urlAPI}` + listName + `')/items` + select);
   }
 
+  getItemList2(select) {
+    return this.http.get(select);
+  }
+
   insertItemList(listName, data) {
     return this.http.post(`${this.restUrl}${this.urlAPI}` + listName + `')/items`, data, this.opInsert);
   }

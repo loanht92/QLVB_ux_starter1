@@ -135,6 +135,9 @@ export class DocumentWaitingComponent implements OnInit {
   overlayRef;
   styleId = 1;
   IsComment;
+  pageIndex = 0;
+  pageLimit:number[] = [5, 10, 20] ;
+
   @HostListener('window:popstate', ['$event']) onPopState(event) {
     console.log('Back button pressed');
   }
@@ -159,6 +162,11 @@ export class DocumentWaitingComponent implements OnInit {
     });
     this.getCurrentUser();
     //this.incoming.isAuthenticated$ = false;
+  }
+
+  nextPage(event) {
+    console.log(event);
+    console.log("page index: " + this.pageIndex);
   }
 
   ClickItem(row) {
