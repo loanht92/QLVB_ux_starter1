@@ -2943,14 +2943,15 @@ AddListTicketApproval() {
         );
       }
       else if(this.IsFinishItem) {
+        this.EmailConfig.FinishEmailBody=this.EmailConfig.FinishEmailBody.replace('{Author}',this.AuthorDocument.Name);
         const dataSendApprover = {
           __metadata: { type: 'SP.Data.ListRequestSendMailListItem' },
           Title: this.listName,
           IndexItem: this.ItemId,
           Step: this.currentStep,
           KeyList: this.listName +  '_' + this.ItemId,
-          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.AuthorDocument.Name, this.IndexStep + 1),
-          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody, this.AuthorDocument.Name, this.IndexStep + 1),
+          SubjectMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailSubject, this.currentUserName, this.IndexStep + 1),
+          BodyMail: this.Replace_Field_Mail(this.EmailConfig.FieldMail, this.EmailConfig.FinishEmailBody,  this.currentUserName, this.IndexStep + 1),
           SendMailTo: this.AuthorDocument.Email
         }
         this.resService.AddItemToList('ListRequestSendMail', dataSendApprover).subscribe(
