@@ -36,6 +36,7 @@ import { ReportAdvanceComponent} from './document-to/components/report-advance.c
 import { DataListComponent } from './data-list/data-list.component';
 import { NumberDirective, FormatMoneyDirective, WindowBackHistory } from './number-directive';
 import { DocumentRetrieveComponent } from './document-to/components/document-retrieve.component';
+import { DocumentGoProcessedComponent } from './document-go/document-go-processed.component';
 
 export function HttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(
@@ -91,7 +92,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     NumberDirective, 
     FormatMoneyDirective, 
     WindowBackHistory,
-    DocumentRetrieveComponent
+    DocumentRetrieveComponent,
+    DocumentGoProcessedComponent
   ],
   entryComponents: [
     DocumentGoPanel,

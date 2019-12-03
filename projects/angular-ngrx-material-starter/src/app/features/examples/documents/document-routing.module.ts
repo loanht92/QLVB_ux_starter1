@@ -19,10 +19,12 @@ import { CommentComponent }from './document-go/comment.component';
 import {DocumentAddComponent} from './document-to/components/document-add.component';
 import {DocumentDetailComponent} from './document-to/components/document-detail.component';
 import { DocumentWaitingComponent } from './document-to/components/document-waiting.component';
+import {DocumentGoProcessedComponent } from './document-go/document-go-processed.component'
 import {ReportComponent} from './document-to/components/report.component';
 import {ReportAdvanceComponent} from './document-to/components/report-advance.component';
 import {DocumentRetrieveComponent} from './document-to/components/document-retrieve.component';
 import {DataListComponent} from './data-list/data-list.component'
+import { from } from 'rxjs';
 
 const routes: Routes = [
   {
@@ -55,8 +57,8 @@ const routes: Routes = [
         data: { title: 'Đang xử lý' }
       },
       {
-        path: 'documentgo-processed/:id',
-        component: DocumentGoWaitingComponent,
+        path: 'documentgo-processed',
+        component: DocumentGoProcessedComponent,
         data: { title: 'Đã xử lý' }
       },
       {
