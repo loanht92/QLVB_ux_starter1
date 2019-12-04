@@ -1,0 +1,23 @@
+table {
+    width: 100%;
+}
+
+tr.example-element-row:hover {
+    background: rgb(201, 198, 198);
+}
+
+.PB10 {
+    padding-bottom: 10px;
+}
+
+.docadd-filter {
+    padding: 1px 0 !important;
+    -webkit-appearance: textfield !important;
+    background-color: white !important;
+    -webkit-rtl-ordering: logical !important;
+    border-width: 2px !important;
+    border-style: inset !important;
+    border-color: initial !important;
+    border-image: initial !important;
+    background: white !important;
+}

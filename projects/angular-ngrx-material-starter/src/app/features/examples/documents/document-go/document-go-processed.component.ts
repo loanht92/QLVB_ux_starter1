@@ -61,12 +61,12 @@ export class DocumentGoProcessedComponent implements OnInit {
   }
 
   displayedColumns: string[] = [
-    'DocumentID',
+    'ID',
     'DocTypeName',
     'DateCreated',
     'UserCreateName',
-    'UserOfHandle',
-    'TaskTypeName',
+    // 'UserOfHandle',
+    // 'TaskTypeName',
     'Deadline',
     'Compendium',
     'flag'
@@ -195,54 +195,29 @@ export class DocumentGoProcessedComponent implements OnInit {
           },
           () => {}
         );
-        this.getListDocumentGo_Wait();
+        this.getListDocumentGo();
       }
     );
   }
   //lấy ds phiếu xử lý
-  getListDocumentGo_Wait() {
-    let strSelect = '';
-    // {-1:Thu hồi, 1:chờ xử lý, 2:Đang xử lý, 3:Đã xử lý, 4:Chờ xin ý kiến, 5:Đã cho ý kiến}
-    //chờ xử lý
-    if (this.id === 1) {
-      strSelect = `'and TypeCode ne 'XYK' and StatusID eq '0'`;
-      this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
-    }
-    //Đang xử lý
-    else if (this.id === 2) {
-   //   strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '1'`;
-      strSelect = `') and TypeCode ne 'XYK' and IsFinished ne '1'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
-    }
-    //Đã xử lý
+  getListDocumentGo() {
+    //  Đang xử lý
+    if (this.id === 2) {
+        this.strFilter = `&$filter=ListUserView/Id eq '` + this.currentUserId + `'and StatusID eq '0'`;
+      }
+   // Đã xử lý
     else if (this.id === 3) {
-     // strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and IsFinished eq '1'`;
-      strSelect = `') and TypeCode ne 'XYK' and IsFinished eq '1' and StatusID ne '-1'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
+      this.strFilter = `&$filter=ListUserView/Id eq '` + this.currentUserId + `'and StatusID eq '1'`;
     }
-     //Thu hồi
-     else if(this.id === -1) {
-      strSelect = `') and TypeCode ne 'XYK' and StatusID eq '-1'`;
-      this.strFilter = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
-    }
-    //Chờ xin ý kiến
-    else if (this.id === 4) {
-   strSelect = `' and TypeCode eq 'XYK' and StatusID eq '0'`;
-   this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
-    }
-    //Đã cho ý kiến
-    else if (this.id === 5) {
-     strSelect = `' and TypeCode eq 'XYK' and StatusID eq '1'`;
-     this.strFilter = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
-    }
+   
     this.openCommentPanel();
     let strFilter1 =
-      `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover` + this.strFilter+`&$orderby=Created desc&$top=12`;
+      `?$select=*,Author/Id,Author/Title,ListUserView/Id&$expand=Author,ListUserView` + this.strFilter+`&$orderby=Created desc&$top=12`;
     console.log('strSelect=' + strFilter1);
     try {
       this.ListDocumentGo = [];
       this.shareServices
-        .getItemList('ListProcessRequestGo', strFilter1)
+        .getItemList('ListDocumentGo', strFilter1)
         .subscribe(
           itemValue => {
             if(this.docServices.checkNull(itemValue['odata.nextLink']) !== '') {
@@ -251,33 +226,31 @@ export class DocumentGoProcessedComponent implements OnInit {
             this.previousLink = itemValue['odata.metadata'];
             let item = itemValue['value'] as Array<any>;
             item.forEach(element => {
-              if (this.ListDocumentGo.findIndex(e => e.DocumentID === element.DocumentGoID ) < 0 ) {
                 this.ListDocumentGo.push({
                   ID: element.ID,
-                  DocumentID: element.DocumentGoID,
                   NumberGo: this.docServices.formatNumberGo(element.NumberGo),
                   DocTypeName: this.CheckNull(element.DocTypeName),
-                  NumberSymbol: this.CheckNull(element.Title),
+                  NumberSymbol: this.CheckNull(element.NumberSymbol),
                   Compendium: this.CheckNull(element.Compendium),
                   AuthorId:
                     element.Author == undefined ? '' : element.Author.Id,               
                   UserCreateName:
                     element.Author == undefined ? '' : element.Author.Title,
                   DateCreated: this.formatDateTime(element.DateCreated),
-                  UserApproverId:
-                  element.UserApprover == undefined ? '' : element.UserApprover.Id,
-                  UserOfHandleName:
-                    element.UserApprover == undefined
-                      ? ''
-                      : element.UserApprover.Title,
-                  UserOfKnowName:
-                    element.UserOfKnow == undefined
-                      ? ''
-                      : element.UserOfKnow.Title,
-                  UserOfCombinateName:
-                    element.UserOfCombinate == undefined
-                      ? ''
-                      : element.UserOfCombinate.Title,
+                  // UserApproverId:
+                  // element.UserApprover == undefined ? '' : element.UserApprover.Id,
+                  // UserOfHandleName:
+                  //   element.UserApprover == undefined
+                  //     ? ''
+                  //     : element.UserApprover.Title,
+                  // UserOfKnowName:
+                  //   element.UserOfKnow == undefined
+                  //     ? ''
+                  //     : element.UserOfKnow.Title,
+                  // UserOfCombinateName:
+                  //   element.UserOfCombinate == undefined
+                  //     ? ''
+                  //     : element.UserOfCombinate.Title,
                   Deadline: this.formatDateTime(element.Deadline),
                   StatusName: this.CheckNull(element.StatusName),
                   BookTypeName: '',
@@ -296,49 +269,18 @@ export class DocumentGoProcessedComponent implements OnInit {
                   NumOfPaper: '',
                   link: this.getLinkItemByRole(
                     this.id,
-                    element.DocumentGoID,
+                    element.ID,
                     element.IndexStep
                   ),
-                  TypeCode: element.TaskTypeCode,
+                 // TypeCode: element.TaskTypeCode,
                   StatusID: element.StatusID,
-                  TaskTypeName:element.TaskTypeName,
+                 // TaskTypeName:element.TaskTypeName,
                   flag:((this.CheckNull(element.UrgentCode)!='' && this.CheckNull(element.UrgentCode)!='BT')|| (this.CheckNull(element.SecretCode)!='' && this.CheckNull(element.SecretCode)!='BT'))?'flag':''
                 });
-              } else if (element.IsFinished === 1) {
-                let index = this.ListDocumentGo.findIndex(
-                  e => e.ID === element.DocumentGoID
-                );
-                if (index >= 0) {
-                  this.ListDocumentGo.splice(index, 1);
-                }
-              }
-            });
-            if(this.id === 2) {
-              let listItem1 = []; // list chờ xử lý
-              let listItem2 = []; // list đang xử lý
-              let listItem3 = [];   // list thu hồi
-              listItem1 = this.ListDocumentGo.filter(i => i.StatusID === 0 && i.UserApproverId === this.currentUserId);
-              listItem3 =  this.ListDocumentGo.filter(i => i.StatusID === -1 && i.UserApproverId === this.currentUserId);
-              this.ListDocumentGo.forEach(element => {
-                if(listItem1.findIndex(e => e.DocumentID === element.DocumentID) < 0 && 
-                  listItem3.findIndex(e => e.DocumentID === element.DocumentID) < 0 &&
-                  listItem2.findIndex(e => e.DocumentID === element.DocumentID) < 0) {
-                    if(element.AuthorId === this.currentUserId && element.TypeCode === "XLC"
-                      || (element.UserApproverId === this.currentUserId && (element.TypeCode === "PH" || element.TypeCode === "NĐB"))) {
-                      listItem2.push(element);
-                    }
-                }
-              })
-              this.dataSource = new MatTableDataSource<ItemDocumentGo>(listItem2);
-            } else {
-              let listItem1 = [];
-              this.ListDocumentGo.forEach(element => {
-                if(listItem1.findIndex(e => e.ID === element.ID) < 0) {
-                  listItem1.push(element);
-                }
-              })
-              this.dataSource = new MatTableDataSource<ItemDocumentGo>(listItem1);
-            }
+              });
+           
+              this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
+            
             if (!(this.ref as ViewRef).destroyed) {
               this.ref.detectChanges();
             }
@@ -363,16 +305,16 @@ export class DocumentGoProcessedComponent implements OnInit {
 
   getLinkItemByRole(type, id, step) {
     let link = '';
-    if (this.docServices.CheckNullSetZero(type) === 1) {
-      link = '/Documents/documentgo-detail/' + id + '/' + step;
-    } else if (
-      this.docServices.CheckNullSetZero(type) === 4 ||
-      this.docServices.CheckNullSetZero(type) === 5
-    ) {
-      link = '/Documents/documentgo-detail/' + id + '/-1';
-    } else {
+    // if (this.docServices.CheckNullSetZero(type) === 1) {
+    //   link = '/Documents/documentgo-detail/' + id + '/' + step;
+    // } else if (
+    //   this.docServices.CheckNullSetZero(type) === 4 ||
+    //   this.docServices.CheckNullSetZero(type) === 5
+    // ) {
+    //   link = '/Documents/documentgo-detail/' + id + '/-1';
+    // } else {
       link = '/Documents/documentgo-detail/' + id;
-    }
+   // }
     return link;
   }
 

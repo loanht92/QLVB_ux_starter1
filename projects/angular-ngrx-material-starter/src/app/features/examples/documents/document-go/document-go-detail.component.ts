@@ -152,6 +152,7 @@ export class DocumentGoDetailComponent implements OnInit {
   ArrayItemId = [];
   ListDepartment = [];
   ListUserApprover = [];
+  ListUserView=[];
   ListUserChoice: UserChoice[] = [];
   ListAllUserChoice: UserChoice[] = [];
   ListUserOfDepartment: UserOfDepartment[] = [];
@@ -648,6 +649,8 @@ export class DocumentGoDetailComponent implements OnInit {
           if(this.numberGo==0){
             this.getNumberGo();
           }
+          //Lấy ds người được xem văn bản
+         this.ListUserView=itemList[0].ListUserViewId;
           //lấy tổng số bước của VB
           this.totalStep=itemList[0].TotalStep==null?0:itemList[0].TotalStep;
           this.deadline_VB =
@@ -1057,6 +1060,36 @@ export class DocumentGoDetailComponent implements OnInit {
                     this.UpdateTicketRetrieve(index);
                   }
                   else {
+                      // update user view cho văn bản
+             let isRemove=false;
+             for(let i=0; i<this.ArrayIdRetrieve.length;i++){
+              if(this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)> -1){
+                let index1=this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)
+                this.ListUserView.splice(index1,1);
+                isRemove=true;
+              }
+             }
+             if(isRemove==true){
+              const data = {
+                __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
+                ListUserViewId:{results:this.ListUserView}
+              };
+              this.resService
+                .updateListById('ListDocumentGo', data, this.ItemId)
+                .subscribe(
+                  item => {},
+                  error => {
+                    this.closeCommentPanel();
+                    console.log(
+                      'error when update item to list ListDocumentGo: ' +
+                        error.error.error.message.value
+                    );
+                  },
+                  () => {
+                    console.log('Update user approver name successfully!');
+                  }
+                );
+             }
                     if(this.Retieved) {
                       if(this.ListHistoryId.length > 0) {
                         this.DeleteHistoryRetrieve(0);
@@ -1552,15 +1585,20 @@ export class DocumentGoDetailComponent implements OnInit {
             console.log(
               'Add item of approval user to list ListProcessRequestGo successfully!'
             );
-            // update user approver , số văn bản cho văn bản
+            // update user approver ,user view, số văn bản cho văn bản
             this.UserAppoverName +=
               ';' +
               this.selectedApprover.split('|')[0] +
               '_' +
               this.selectedApprover.split('|')[2];
+
+              if(this.ListUserView.indexOf(this.selectedApprover.split('|')[0])==-1){
+                this.ListUserView.push(this.selectedApprover.split('|')[0]);
+              }
             const data = {
               __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
-              ListUserApprover: this.UserAppoverName
+              ListUserApprover: this.UserAppoverName,
+              ListUserViewId:{results:this.ListUserView}
             };
             if (this.IndexStep === this.totalStep - 2) {
               Object.assign(data, {
@@ -1684,6 +1722,37 @@ export class DocumentGoDetailComponent implements OnInit {
           this.AddUserCombine();
         } else {
           this.index = 0;
+             // update user view cho văn bản
+             let isAddNew=false;
+             for(let i=0; i<this.selectedCombiner.length;i++){
+              if(this.ListUserView.indexOf( this.selectedCombiner[i].split('|')[0])==-1){
+                this.ListUserView.push( this.selectedCombiner[i].split('|')[0]);
+                isAddNew=true;
+              }
+             }
+             if(isAddNew==true){
+              const data = {
+                __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
+                ListUserViewId:{results:this.ListUserView}
+              };
+              this.resService
+                .updateListById('ListDocumentGo', data, this.ItemId)
+                .subscribe(
+                  item => {},
+                  error => {
+                    this.closeCommentPanel();
+                    console.log(
+                      'error when update item to list ListDocumentGo: ' +
+                        error.error.error.message.value
+                    );
+                  },
+                  () => {
+                    console.log('Update user approver name successfully!');
+                  }
+                );
+             }
+          
+             //thêm phiếu xử lý cho người nhận để biết
           if (
             this.selectedKnower !== undefined &&
             this.selectedKnower.length > 0
@@ -1760,6 +1829,35 @@ export class DocumentGoDetailComponent implements OnInit {
         if (this.index < this.selectedKnower.length) {
           this.AddUserKnow();
         } else {
+           // update user view cho văn bản
+           let isAddNew=false;
+           for(let i=0; i<this.selectedKnower.length;i++){
+            if(this.ListUserView.indexOf( this.selectedKnower[i].split('|')[0])==-1){
+              this.ListUserView.push( this.selectedKnower[i].split('|')[0]);
+              isAddNew=true;
+            }
+           }
+           if(isAddNew==true){
+            const data = {
+              __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
+              ListUserViewId:{results:this.ListUserView}
+            };
+            this.resService
+              .updateListById('ListDocumentGo', data, this.ItemId)
+              .subscribe(
+                item => {},
+                error => {
+                  this.closeCommentPanel();
+                  console.log(
+                    'error when update item to list ListDocumentGo: ' +
+                      error.error.error.message.value
+                  );
+                },
+                () => {
+                  console.log('Update user approver name successfully!');
+                }
+              );
+           }
           this.callbackFunc(this.processId, this.ItemId, false);
         }
       }
@@ -2765,7 +2863,7 @@ AddListTicketApproval() {
     return 0;
   }
 
-  //xin ý kiến
+  //Lưu :xin ý kiến
   saveItem() {
     try {
       if (this.isNotNull(this.contentComment)) {
@@ -2823,6 +2921,35 @@ AddListTicketApproval() {
           },
           () => {
             this.closeCommentPanel();
+             // update user view cho văn bản
+             let isAddNew=false;
+          //   for(let i=0; i<this.selectedCombiner.length;i++){
+              if(this.ListUserView.indexOf( this.listUserIdSelect[index])==-1){
+                this.ListUserView.push( this.listUserIdSelect[index]);
+                isAddNew=true;
+              }
+           //  }
+             if(isAddNew==true){
+              const data = {
+                __metadata: { type: 'SP.Data.ListDocumentGoListItem' },
+                ListUserViewId:{results:this.ListUserView}
+              };
+              this.resService
+                .updateListById('ListDocumentGo', data, this.ItemId)
+                .subscribe(
+                  item => {},
+                  error => {
+                    this.closeCommentPanel();
+                    console.log(
+                      'error when update item to list ListDocumentGo: ' +
+                        error.error.error.message.value
+                    );
+                  },
+                  () => {
+                    console.log('Update user approver name successfully!');
+                  }
+                );
+             }
             this.SendComment(this.contentComment, true, index);
             // gui mail
             const dataSendUser = {

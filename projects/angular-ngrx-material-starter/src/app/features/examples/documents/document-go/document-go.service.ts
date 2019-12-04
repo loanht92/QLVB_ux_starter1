@@ -125,8 +125,8 @@ export class DocumentGoService {
   private getProcessRequestGo= "/_api/web/lists/getbytitle('ListProcessRequestGo')/items?$select=*,UserRequest/Title,UserRequest/Name,UserRequest/Id,Author/Id,Author/Title,Author/Name,UserApprover/Id,UserApprover/Title,UserApprover/Name&$expand=Author,UserApprover,UserRequest";
   private  urlGroupApprover = "/_api/web/lists/getbytitle('ListMapEmployee')/items?$select=*,User/Name,User/Title,User/Id&$expand=User"
   private urlDetailLeave = "/_api/web/lists/getbytitle('ListDocumentGo')/items?$select=*,Author/Id,Author/Title,Author/Name,UserOfHandle/Id,UserOfHandle/Title,UserOfHandle/Name,"
-  + "UserOfCombinate/Title,UserOfCombinate/Id,UserOfCombinate/Name,UserOfKnow/Title,UserOfKnow/Id,UserOfKnow/Name,Signer/Id,Signer/Title,Signer/Name,AttachmentFiles"
-  + "&$expand=UserOfHandle,UserOfCombinate,UserOfKnow,Author,Signer,AttachmentFiles&$filter=ID eq ";
+  + "UserOfCombinate/Title,UserOfCombinate/Id,UserOfCombinate/Name,UserOfKnow/Title,UserOfKnow/Id,UserOfKnow/Name,Signer/Id,Signer/Title,Signer/Name,AttachmentFiles,ListUserView/Id,ListUserView/Title"
+  + "&$expand=UserOfHandle,UserOfCombinate,UserOfKnow,Author,Signer,AttachmentFiles,ListUserView&$filter=ID eq ";
  
   getHistoryStep(noteBookID, step) {
     return this.http.get(

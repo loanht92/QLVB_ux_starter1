@@ -53,11 +53,11 @@ const routes: Routes = [
       },
       {
         path: 'documentgo-processing/:id',
-        component: DocumentGoWaitingComponent,
+        component: DocumentGoProcessedComponent,
         data: { title: 'Đang xử lý' }
       },
       {
-        path: 'documentgo-processed',
+        path: 'documentgo-processed/:id',
         component: DocumentGoProcessedComponent,
         data: { title: 'Đã xử lý' }
       },

@@ -742,6 +742,14 @@ GetTotalStep() {
             this.SelectUserKnower = dataForm.UserOfKnow;
         //lấy ra id , email của người xl chính
         this.splitDataUserApprover(dataForm.UserOfHandle);
+        //Lấy ra mảng id người tham gia vào văn bản
+        let arrUserViewId=[this.currentUserId,this.userApproverId];
+if(this.UserOfCombinate!=0){
+  arrUserViewId.push(this.UserOfCombinate);
+}
+if(this.UserOfKnow!=0){
+  arrUserViewId.push(this.UserOfKnow);
+}
         //lấy ra tổng số bước
         this.TotalStep=0;
         if(this.IsTP){//nếu người tạo VB là trưởng phòng
@@ -805,7 +813,8 @@ GetTotalStep() {
           StatusID: ChuyenXL,
           StatusName: ChuyenXL === 0 ? 'Chờ xử lý' : 'Dự thảo',
           ListUserApprover: this.userApproverId + '_' + this.userApproverName,
-          TotalStep:this.TotalStep
+          TotalStep:this.TotalStep,
+          ListUserViewId:{results:arrUserViewId}
         };
         console.log('data=' + data);
         if (this.IdEdit == 0) {
