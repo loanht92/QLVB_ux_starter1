@@ -3,7 +3,7 @@
         <input class="docadd-filter" fxFlex="200px" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
     </div>
     <div fxFlexFill class="form-input">
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort matSortActive="{{sortActive}}" matSortDisableClear matSortDirection="{{sortDirection}}" (matSortChange)="sortData($event)">
             <!-- DocumentID Column -->
             <ng-container matColumnDef="DocumentID">
                 <th mat-header-cell *matHeaderCellDef> No. </th>
@@ -18,7 +18,7 @@
 
             <!-- DateCreated Column -->
             <ng-container matColumnDef="DateCreated">
-                <th mat-header-cell *matHeaderCellDef> Ngày gửi </th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Ngày gửi </th>
                 <td mat-cell *matCellDef="let element">{{element.DateCreated}}</td>
             </ng-container>
             <!-- UserCreateName Column -->
@@ -58,6 +58,7 @@
                 </td>
             </ng-container>
         </table>
-        <mat-paginator [pageIndex]="pageIndex" [pageSize]="5" [pageSizeOptions]="pageLimit" (page)="nextPage($event)"></mat-paginator>
+        <mat-paginator (page)="onPageChange($event)" [length]="lengthData" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"></mat-paginator>
+        <!-- <mat-paginator [pageIndex]="pageIndex" [pageSize]="5" [pageSizeOptions]="pageLimit" (page)="nextPage($event)"></mat-paginator> -->
     </div>
 </div>

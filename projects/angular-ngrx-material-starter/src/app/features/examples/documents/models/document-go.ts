@@ -72,6 +72,7 @@ export interface DocumentGoTicket {
   created: string;
   numberTo: string;
 }
+ 
 //select
 export interface ItemSeleted {
   ID: number;

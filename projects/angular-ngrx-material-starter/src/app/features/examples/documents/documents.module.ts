@@ -10,7 +10,7 @@ import {FlexLayoutModule} from '@angular/flex-layout'
 import { SharedModule } from '../../../shared/shared.module';
 import { environment } from '../../../../environments/environment';
 import {MatTableModule} from '@angular/material/table';
-import {MatPaginatorModule} from '@angular/material';
+import {MatPaginatorModule,MatSortModule} from '@angular/material';
 import {MatTreeModule} from '@angular/material/tree'
 import {MatAutocompleteModule} from '@angular/material';
 //import {NgxPaginationModule} from 'ngx-pagination';
@@ -51,6 +51,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     LazyElementsModule,
     MatTableModule,
     MatPaginatorModule,
+    MatSortModule,
     SharedModule,
     DocumentRoutingModule,
     ModalModule,

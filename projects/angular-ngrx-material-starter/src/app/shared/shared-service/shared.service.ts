@@ -199,5 +199,11 @@ export class SharedService {
       })
     );
   }
+  getCountItem(filter) {
+    // return this._httpClient.get(`https://tsgvietnam.sharepoint.com/sites/dev/dtdemo1/_vti_bin/ListData.svc/`+ listname +`/$count?$filter=`+ filter);
+    // return this._httpClient.get(`http://localhost:8080/_vti_bin/ListData.svc/`+ listname +`/$count?$filter=`+ filter);
+    // return this.http.get(`${this.restUrl}/_vti_bin/ListData.svc/` + listname + `/$count`);
+    return this.http.get(`${this.restUrl}/_vti_bin/ListData.svc/` + filter);
+  }
 
 }

@@ -95,6 +95,7 @@ export class UserRetieve {
   Email: string;
 }
 
+
 @Component({
   selector: 'anms-document-go-detail',
   templateUrl: './document-go-detail.component.html',
@@ -200,6 +201,7 @@ export class DocumentGoDetailComponent implements OnInit {
   IsFinishItem = false; IsFlag = false;
   AuthorDocument;
   Retieved = false;
+  
   constructor(
     private docServices: DocumentGoService,
     private resService: ResApiService,
@@ -765,7 +767,7 @@ export class DocumentGoDetailComponent implements OnInit {
       this.closeCommentPanel();
     }
   }
-
+ 
   GetHistory() {
     try {
       this.strFilter =
