@@ -204,7 +204,8 @@ export class DocumentGoProcessedComponent implements OnInit {
           },
           () => {}
         );
-        this.getListDocumentGo();
+       // this.getListDocumentGo();
+       this.Search();
       }
     );
   }
@@ -368,6 +369,7 @@ export class DocumentGoProcessedComponent implements OnInit {
       },
       error => {
         console.log(error);
+        this.closeCommentPanel();
       },
       () => {
         if(this.indexPage > 0){

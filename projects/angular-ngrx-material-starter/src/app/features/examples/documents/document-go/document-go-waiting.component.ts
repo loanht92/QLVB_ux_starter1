@@ -290,6 +290,7 @@ export class DocumentGoWaitingComponent implements OnInit {
     // console.log($event)
     if ($event.pageSize !== this.pageSize) {
       this.pageSize = this.paginator.pageSize;
+      this.openCommentPanel();
       this.Search();
     }
     else {
@@ -397,6 +398,7 @@ export class DocumentGoWaitingComponent implements OnInit {
       },
       error => {
         console.log(error);
+        this.closeCommentPanel();
       },
       () => {
         this.dataSource = new MatTableDataSource<ItemDocumentGo>(this.ListDocumentGo);
@@ -406,6 +408,9 @@ export class DocumentGoWaitingComponent implements OnInit {
         });
         if (!(this.ref as ViewRef).destroyed) {
           this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.closeCommentPanel();
         }
       })
   }
