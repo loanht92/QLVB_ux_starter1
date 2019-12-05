@@ -99,7 +99,7 @@ export class DocumentGoWaitingComponent implements OnInit {
   nextLink = '';
   previousLink = '';
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [1,10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
   ArrayHistory: ArrayHistoryObject[] = []
@@ -282,7 +282,7 @@ export class DocumentGoWaitingComponent implements OnInit {
     `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover&$top=`
     + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
     console.log(' strFilter='+this.strFilter);
-    this.getData(this.strFilter);
+   // this.getData(this.strFilter);
     this.getLengthData(filterCount);
   }
   onPageChange($event) {
@@ -319,6 +319,7 @@ export class DocumentGoWaitingComponent implements OnInit {
       }
     }
     this.indexPage = $event.pageIndex;
+  
   }
 
   sortData($event) {
@@ -393,7 +394,6 @@ export class DocumentGoWaitingComponent implements OnInit {
           });
         })
         this.urlNextPage = itemValue["odata.nextLink"];
-
       },
       error => {
         console.log(error);
@@ -404,9 +404,9 @@ export class DocumentGoWaitingComponent implements OnInit {
           pageIndex: this.paginator.pageIndex,
           data: this.ListDocumentGo
         });
-        // if (!(this.ref as ViewRef).destroyed) {
-        //   this.ref.detectChanges();
-        // }
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
       })
   }
 
@@ -418,12 +418,17 @@ export class DocumentGoWaitingComponent implements OnInit {
         // this.lengthData = Number(items);
         this.lengthData = items as number;
         // console.log("this.lengthData: " + this.lengthData);
+       
       },
       error => {
         console.log(error);
       },
       () => {
+        this.getData(this.strFilter);
         console.log("lengthData: " + this.lengthData);
+        // if (!(this.ref as ViewRef).destroyed) {
+        //   this.ref.detectChanges();
+        // }
       }
     )
   }
