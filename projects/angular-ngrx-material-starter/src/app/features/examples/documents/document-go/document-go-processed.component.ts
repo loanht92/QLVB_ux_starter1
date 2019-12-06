@@ -372,6 +372,7 @@ export class DocumentGoProcessedComponent implements OnInit {
         this.closeCommentPanel();
       },
       () => {
+        //gán lại lengthdata
         if(this.indexPage > 0){
           if(this.isNotNull(this.urlNextPage)){
             this.lengthData += this.ListDocumentGo.length;

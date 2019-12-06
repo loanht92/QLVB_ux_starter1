@@ -1,5 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, Injectable } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, Injectable , ViewRef} from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
@@ -18,7 +19,12 @@ import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../core/core.module';
-
+import { SharedService } from '../../../../shared/shared-service/shared.service';
+ // MatdataTable
+ export interface ArrayHistoryObject {
+  pageIndex: Number;
+  data: DocumentGoTicket[];
+}
 @Component({
   selector: 'anms-report',
   templateUrl: './report.component.html',
@@ -28,7 +34,7 @@ import {
 export class ReportDGComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','dateIssued','compendium', 'sts']; //'select', 'userApprover','content',
+  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','dateIssued','compendium', 'sts','flag']; //'select', 'userApprover','content',
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -44,12 +50,17 @@ export class ReportDGComponent implements OnInit {
   ListDocType: ItemSeleted[] = [];
   docType;
   ListDocumentID = [];
-
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
+  urlNextPage = ""; indexPage = 0;
+  ArrayHistory: ArrayHistoryObject[] = []
   constructor(private fb: FormBuilder, private docTo: DocumentGoService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private location: PlatformLocation
+              private location: PlatformLocation,
+              private shareService: SharedService
     ) {
       this.location.onPopState(() => {
         console.log('Init: pressed back!');
@@ -72,7 +83,208 @@ export class ReportDGComponent implements OnInit {
       return false;
     }
   };
+  Search() {
+    this.inDocs$ = [];
+    this.ArrayHistory = [];
+    this.paginator.pageIndex = 0;
+
+    let filterCount='' ;
+    let strFilter1 ='';
+
+    strFilter1 = `&$filter=StatusID ne '-1' and ListUserView/Id eq '`+this.currentUserId+`'`;
+    //filterCount=`?$filter=StatusID ne -1`;
+    if(this.docTo.CheckNullSetZero(this.docType) > 0) {
+      strFilter1 += ` and DocTypeID eq '` + this.docType +`'`;
+    //  filterCount+=` and DocTypeID eq `+ this.docType;
+    }
+
+    if(this.docTo.checkNull(this.dateIssuedFrom) !== '') {
+      this.dateIssuedFrom = moment(this.dateIssuedFrom).hours(0).minutes(0).seconds(0).toDate();
+      strFilter1 += ` and (DateIssued ge '` + this.ISODateStringUTC(this.dateIssuedFrom) + `' or DateIssued eq null)`;
+    //  filterCount+=` and DateIssued ge datetime'` + this.ISODateStringUTC(this.dateIssuedFrom) + `' or DateIssued eq null`;
+    }
+
+    if(this.docTo.checkNull(this.dateIssuedTo) !== '') {
+      this.dateIssuedTo = moment(this.dateIssuedTo).hours(23).minutes(59).seconds(59).toDate();
+      strFilter1 += ` and (DateIssued le '` + this.ISODateStringUTC(this.dateIssuedTo) + `' or DateIssued eq null)`;
+    //  filterCount+=` and DateIssued le datetime'` + this.ISODateStringUTC(this.dateIssuedTo) + `' or DateIssued eq null`;
+    }
+
+
+    // if (this.s != null) {
+    //   this.strFilter += ` and DateRequest ge '` + this.ISODateString(this.startDate) + `'`;
+    //   filterCount += ` and DateRequest ge datetime'` + this.ISODateString(this.startDate) + `'`
+    // }
+    // if (this.endDate != null) {
+    //   this.strFilter += ` and DateRequest le '` + this.ISODateString(this.endDate) + `'`;
+    //   filterCount += ` and DateRequest le datetime'` + this.ISODateString(this.endDate) + `'`;
+    // }
+    // if (this.TitleRequest != null && this.TitleRequest != '') {
+    //   this.strFilter += ` and substringof('` + this.TitleRequest + `', Title) `;
+    //   filterCount += ` and substringof('` + this.TitleRequest + `', Title) `;
+    // }
+
+    // if (this.selectedType != null && this.selectedType != '') {
+    //   this.strFilter += ` and ListName eq '` + this.selectedType + `'`;
+    //   filterCount += ` and ListName eq '` + this.selectedType + `'`;
+    // }
+    // if (this.selectedStatus != null && this.selectedStatus != '') {
+    //   this.strFilter += ` and IsFinnish eq '` + this.selectedStatus + `'`;
+    //   filterCount += ` and IsFinnish eq ` + this.selectedStatus;
+    // }
+   
+  //  console.log(' filterCount='+filterCount);
+    this.strFilter =
+    `?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,Signer/Id,Signer/Title,ListUserView/Id,AttachmentFiles&$expand=UserOfHandle,Author,Signer,ListUserView,AttachmentFiles&$top=`
+    + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
+    console.log(' strFilter='+this.strFilter);
+    this.getData(this.strFilter);
+   // this.getLengthData(filterCount);
+  }
+  onPageChange($event) {
+    // console.log("$event");
+    // console.log($event)
+    if ($event.pageSize !== this.pageSize) {
+      this.pageSize = this.paginator.pageSize;
+      this.OpenRotiniPanel();
+      this.Search();
+    }
+    else {
+      if ($event.pageIndex > this.indexPage) {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.ArrayHistory[next].data);
+        }
+        else {
+          if (this.urlNextPage !== undefined) {
+            const url = this.urlNextPage.split("/items")[1];
+            this.getData(url);
+          }
+        }
+      }
+      else {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.ArrayHistory[next].data);
+        }
+        else {
+          this.pageSize = this.paginator.pageSize;
+          this.paginator.pageIndex = 0;
+          this.indexPage = 0;
+          this.Search();
+        }
+      }
+    }
+    this.indexPage = $event.pageIndex;
   
+  }
+
+  sortData($event) {
+    // console.log("$event");
+    // console.log($event);
+    this.sortActive = $event.active;
+    this.sortDirection = $event.direction;
+    this.paginator.pageIndex = 0;
+    this.indexPage = 0;
+    this.Search();
+  }
+
+  getData(filter) {
+    this.inDocs$ = [];
+    this.shareService.getItemList("ListDocumentGo", filter).subscribe(
+      itemValue => {
+        // console.log("itemValue");
+        // console.log(itemValue);
+        let itemList = itemValue["value"] as Array<any>;
+        itemList.forEach(element => {
+          this.inDocs$.push({
+            STT: this.inDocs$.length + 1,
+            ID: element.ID,
+            numberGo: this.docTo.checkNull(element.NumberGo) !== '' ? this.docTo.formatNumberGo(element.NumberGo) : '',
+            numberSymbol: this.docTo.checkNull(element.NumberSymbol) !== '' ? element.NumberSymbol : '', 
+            docType: this.docTo.checkNull(element.DocTypeName) !== '' ? element.DocTypeName : '', 
+            userRequest: element.Author.Title,
+            userRequestId: element.Author.Id,
+            userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
+            deadline: this.docTo.checkNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+            status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
+            compendium: this.docTo.checkNull(element.Compendium),
+            note: this.docTo.checkNull(element.Note),
+            created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            dateIssued:this.docTo.checkNull(element.DateIssued)==''?'':moment(element.DateIssued).format('DD/MM/YYYY'),
+            sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
+            link: '/Documents/documentgo-detail/' + element.ID,
+            flag:((this.docTo.checkNull(element.UrgentCode)!='' && this.docTo.checkNull(element.UrgentCode)!='BT')|| (this.docTo.checkNull(element.SecretCode)!='' && this.docTo.checkNull(element.SecretCode)!='BT'))?'flag':''
+          })
+        })
+        this.urlNextPage = itemValue["odata.nextLink"];
+      },
+      error => {
+        console.log(error);
+        this.CloseRotiniPanel();
+      },
+      () => {
+          //gán lại lengthdata
+          if(this.indexPage > 0){
+            if(this.isNotNull(this.urlNextPage)){
+              this.lengthData += this.inDocs$.length;
+            }
+            else{
+              this.lengthData += this.inDocs$.length -1;
+            }
+          }
+          else{
+            if(this.inDocs$.length < this.pageSize){
+              this.lengthData = this.inDocs$.length;
+            }
+            else{
+              if(this.isNotNull(this.urlNextPage)){
+                this.lengthData = this.inDocs$.length + 1;
+              }
+              else{
+                this.lengthData = this.inDocs$.length;
+              }
+            }
+          }
+        this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.inDocs$);
+        this.ArrayHistory.push({
+          pageIndex: this.paginator.pageIndex,
+          data: this.inDocs$
+        });
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.CloseRotiniPanel();
+        }
+      })
+  }
+
+  isNotNull(str) {
+    return str !== null && str !== '' && str !== undefined;
+  }
+  getLengthData(filterCount) {
+    const urlFilter = `ListProcessRequestGo/$count` + filterCount;
+    this.shareService.getCountItem(urlFilter).subscribe(
+      items => {
+        // console.log(items);
+        // this.lengthData = Number(items);
+        this.lengthData = items as number;
+        // console.log("this.lengthData: " + this.lengthData);
+       
+      },
+      error => {
+        console.log(error);
+      },
+      () => {
+        this.getData(this.strFilter);
+        console.log("lengthData: " + this.lengthData);
+        // if (!(this.ref as ViewRef).destroyed) {
+        //   this.ref.detectChanges();
+        // }
+      }
+    )
+  }
   getAllListRequest() {
     try{
       this.OpenRotiniPanel();
@@ -157,7 +369,8 @@ export class ReportDGComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
-        this.getAllListProcess();
+       // this.getAllListProcess();
+       this.Search();
       }
       );
   }

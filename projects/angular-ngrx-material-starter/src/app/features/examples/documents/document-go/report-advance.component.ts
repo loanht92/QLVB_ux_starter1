@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ViewRef } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import {FormControl, FormBuilder} from '@angular/forms';
@@ -20,14 +21,18 @@ import {
 } from '../../../../core/core.module';
 import { any } from 'bluebird';
 import { Router } from '@angular/router';
-
+import { SharedService } from '../../../../shared/shared-service/shared.service';
 export class ItemRetrieve {
   Department: string;
   UserName: string;
   TimeRetrieve: string;
   Reason: string;
 }
-
+ // MatdataTable
+ export interface ArrayHistoryObject {
+  pageIndex: Number;
+  data: DocumentGoTicket[];
+}
 @Component({
   selector: 'anms-report-advance',
   templateUrl: './report-advance.component.html',
@@ -77,13 +82,17 @@ export class ReportAdvanceDGComponent implements OnInit {
   statusDoc; compendium; isAttachment = false;
   userApprover = new FormControl();
   filteredOptions: Observable<ItemUser[]>;
-
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
+  urlNextPage = ""; indexPage = 0;
+  ArrayHistory: ArrayHistoryObject[] = []
   constructor(private fb: FormBuilder, private docTo: DocumentGoService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
               private routes: Router, private location: PlatformLocation,
-              private modalService: BsModalService,
+              private modalService: BsModalService, private shareService: SharedService
     ) {
       this.location.onPopState(() => {
         console.log('Init: pressed back!');
@@ -435,11 +444,198 @@ export class ReportAdvanceDGComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
-        this.getAllListProcess();
+       // this.getAllListProcess();
+    this.Search();
       }
       );
   }
+  Search() {
+    this.inDocs$ = [];
+    this.ArrayHistory = [];
+    this.paginator.pageIndex = 0;
 
+    let filterCount='' ;
+    let strFilter1 ='';
+
+    
+    if(this.bookType == 1){
+      strFilter1 = `&$filter=NumberGo ne null`;
+    } else if(this.bookType == -1){
+      strFilter1 = `&$filter=NumberGo eq null`;
+    } else {
+      strFilter1 = `&$filter=ID ne '0'`;
+    }
+    strFilter1 += ` and ListUserView/Id eq '`+this.currentUserId+`'`;
+    // if(this.docTo.checkNull(this.numberTo) !== '') {
+    //   this.strFilter += ` and NumberTo eq '` + this.docTo.CheckNullSetZero(this.numberTo) + `'`;
+    // }
+
+    if(this.docTo.checkNull(this.numberOfSymbol) !== '') {
+      strFilter1 += ` and substringof('` + this.numberOfSymbol + `',NumberSymbol)`;
+    }
+
+    if(this.docTo.CheckNullSetZero(this.docType) > 0) {
+      strFilter1 += ` and DocTypeID eq '` + this.docType +`'`;
+    }
+
+    if(this.docTo.checkNull(this.promulgatedFrom) !== '') {
+      this.promulgatedFrom = moment(this.promulgatedFrom).hours(0).minutes(0).seconds(0).toDate();
+      strFilter1 += ` and (DateIssued ge '` + this.ISODateStringUTC(this.promulgatedFrom) + `' or DateIssued eq null)`;
+    }
+
+    if(this.docTo.checkNull(this.promulgatedTo) !== '') {
+      this.promulgatedTo = moment(this.promulgatedTo).hours(23).minutes(59).seconds(59).toDate();
+      strFilter1 += ` and (DateIssued le '` + this.ISODateStringUTC(this.promulgatedTo) + `' or DateIssued eq null)`
+    }
+
+    if(this.docTo.checkNull(this.dateFrom) !== '') {
+      this.dateFrom = moment(this.dateFrom).hours(0).minutes(0).seconds(0).toDate();
+      strFilter1 += ` and DateCreated ge '` + this.ISODateStringUTC(this.dateFrom) + `'`;
+    }
+
+    if(this.docTo.checkNull(this.dateTo) !== '') {
+      this.dateTo = moment(this.dateTo).hours(23).minutes(59).seconds(59).toDate();
+      strFilter1 += ` and DateCreated le '` + this.ISODateStringUTC(this.dateTo) + `'`;
+    }
+
+    if(this.docTo.checkNull(this.Signer) !== '') {
+      // this.strFilter += ` and substringof('` + this.singer + `',Signer)`;
+      strFilter1 += ` and SignerId eq'` + this.Signer + `'`;
+    }
+
+    if(this.docTo.checkNull(this.source) !== '') {
+      strFilter1 += ` and (substringof('` + this.source + `',RecipientsInName) or substringof('` + this.source + `',RecipientsOutName))`;
+    }
+
+    this.strFilter =
+    `?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,Signer/Id,Signer/Title,ListUserView/Id,AttachmentFiles&$expand=UserOfHandle,Author,Signer,ListUserView,AttachmentFiles&$top=`
+    + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
+    console.log(' strFilter='+this.strFilter);
+    this.getData(this.strFilter);
+   // this.getLengthData(filterCount);
+  }
+  onPageChange($event) {
+    // console.log("$event");
+    // console.log($event)
+    if ($event.pageSize !== this.pageSize) {
+      this.pageSize = this.paginator.pageSize;
+      this.OpenRotiniPanel();
+      this.Search();
+    }
+    else {
+      if ($event.pageIndex > this.indexPage) {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.ArrayHistory[next].data);
+        }
+        else {
+          if (this.urlNextPage !== undefined) {
+            const url = this.urlNextPage.split("/items")[1];
+            this.getData(url);
+          }
+        }
+      }
+      else {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.ArrayHistory[next].data);
+        }
+        else {
+          this.pageSize = this.paginator.pageSize;
+          this.paginator.pageIndex = 0;
+          this.indexPage = 0;
+          this.Search();
+        }
+      }
+    }
+    this.indexPage = $event.pageIndex;
+  
+  }
+
+  sortData($event) {
+    // console.log("$event");
+    // console.log($event);
+    this.sortActive = $event.active;
+    this.sortDirection = $event.direction;
+    this.paginator.pageIndex = 0;
+    this.indexPage = 0;
+    this.Search();
+  }
+
+  getData(filter) {
+    this.inDocs$ = [];
+    this.shareService.getItemList("ListDocumentGo", filter).subscribe(
+      itemValue => {
+        // console.log("itemValue");
+        // console.log(itemValue);
+        let itemList = itemValue["value"] as Array<any>;
+        itemList.forEach(element => {
+          this.inDocs$.push({
+            STT: this.inDocs$.length + 1,
+            ID: element.ID,
+            numberGo: this.docTo.checkNull(element.NumberGo) !== '' ? this.docTo.formatNumberGo(element.NumberGo) : '',
+            numberSymbol: this.docTo.checkNull(element.NumberSymbol) !== '' ? element.NumberSymbol : '', 
+            docType: this.docTo.checkNull(element.DocTypeName) !== '' ? element.DocTypeName : '', 
+            userRequest: element.Author.Title,
+            userRequestId: element.Author.Id,
+            userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
+            deadline: this.docTo.checkNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+            status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
+            compendium: this.docTo.checkNull(element.Compendium),
+            note: this.docTo.checkNull(element.Note),
+            created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            dateIssued:this.docTo.checkNull(element.DateIssued)==''?'':moment(element.DateIssued).format('DD/MM/YYYY'),
+            sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
+            link: '/Documents/documentgo-detail/' + element.ID,
+            flag:((this.docTo.checkNull(element.UrgentCode)!='' && this.docTo.checkNull(element.UrgentCode)!='BT')|| (this.docTo.checkNull(element.SecretCode)!='' && this.docTo.checkNull(element.SecretCode)!='BT'))?'flag':''
+          })
+        })
+        this.urlNextPage = itemValue["odata.nextLink"];
+      },
+      error => {
+        console.log(error);
+        this.CloseRotiniPanel();
+      },
+      () => {
+          //gán lại lengthdata
+          if(this.indexPage > 0){
+            if(this.isNotNull(this.urlNextPage)){
+              this.lengthData += this.inDocs$.length;
+            }
+            else{
+              this.lengthData += this.inDocs$.length -1;
+            }
+          }
+          else{
+            if(this.inDocs$.length < this.pageSize){
+              this.lengthData = this.inDocs$.length;
+            }
+            else{
+              if(this.isNotNull(this.urlNextPage)){
+                this.lengthData = this.inDocs$.length + 1;
+              }
+              else{
+                this.lengthData = this.inDocs$.length;
+              }
+            }
+          }
+        this.dataSource = new MatTableDataSource<DocumentGoTicket>(this.inDocs$);
+        this.ArrayHistory.push({
+          pageIndex: this.paginator.pageIndex,
+          data: this.inDocs$
+        });
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.CloseRotiniPanel();
+        }
+      })
+  }
+
+  isNotNull(str) {
+    return str !== null && str !== '' && str !== undefined;
+  }
   getDocType() {
     this.services.getList('ListDocType').subscribe((itemValue: any[]) => {
       let item = itemValue['value'] as Array<any>;
