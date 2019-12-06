@@ -22,13 +22,13 @@ export class DocumentComponent implements OnInit {
 
   documents = [
     // { link: 'documentgo/0', label: 'Văn bản trình', display: true },
-    { link: 'documentgo-waiting-process/1', label: 'Chờ xử lý' },
-    { link: 'documentgo-processing/2', label: 'Đang xử lý' },
-    { link: 'documentgo-processed/3', label: 'Đã xử lý' },
-    { link: 'docGo-retrieve', label: 'Thu hồi' },
-    { link: 'documentgo-waiting-comment/4', label: 'Chờ xin ý kiến' },
-    { link: 'documentgo-comment/5', label: 'Đã cho ý kiến' },
-    { link: 'reportDocGo', label: 'Báo cáo, thống kê' },
+    { link: 'documentgo-waiting-process/1', label: 'P.Chờ xử lý' },
+    { link: 'documentgo-processing/2', label: 'VB.Đang xử lý' },
+    { link: 'documentgo-processed/3', label: 'VB.Đã hoàn thành' },
+    { link: 'docGo-retrieve', label: 'P.Thu hồi' },
+    { link: 'documentgo-waiting-comment/4', label: 'P.Chờ xin ý kiến' },
+    { link: 'documentgo-comment/5', label: 'P.Đã cho ý kiến' },
+    { link: 'reportDocGo', label: 'Báo cáo, thống kê VB' },
     { link: 'reportAdvanceDocGo', label: 'Tra cứu văn bản' }
   ];
   constructor(

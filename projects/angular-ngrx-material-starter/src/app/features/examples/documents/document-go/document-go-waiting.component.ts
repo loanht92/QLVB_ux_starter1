@@ -73,6 +73,7 @@ export class DocumentGoWaitingComponent implements OnInit {
     'UserCreateName',
     'UserOfHandle',
     'TaskTypeName',
+    'Note',
     'Deadline',
     'Compendium',
     'flag'
@@ -381,7 +382,7 @@ export class DocumentGoWaitingComponent implements OnInit {
             MethodSendName: '',
             DateIssued: '',
             SignerName: '',
-            Note: '',
+            Note: this.CheckNull(element.Content),
             NumOfPaper: '',
             link: this.getLinkItemByRole(
               this.id,

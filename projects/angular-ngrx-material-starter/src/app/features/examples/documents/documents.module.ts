@@ -27,6 +27,7 @@ import {ReportDGComponent} from '../documents/document-go/report.component';
 import {ReportAdvanceDGComponent} from '../documents/document-go/report-advance.component';
 import { CommentComponent } from './document-go/comment.component';
 import {DocumentGoRetrieveComponent} from './document-go/document-retrieve.component';
+import { DocumentGoProcessedComponent } from './document-go/document-go-processed.component';
 //Loan
 import {DocumentAddComponent, RotiniPanel} from './document-to/components/document-add.component';
 import {DocumentDetailComponent} from './document-to/components/document-detail.component';
@@ -36,7 +37,7 @@ import { ReportAdvanceComponent} from './document-to/components/report-advance.c
 import { DataListComponent } from './data-list/data-list.component';
 import { NumberDirective, FormatMoneyDirective, WindowBackHistory } from './number-directive';
 import { DocumentRetrieveComponent } from './document-to/components/document-retrieve.component';
-import { DocumentGoProcessedComponent } from './document-go/document-go-processed.component';
+import { DocumentProcessedComponent } from './document-to/components/document-processed.component';
 
 export function HttpLoaderFactory(http: HttpClient) {
     return new TranslateHttpLoader(
@@ -94,7 +95,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormatMoneyDirective, 
     WindowBackHistory,
     DocumentRetrieveComponent,
-    DocumentGoProcessedComponent
+    DocumentGoProcessedComponent,
+    DocumentProcessedComponent
   ],
   entryComponents: [
     DocumentGoPanel,

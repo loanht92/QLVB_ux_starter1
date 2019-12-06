@@ -15,11 +15,12 @@ import {ReportDGComponent} from '../documents/document-go/report.component';
 import {ReportAdvanceDGComponent} from '../documents/document-go/report-advance.component';
 import {DocumentGoRetrieveComponent} from './document-go/document-retrieve.component';
 import { CommentComponent }from './document-go/comment.component';
+import {DocumentGoProcessedComponent } from './document-go/document-go-processed.component'
 
 import {DocumentAddComponent} from './document-to/components/document-add.component';
 import {DocumentDetailComponent} from './document-to/components/document-detail.component';
 import { DocumentWaitingComponent } from './document-to/components/document-waiting.component';
-import {DocumentGoProcessedComponent } from './document-go/document-go-processed.component'
+import {DocumentProcessedComponent } from './document-to/components/document-processed.component'
 import {ReportComponent} from './document-to/components/report.component';
 import {ReportAdvanceComponent} from './document-to/components/report-advance.component';
 import {DocumentRetrieveComponent} from './document-to/components/document-retrieve.component';
@@ -59,7 +60,7 @@ const routes: Routes = [
       {
         path: 'documentgo-processed/:id',
         component: DocumentGoProcessedComponent,
-        data: { title: 'Đã xử lý' }
+        data: { title: 'Đã hoàn thành' }
       },
       {
         path: 'documentgo-waiting-comment/:id',
@@ -119,13 +120,13 @@ const routes: Routes = [
       },
       {
         path: 'docTo-list-approving/:id',
-        component: DocumentWaitingComponent,
+        component: DocumentProcessedComponent,
         data: { title: 'Đang xử lý' }
       },      
       {
         path: 'docTo-list-approved/:id',
-        component: DocumentWaitingComponent,
-        data: { title: 'Đã xử lý' }
+        component: DocumentProcessedComponent,
+        data: { title: 'Đã hoàn thành' }
       },
       {
         path: 'docTo-list-waiting-comment/:id',

@@ -37,6 +37,10 @@
                 <th mat-header-cell *matHeaderCellDef> Loại xử lý </th>
                 <td mat-cell *matCellDef="let element">{{element.TaskTypeName}}</td>
             </ng-container>
+            <ng-container matColumnDef="Note">
+                <th mat-header-cell *matHeaderCellDef> Nội dung xử lý </th>
+                <td mat-cell *matCellDef="let element">{{element.Note}}</td>
+            </ng-container>
             <!-- Deadline Column -->
             <ng-container matColumnDef="Deadline">
                 <th mat-header-cell *matHeaderCellDef> Hạn xử lý </th>
@@ -47,6 +51,7 @@
                 <th mat-header-cell *matHeaderCellDef> Trích yếu </th>
                 <td mat-cell *matCellDef="let element">{{element.Compendium}}</td>
             </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="ClickItem(row)" class="example-element-row">
                 <!-- (click)="selection.toggle(row)" -->

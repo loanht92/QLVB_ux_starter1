@@ -10,7 +10,8 @@ import { AppComponent } from './app/app.component';
 import {DocumentsModule } from './features/examples/documents/documents.module';
 import { from } from 'rxjs';
 import { ModalModule } from 'ngx-bootstrap/modal';
-import {ShareFunction} from './shared/shared-service/shared-functions'
+import {ShareFunction} from './shared/shared-service/shared-functions';
+
 
 
 @NgModule({

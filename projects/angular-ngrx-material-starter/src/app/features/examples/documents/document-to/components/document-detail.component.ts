@@ -156,7 +156,7 @@ export class DocumentDetailComponent implements OnInit {
     'taskType',
     'type'
   ]; //'select'
-  ListItem = [];
+  ListItem = [];ListUserView=[];
   dataSource = new MatTableDataSource<IncomingTicket>();
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
 
@@ -326,6 +326,8 @@ export class DocumentDetailComponent implements OnInit {
             });
           });
         }
+           //Lấy ds người được xem văn bản
+           this.ListUserView=itemList[0].ListUserViewId;
         this.UserAppoverName = itemList[0].ListUserApprover;
         if(this.docTo.CheckNull(itemList[0].Deadline) === '' && itemList[0].IsResponse === 1 && this.IndexStep === 2) {
           this.IsDeadline = true;
@@ -999,6 +1001,36 @@ export class DocumentDetailComponent implements OnInit {
                   this.UpdateTicketRetrieve(index);
                 }
                 else {
+                    // update user view cho văn bản
+             let isRemove=false;
+             for(let i=0; i<this.ArrayIdRetrieve.length;i++){
+              if(this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)> -1){
+                let index1=this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)
+                this.ListUserView.splice(index1,1);
+                isRemove=true;
+              }
+             }
+             if(isRemove==true){
+              const data = {
+                __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+                ListUserViewId:{results:this.ListUserView}
+              };
+              this.services
+                .updateListById('ListDocumentTo', data, this.IncomingDocID)
+                .subscribe(
+                  item => {},
+                  error => {
+                    this.CloseRotiniPanel();
+                    console.log(
+                      'error when update item to list ListDocumentTo: ' +
+                        error.error.error.message.value
+                    );
+                  },
+                  () => {
+                    console.log('Update user approver name successfully!');
+                  }
+                );
+             }
                   if(this.Retieved) {
                     if(this.ListHistoryId.length > 0) {
                       this.DeleteHistoryRetrieve(0);
@@ -1462,13 +1494,16 @@ export class DocumentDetailComponent implements OnInit {
             console.log(
               'Add item of approval user to list ListHistoryRequestTo successfully!'
             );            
-
-            // update user approver
+            // update user approver  ,user view, số văn bản cho văn bản
             this.UserAppoverName += ';' + this.selectedApprover.split('|')[0] + '_' + this.selectedApprover.split('|')[2];
+            if(this.ListUserView.indexOf(this.selectedApprover.split('|')[0])==-1){
+              this.ListUserView.push(this.selectedApprover.split('|')[0]);
+            }
             const data = {
               __metadata: { type: 'SP.Data.ListDocumentToListItem' },
               ListUserApprover: this.UserAppoverName,
-              Deadline: this.IsDeadline === true ? moment(this.deadlineDoc).toDate() : this.itemDoc.deadline
+              Deadline: this.IsDeadline === true ? moment(this.deadlineDoc).toDate() : this.itemDoc.deadline,
+              ListUserViewId:{results:this.ListUserView}
             };
             this.services.updateListById('ListDocumentTo', data, this.IncomingDocID).subscribe(
               item => {},
@@ -1566,6 +1601,35 @@ export class DocumentDetailComponent implements OnInit {
         }
         else {
           this.index = 0;
+           // update user view cho văn bản
+           let isAddNew=false;
+           for(let i=0; i<this.selectedCombiner.length;i++){
+            if(this.ListUserView.indexOf( this.selectedCombiner[i].split('|')[0])==-1){
+              this.ListUserView.push( this.selectedCombiner[i].split('|')[0]);
+              isAddNew=true;
+            }
+           }
+           if(isAddNew==true){
+            const data = {
+              __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+              ListUserViewId:{results:this.ListUserView}
+            };
+            this.services
+              .updateListById('ListDocumentTo', data, this.IncomingDocID)
+              .subscribe(
+                item => {},
+                error => {
+                  this.CloseRotiniPanel();
+                  console.log(
+                    'error when update item to list ListDocumentTo: ' +
+                      error.error.error.message.value
+                  );
+                },
+                () => {
+                  console.log('Update user  name successfully!');
+                }
+              );
+           }
           if(this.selectedKnower !== undefined && this.selectedKnower.length > 0) {
             this.AddUserKnow();
           } else {
@@ -1630,6 +1694,35 @@ export class DocumentDetailComponent implements OnInit {
           this.AddUserKnow();
         }
         else {
+           // update user view cho văn bản
+           let isAddNew=false;
+           for(let i=0; i<this.selectedKnower.length;i++){
+            if(this.ListUserView.indexOf( this.selectedKnower[i].split('|')[0])==-1){
+              this.ListUserView.push( this.selectedKnower[i].split('|')[0]);
+              isAddNew=true;
+            }
+           }
+           if(isAddNew==true){
+            const data = {
+              __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+              ListUserViewId:{results:this.ListUserView}
+            };
+            this.services
+              .updateListById('ListDocumentTo', data, this.IncomingDocID)
+              .subscribe(
+                item => {},
+                error => {
+                  this.CloseRotiniPanel();
+                  console.log(
+                    'error when update item to list ListDocumentTo: ' +
+                      error.error.error.message.value
+                  );
+                },
+                () => {
+                  console.log('Update user  name successfully!');
+                }
+              );
+           }
           this.callbackFunc(this.processId, this.IncomingDocID, false);
           // this.CloseRotiniPanel();     
           // this.notificationService.success('Cập nhật thông tin xử lý thành công.');  
@@ -2492,6 +2585,35 @@ export class DocumentDetailComponent implements OnInit {
           this.CloseRotiniPanel();
         },
         () => {
+            // update user view cho văn bản
+            let isAddNew=false;
+          //  for(let i=0; i<this.selectedCombiner.length;i++){
+             if(this.ListUserView.indexOf( this.listUserIdSelect[index].split('|')[0])==-1){
+               this.ListUserView.push( this.listUserIdSelect[index].split('|')[0]);
+               isAddNew=true;
+             }
+          //  }
+            if(isAddNew==true){
+             const data = {
+               __metadata: { type: 'SP.Data.ListDocumentToListItem' },
+               ListUserViewId:{results:this.ListUserView}
+             };
+             this.services
+               .updateListById('ListDocumentTo', data, this.IncomingDocID)
+               .subscribe(
+                 item => {},
+                 error => {
+                   this.CloseRotiniPanel();
+                   console.log(
+                     'error when update item to list ListDocumentTo: ' +
+                       error.error.error.message.value
+                   );
+                 },
+                 () => {
+                   console.log('Update user  name successfully!');
+                 }
+               );
+            }
           this.CloseRotiniPanel();
           this.saveComment(this.contentComment,true,index);
           // gui mail

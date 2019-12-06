@@ -589,6 +589,7 @@ export class DocumentAddComponent implements OnInit {
         );
         let sourceT = this.docTo.FindItemById(this.ListSource, dataForm.source);
         this.splitDataUserApprover(dataForm.userHandle);
+
         this.Title =  dataForm.numberTo + '/Văn bản đến'
         const data = {
           __metadata: { type: 'SP.Data.ListDocumentToListItem' },
@@ -624,6 +625,7 @@ export class DocumentAddComponent implements OnInit {
           StatusName: sts === 0 ? 'Chờ xử lý' : 'Lưu tạm',
           Signer: dataForm.signer,
           ListUserApprover: this.userApproverId + '_' + this.userApproverName,
+          ListUserViewId:{results:[this.currentUserId,this.userApproverId]}
         };
         if(this.IdEdit <= 0) {
           this.services.AddItemToList(this.listTitle, data).subscribe(

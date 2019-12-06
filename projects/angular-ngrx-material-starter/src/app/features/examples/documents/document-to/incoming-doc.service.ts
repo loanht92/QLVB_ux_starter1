@@ -178,7 +178,7 @@ export class IncomingDocService {
   getListDocByID(id) {
     let urlDetailLeave =
       "/_api/web/lists/getbytitle('ListDocumentTo')/items?$select=* ,Author/Id,Author/Title,Author/Name,UserOfHandle/Id,UserOfHandle/Title,UserOfHandle/Name," +
-      'AttachmentFiles&$expand=UserOfHandle,Author,AttachmentFiles&$filter=ID eq ';
+      'ListUserView/Id, AttachmentFiles&$expand=UserOfHandle,Author,ListUserView,AttachmentFiles&$filter=ID eq ';
     return this.http.get(`${this.restUrl}${urlDetailLeave}` + `'` + id + `'`);
   }
 }
