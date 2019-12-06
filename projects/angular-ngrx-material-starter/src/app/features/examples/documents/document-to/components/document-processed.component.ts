@@ -1,6 +1,7 @@
 
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, Injectable, ViewRef, HostListener } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
@@ -14,12 +15,17 @@ import {ResApiService} from '../../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { IncomingDocumentComponent } from './incoming-document.component';
+import { SharedService } from '../../../../../shared/shared-service/shared.service';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
 import { element } from 'protractor';
-
+// MatdataTable
+export interface ArrayHistoryObject {
+  pageIndex: Number;
+  data: any[];
+}
 export class TodoItemNode {
   children: TodoItemNode[];
   item: string;
@@ -122,9 +128,9 @@ export class ChecklistDatabase {
 export class DocumentProcessedComponent implements OnInit {
 
   listTitle = "ListProcessRequestTo";
-  inDocs$: IncomingTicket[]= [];
-  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium', 'taskType', 'flag']; //'select', 'userApprover'
-  dataSource = new MatTableDataSource<IncomingTicket>();
+  inDocs$= [];
+  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'deadline','compendium',  'flag']; //'select', 'userApprover'
+  dataSource = new MatTableDataSource();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   searchText = '';
@@ -136,16 +142,20 @@ export class DocumentProcessedComponent implements OnInit {
   overlayRef;
   styleId = 1;
   IsComment;
-  pageIndex = 0;
+ 
   pageLimit:number[] = [5, 10, 20] ;
-
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
+  urlNextPage = ""; indexPage = 0;
+  ArrayHistory: ArrayHistoryObject[] = []
   @HostListener('window:popstate', ['$event']) onPopState(event) {
     console.log('Back button pressed');
   }
   constructor(private fb: FormBuilder, private docTo: IncomingDocService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService, private routes: Router,
-              public overlay: Overlay, public viewContainerRef: ViewContainerRef,
+              public overlay: Overlay, public viewContainerRef: ViewContainerRef, private shareService: SharedService,
               private route: ActivatedRoute, private location: PlatformLocation,
               private incoming: IncomingDocumentComponent
               ) {
@@ -174,7 +184,182 @@ export class DocumentProcessedComponent implements OnInit {
     console.log(row);
     this.routes.navigate([row.link]);
   }
+  Search() {
+    this.inDocs$ = [];
+    this.ArrayHistory = [];
+    this.paginator.pageIndex = 0;
 
+    let filterCount='' ;
+    let strFilter1 ='';
+let strSelect='';
+     //  Đang xử lý
+     if (this.styleId === 2) {
+      strFilter1 = `&$filter=ListUserView/Id eq '` + this.currentUserId + `'and StatusID eq '0'`;
+    }
+ // Đã xử lý
+  else if (this.styleId === 3) {
+    strFilter1 = `&$filter=ListUserView/Id eq '` + this.currentUserId + `'and StatusID eq '1'`;
+  }
+ 
+    
+    // if (this.startDate != null) {
+    //   this.strFilter += ` and DateRequest ge '` + this.ISODateString(this.startDate) + `'`;
+    //   filterCount += ` and DateRequest ge datetime'` + this.ISODateString(this.startDate) + `'`
+    // }
+    // if (this.endDate != null) {
+    //   this.strFilter += ` and DateRequest le '` + this.ISODateString(this.endDate) + `'`;
+    //   filterCount += ` and DateRequest le datetime'` + this.ISODateString(this.endDate) + `'`;
+    // }
+    // if (this.TitleRequest != null && this.TitleRequest != '') {
+    //   this.strFilter += ` and substringof('` + this.TitleRequest + `', Title) `;
+    //   filterCount += ` and substringof('` + this.TitleRequest + `', Title) `;
+    // }
+
+    // if (this.selectedType != null && this.selectedType != '') {
+    //   this.strFilter += ` and ListName eq '` + this.selectedType + `'`;
+    //   filterCount += ` and ListName eq '` + this.selectedType + `'`;
+    // }
+    // if (this.selectedStatus != null && this.selectedStatus != '') {
+    //   this.strFilter += ` and IsFinnish eq '` + this.selectedStatus + `'`;
+    //   filterCount += ` and IsFinnish eq ` + this.selectedStatus;
+    // }
+   
+    this.strFilter =
+    `?$select=*,Author/Id,Author/Title,ListUserView/Id&$expand=Author,ListUserView&$top=`
+    + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
+    console.log(' strFilter='+this.strFilter);
+   this.getData(this.strFilter);
+   // this.getLengthData(filterCount);
+  }
+  onPageChange($event) {
+    // console.log("$event");
+    // console.log($event)
+    if ($event.pageSize !== this.pageSize) {
+      this.pageSize = this.paginator.pageSize;
+      this.OpenRotiniPanel();
+      this.Search();
+    }
+    else {
+      if ($event.pageIndex > this.indexPage) {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          if (this.urlNextPage !== undefined) {
+            const url = this.urlNextPage.split("/items")[1];
+            this.getData(url);
+          }
+        }
+      }
+      else {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          this.pageSize = this.paginator.pageSize;
+          this.paginator.pageIndex = 0;
+          this.indexPage = 0;
+          this.Search();
+        }
+      }
+    }
+    this.indexPage = $event.pageIndex;
+ 
+  }
+
+  sortData($event) {
+    // console.log("$event");
+    // console.log($event);
+    this.sortActive = $event.active;
+    this.sortDirection = $event.direction;
+    this.paginator.pageIndex = 0;
+    this.indexPage = 0;
+    this.Search();
+  }
+
+  getData(filter) {
+    this.inDocs$ = [];
+    this.shareService.getItemList("ListDocumentTo", filter).subscribe(
+      itemValue => {
+        // console.log("itemValue");
+        // console.log(itemValue);
+        let itemList = itemValue["value"] as Array<any>;
+        itemList.forEach(element => {
+          this.inDocs$.push({
+            STT: this.inDocs$.length + 1,
+            ID: element.ID,
+            documentID: element.NoteBookID, 
+            compendium: element.Compendium, 
+            userRequest: (element.IndexStep === 1 && element.TypeCode === "CXL" ) ? 
+                        this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
+            userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
+            userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
+            userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
+            deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+            status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
+            statusID: element.StatusID,
+            source: '',
+            destination: '',
+            taskType: this.docTo.CheckNull(element.TaskTypeName),
+            typeCode: element.TaskTypeCode,
+            content: this.docTo.CheckNull(element.Content),
+            indexStep: element.IndexStep,
+            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            numberTo: element.Title,
+            link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
+            stsClass: '',
+            flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''
+          })
+        })
+        this.urlNextPage = itemValue["odata.nextLink"];
+        this.lengthData
+      },
+      error => {
+        console.log(error);
+        this.CloseRotiniPanel();
+      },
+      () => {
+        //gán lại lengthdata
+        if(this.indexPage > 0){
+          if(this.isNotNull(this.urlNextPage)){
+            this.lengthData += this.inDocs$.length;
+          }
+          else{
+            this.lengthData += this.inDocs$.length -1;
+          }
+        }
+        else{
+          if(this.inDocs$.length < this.pageSize){
+            this.lengthData = this.inDocs$.length;
+          }
+          else{
+            if(this.isNotNull(this.urlNextPage)){
+              this.lengthData = this.inDocs$.length + 1;
+            }
+            else{
+              this.lengthData = this.inDocs$.length;
+            }
+          }
+        }
+
+        this.dataSource = new MatTableDataSource(this.inDocs$);
+        this.ArrayHistory.push({
+          pageIndex: this.paginator.pageIndex,
+          data: this.inDocs$
+        });
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.CloseRotiniPanel();
+        }
+      })
+  }
+  isNotNull(str) {
+    return str !== null && str !== '' && str !== undefined;
+  }
   getAllListRequest() {
     let strSelect = '';
     this.IsComment = true;
@@ -323,7 +508,8 @@ export class DocumentProcessedComponent implements OnInit {
             this.CloseRotiniPanel();
           },
         )
-        this.getAllListRequest();
+        //this.getAllListRequest();
+        this.Search();
       }
       );
   }
