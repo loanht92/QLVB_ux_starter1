@@ -18,6 +18,9 @@ export class ResApiService {
 
   constructor(private http: HttpClient) {
     if (environment.production) {
+      this.restUrl = window.location.origin + environment.siteDBUrl;
+    }
+    if (environment.production) {
       http.options(this.restUrl,
         {
           headers: {

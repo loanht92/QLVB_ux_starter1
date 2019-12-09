@@ -26,5 +26,6 @@ export const environment = {
   },
   proxyUrl: 'http://localhost:8080',
   assetFolder: "../assets",
+  siteDBUrl: '',
   usingMockData: true
 };

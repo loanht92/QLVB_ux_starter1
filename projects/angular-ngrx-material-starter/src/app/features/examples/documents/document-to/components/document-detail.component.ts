@@ -121,7 +121,7 @@ export class DocumentDetailComponent implements OnInit {
   RoleCombine = [];
   RoleKnow = [];
   ItemAttachments = [];
-  urlAttachment = environment.proxyUrl.split('/sites/', 1);
+  urlAttachment = '';
   listName = 'ListDocumentTo';
   outputFile = [];
   outputFileHandle = [];
@@ -188,6 +188,11 @@ export class DocumentDetailComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (environment.production) {
+      this.urlAttachment = window.location.origin;
+    } else {
+      this.urlAttachment = environment.proxyUrl.split('/sites/')[0];
+    }
     this.route.paramMap.subscribe(parames => {
       this.IncomingDocID = this.docTo.CheckNullSetZero(parames.get('id'));
       this.IndexStep = this.docTo.CheckNullSetZero(parames.get('step'));

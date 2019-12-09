@@ -40,9 +40,10 @@ import { DocumentRetrieveComponent } from './document-to/components/document-ret
 import { DocumentProcessedComponent } from './document-to/components/document-processed.component';
 
 export function HttpLoaderFactory(http: HttpClient) {
+  var url = window.location.origin + window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/Default.aspx'));
     return new TranslateHttpLoader(
       http,
-      `${environment.i18nPrefix}/assets/i18n/examples/`,
+      `${url}/assets/i18n/examples/`,
       '.lang'
     );
   }

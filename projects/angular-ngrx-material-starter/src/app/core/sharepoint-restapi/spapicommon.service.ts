@@ -10,7 +10,9 @@ export class SPAPICommonService {
   private currentUserAPI = "/_api/web/currentUser";
   currentUserId: number;
   constructor(private http: HttpClient) { 
-    
+    if (environment.production) {
+      this.restUrl = window.location.origin + environment.siteDBUrl;
+    }
   }
 
   getCurrentUser(){

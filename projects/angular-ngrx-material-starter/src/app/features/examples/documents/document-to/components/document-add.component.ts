@@ -108,7 +108,7 @@ export class DocumentAddComponent implements OnInit {
   overlayRef;
   ItemAttachments = [];
   itemDocEdit;
-  urlAttachment = environment.proxyUrl.split('/sites/', 1);
+  urlAttachment = '';
   IdEdit = 0;
   IdDelete = 0;
   Title = '';
@@ -146,6 +146,11 @@ export class DocumentAddComponent implements OnInit {
     }
 
   ngOnInit() {
+    if (environment.production) {
+      this.urlAttachment = window.location.origin;
+    } else {
+      this.urlAttachment = environment.proxyUrl.split('/sites/')[0];
+    }
     this.getCurrentUser();
     this.getBookType();
     this.getDocType();

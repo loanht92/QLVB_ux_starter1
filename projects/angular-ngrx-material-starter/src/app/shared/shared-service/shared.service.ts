@@ -53,7 +53,11 @@ export class SharedService {
   }
   private restUrl = environment.proxyUrl;
   private urlAPI = `/_api/web/lists/getbytitle('`;
+
   constructor(private http: HttpClient) {
+    if (environment.production) {
+      this.restUrl = window.location.origin + environment.siteDBUrl;
+    }
     this.opInsert = {
       headers: new HttpHeaders({
         'accept': 'application/json;odata=verbose',

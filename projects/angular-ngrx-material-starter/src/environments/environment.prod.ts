@@ -5,7 +5,7 @@ export const environment = {
   envName: 'PROD',
   production: true,
   test: false,
-  i18nPrefix: 'https://tsgvietnam.sharepoint.com/sites/dev/dtdemo1/AppsLibraries/ux-starter/QLVB_Loan/angular-ngrx-material-starter',
+  i18nPrefix: '',
   versions: {
     app: packageJson.version,
     angular: packageJson.dependencies['@angular/core'],
@@ -21,6 +21,7 @@ export const environment = {
     cypress: packageJson.devDependencies['cypress']
   },
   proxyUrl: 'https://tsgvietnam.sharepoint.com/sites/dev/Ha_Document',
+  siteDBUrl: '/sites/dev',
   usingMockData: false,
   assetFolder: "../assets"
 };

@@ -115,7 +115,7 @@ export class DocumentGoDetailComponent implements OnInit {
   historyId = 0;
   processId = 0;
   ItemAttachments: AttachmentsObject[] = [];
-  urlAttachment = environment.proxyUrl.split('/sites/', 1);
+  urlAttachment = '';
   listName = 'ListDocumentGo';
   outputFile = [];
   outputFileHandle = [];
@@ -225,6 +225,11 @@ export class DocumentGoDetailComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (environment.production) {
+      this.urlAttachment = window.location.origin;
+    } else {
+      this.urlAttachment = environment.proxyUrl.split('/sites/')[0];
+    }
     this.route.paramMap.subscribe(parames => {
       this.ItemId = this.docServices.CheckNullSetZero(parames.get('id'));
       this.IndexStep = this.docServices.CheckNullSetZero(parames.get('step'));

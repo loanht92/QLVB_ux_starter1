@@ -69,9 +69,15 @@ export {
 };
 
 export function HttpLoaderFactory(http: HttpClient) {
+  // return new TranslateHttpLoader(
+  //   http,
+  //   `${environment.i18nPrefix}/assets/i18n/`,
+  //   '.lang'
+  // );
+  var url = window.location.origin + window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/Default.aspx'));
   return new TranslateHttpLoader(
     http,
-    `${environment.i18nPrefix}/assets/i18n/`,
+    `${url}/assets/i18n/examples/`,
     '.lang'
   );
 }
