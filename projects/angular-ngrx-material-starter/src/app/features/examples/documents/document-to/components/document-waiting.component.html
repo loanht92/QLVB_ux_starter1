@@ -3,14 +3,14 @@
         <input class="docadd-filter" fxFlex="200px" style="border-width: 2px !important;" fxLayout matInput (keyup)="applyFilter($event.target.value)" placeholder="Tìm kiếm">
     </div>
     <div fxFlexFill class=" form-input">
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort matSortActive="{{sortActive}}" matSortDisableClear matSortDirection="{{sortDirection}}" (matSortChange)="sortData($event)">
             <ng-container matColumnDef="numberTo">
                 <th mat-header-cell *matHeaderCellDef style="width: 80px;"> Số đến </th>
                 <!-- <td mat-cell *matCellDef="let element">{{element.numberTo}}</td> -->
                 <td mat-cell *matCellDef="let element">{{element.numberTo}}</td>
             </ng-container>
             <ng-container matColumnDef="created">
-                <th mat-header-cell *matHeaderCellDef style="width: 100px;"> Ngày gửi </th>
+                <th mat-header-cell *matHeaderCellDef style="width: 100px;" mat-sort-header> Ngày gửi </th>
                 <td mat-cell *matCellDef="let element">{{element.created}}</td>
             </ng-container>
             <ng-container matColumnDef="userRequest">
@@ -44,8 +44,8 @@
         </table>
         <!-- <pagination-controls id="some_id" (pageChange)="pageChanged($event)" maxSize="5" directionLinks="true" responsive="true" previousLabel="Previous" nextLabel="Next" screenReaderPaginationLabel="Pagination" screenReaderPageLabel="page" screenReaderCurrentLabel="You're on page">
         </pagination-controls> -->
-        <mat-paginator [pageIndex]="pageIndex" [pageSize]="5" [pageSizeOptions]="pageLimit" (page)="nextPage($event)"></mat-paginator>
 
+        <mat-paginator (page)="onPageChange($event)" [length]="lengthData" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"></mat-paginator>
         <!-- <mat-tree [dataSource]="dataSource2" [treeControl]="treeControl">
             <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
                 <button mat-icon-button disabled></button>

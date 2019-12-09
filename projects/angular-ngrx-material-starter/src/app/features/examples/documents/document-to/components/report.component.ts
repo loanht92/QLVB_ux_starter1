@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ViewRef } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
@@ -13,11 +14,16 @@ import {RotiniPanel} from './document-add.component';
 import {ResApiService} from '../../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { SharedService } from '../../../../../shared/shared-service/shared.service';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
-
+// MatdataTable
+export interface ArrayHistoryObject {
+  pageIndex: Number;
+  data: any[];
+}
 @Component({
   selector: 'anms-report',
   templateUrl: './report.component.html',
@@ -45,11 +51,15 @@ export class ReportComponent implements OnInit {
   ListDocType: ItemSeleted[] = [];
   numberTo; docType;
   ListDocumentID = [];
-
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
+  urlNextPage = ""; indexPage = 0;
+  ArrayHistory: ArrayHistoryObject[] = []
   constructor(private fb: FormBuilder, private docTo: IncomingDocService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
-              public overlay: Overlay, public viewContainerRef: ViewContainerRef,
+              public overlay: Overlay, public viewContainerRef: ViewContainerRef,private shareService: SharedService,
               private location: PlatformLocation
     ) {
       this.location.onPopState(() => {
@@ -74,7 +84,169 @@ export class ReportComponent implements OnInit {
       return false;
     }
   };
-  
+  Search() {
+    this.inDocs$ = [];
+    this.ArrayHistory = [];
+    this.paginator.pageIndex = 0;
+    let strFilter1 ='';
+    strFilter1 = `&$filter=StatusID ne '-1'`;
+    strFilter1 += ` and ListUserView/Id eq '`+this.currentUserId+`'`;
+    if(this.docTo.CheckNull(this.numberTo) !== '') {
+      strFilter1 += ` and(NumberTo eq '` + this.docTo.CheckNullSetZero(this.numberTo) + `' or substringof('` + this.numberTo + `',NumberOfSymbol))`;
+    }
+
+    if(this.docTo.CheckNullSetZero(this.docType) > 0) {
+      strFilter1 += ` and DocTypeID eq '` + this.docType +`'`;
+    }
+
+    if(this.docTo.CheckNull(this.deadlineFrom) !== '') {
+      this.deadlineFrom =  new Date(moment(this.deadlineFrom).hours(0).minutes(0).seconds(0).toDate());
+      strFilter1 += ` and (Deadline ge '` + this.ISODateStringUTC(this.deadlineFrom) + `' or Deadline eq null)`;
+    }
+
+    if(this.docTo.CheckNull(this.deadlineTo) !== '') {
+      this.deadlineTo =  new Date(moment(this.deadlineTo).hours(23).minutes(59).seconds(59).toDate());
+      strFilter1 += ` and (Deadline le '` + this.ISODateStringUTC(this.deadlineTo) + `' or Deadline eq null)`
+    }
+
+    if(this.docTo.CheckNull(this.dateFrom) !== '') {
+      this.dateFrom =  new Date(moment(this.dateFrom).hours(0).minutes(0).seconds(0).toDate());
+      strFilter1 += ` and (DateTo ge '` + this.ISODateStringUTC(this.dateFrom) + `' or DateTo eq null)`;
+    }
+
+    if(this.docTo.CheckNull(this.dateTo) !== '') {
+      this.dateTo =  new Date(moment(this.dateTo).hours(23).minutes(59).seconds(59).toDate());
+      strFilter1 += ` and (DateTo le '` + this.ISODateStringUTC(this.dateTo) + `' or DateTo eq null)`;
+    }
+
+    this.strFilter =
+    `?$select=*,Author/Id,Author/Title,ListUserView/Id&$expand=Author,ListUserView&$top=`
+    + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
+    console.log(' strFilter='+this.strFilter);
+   this.getData(this.strFilter);
+   // this.getLengthData(filterCount);
+  }
+  onPageChange($event) {
+    // console.log("$event");
+    // console.log($event)
+    if ($event.pageSize !== this.pageSize) {
+      this.pageSize = this.paginator.pageSize;
+      this.OpenRotiniPanel();
+      this.Search();
+    }
+    else {
+      if ($event.pageIndex > this.indexPage) {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          if (this.urlNextPage !== undefined) {
+            const url = this.urlNextPage.split("/items")[1];
+            this.getData(url);
+          }
+        }
+      }
+      else {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          this.pageSize = this.paginator.pageSize;
+          this.paginator.pageIndex = 0;
+          this.indexPage = 0;
+          this.Search();
+        }
+      }
+    }
+    this.indexPage = $event.pageIndex;
+ 
+  }
+
+  sortData($event) {
+    // console.log("$event");
+    // console.log($event);
+    this.sortActive = $event.active;
+    this.sortDirection = $event.direction;
+    this.paginator.pageIndex = 0;
+    this.indexPage = 0;
+    this.Search();
+  }
+
+  getData(filter) {
+    this.inDocs$ = [];
+    this.shareService.getItemList("ListDocumentTo", filter).subscribe(
+      itemValue => {
+        // console.log("itemValue");
+        // console.log(itemValue);
+        let itemList = itemValue["value"] as Array<any>;
+        itemList.forEach(element => {
+          this.inDocs$.push({
+            STT: this.inDocs$.length + 1,
+            ID: element.ID,
+            numberTo: this.docTo.formatNumberTo(element.NumberTo), 
+            numberSub: element.NumberToSub,
+            numberSymbol: element.NumberOfSymbol, 
+            userRequest: element.Author.Title,
+            userRequestId: element.Author.Id,
+            userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
+            deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+            status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
+            compendium: this.docTo.CheckNull(element.Compendium),
+            note: this.docTo.CheckNull(element.Note),
+            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
+            link: element.StatusID !== -1 ? '/Documents/IncomingDoc/docTo-detail/' + element.ID : ''
+          })
+        })
+        this.urlNextPage = itemValue["odata.nextLink"];
+        this.lengthData
+      },
+      error => {
+        console.log(error);
+        this.CloseRotiniPanel();
+      },
+      () => {
+        //gán lại lengthdata
+        if(this.indexPage > 0){
+          if(this.isNotNull(this.urlNextPage)){
+            this.lengthData += this.inDocs$.length;
+          }
+          else{
+            this.lengthData += this.inDocs$.length -1;
+          }
+        }
+        else{
+          if(this.inDocs$.length < this.pageSize){
+            this.lengthData = this.inDocs$.length;
+          }
+          else{
+            if(this.isNotNull(this.urlNextPage)){
+              this.lengthData = this.inDocs$.length + 1;
+            }
+            else{
+              this.lengthData = this.inDocs$.length;
+            }
+          }
+        }
+
+        this.dataSource = new MatTableDataSource(this.inDocs$);
+        this.ArrayHistory.push({
+          pageIndex: this.paginator.pageIndex,
+          data: this.inDocs$
+        });
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.CloseRotiniPanel();
+        }
+      })
+  }
+  isNotNull(str) {
+    return str !== null && str !== '' && str !== undefined;
+  }
   getAllListRequest() {
     try{
       this.OpenRotiniPanel();
@@ -88,22 +260,22 @@ export class ReportComponent implements OnInit {
       }
 
       if(this.docTo.CheckNull(this.deadlineFrom) !== '') {
-        this.deadlineFrom = moment(this.deadlineFrom).hours(0).minutes(0).seconds(0).toDate();
+        this.deadlineFrom = new Date(moment(this.deadlineFrom).hours(0).minutes(0).seconds(0).toDate());
         this.strFilter += ` and (Deadline ge '` + this.ISODateStringUTC(this.deadlineFrom) + `' or Deadline eq null)`;
       }
 
       if(this.docTo.CheckNull(this.deadlineTo) !== '') {
-        this.deadlineTo = moment(this.deadlineTo).hours(23).minutes(59).seconds(59).toDate();
+        this.deadlineTo =  new Date(moment(this.deadlineTo).hours(23).minutes(59).seconds(59).toDate());
         this.strFilter += ` and (Deadline le '` + this.ISODateStringUTC(this.deadlineTo) + `' or Deadline eq null)`
       }
 
       if(this.docTo.CheckNull(this.dateFrom) !== '') {
-        this.dateFrom = moment(this.dateFrom).hours(0).minutes(0).seconds(0).toDate();
+        this.dateFrom =  new Date(moment(this.dateFrom).hours(0).minutes(0).seconds(0).toDate());
         this.strFilter += ` and (DateTo ge '` + this.ISODateStringUTC(this.dateFrom) + `' or DateTo eq null)`;
       }
 
       if(this.docTo.CheckNull(this.dateTo) !== '') {
-        this.dateTo = moment(this.dateTo).hours(23).minutes(59).seconds(59).toDate();
+        this.dateTo =  new Date(moment(this.dateTo).hours(23).minutes(59).seconds(59).toDate());
         this.strFilter += ` and (DateTo le '` + this.ISODateStringUTC(this.dateTo) + `' or DateTo eq null)`;
       }
 
@@ -180,7 +352,8 @@ export class ReportComponent implements OnInit {
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
         this.CloseRotiniPanel();
-        this.getAllListProcess();
+       // this.getAllListProcess();
+       this.Search();
       }
       );
   }

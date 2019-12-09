@@ -25,13 +25,13 @@ export class IncomingDocumentComponent implements OnInit {
 
   examples = [
     //{ link: 'documentto', label: 'Tiếp nhận văn bản', display: true },
-    { link: 'docTo-list/1', label: 'Chờ xử lý' },
-    { link: 'docTo-list-approving/2', label: 'Đang xử lý' },
-    { link: 'docTo-list-approved/3', label: 'Đã xử lý' },
-    { link: 'docTo-retrieve', label: 'Thu hồi' },
-    { link: 'docTo-list-waiting-comment/4', label: 'Chờ xin ý kiến' },
-    { link: 'docTo-list-response-comment/5', label: 'Đã cho ý kiến' },
-    { link: 'reportDocTo', label: 'Báo cáo, thống kế' },
+    { link: 'docTo-list/1', label: 'P.Chờ xử lý' },
+    { link: 'docTo-list-approving/2', label: 'VB.Đang xử lý' },
+    { link: 'docTo-list-approved/3', label: 'VB.Đã hoàn thành' },
+    { link: 'docTo-retrieve', label: 'P.Thu hồi' },
+    { link: 'docTo-list-waiting-comment/4', label: 'P.Chờ xin ý kiến' },
+    { link: 'docTo-list-response-comment/5', label: 'P.Đã cho ý kiến' },
+    { link: 'reportDocTo', label: 'Báo cáo, thống kế VB' },
     { link: 'reportAdvanceDocTo', label: 'Tra cứu văn bản'},
   ];
 

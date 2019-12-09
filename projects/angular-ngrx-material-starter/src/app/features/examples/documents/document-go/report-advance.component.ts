@@ -453,11 +453,8 @@ export class ReportAdvanceDGComponent implements OnInit {
     this.inDocs$ = [];
     this.ArrayHistory = [];
     this.paginator.pageIndex = 0;
-
     let filterCount='' ;
     let strFilter1 ='';
-
-    
     if(this.bookType == 1){
       strFilter1 = `&$filter=NumberGo ne null`;
     } else if(this.bookType == -1){

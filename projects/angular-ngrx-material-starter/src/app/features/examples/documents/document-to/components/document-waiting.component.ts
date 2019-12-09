@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, Injectable, ViewRef, HostListener } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
@@ -13,12 +14,17 @@ import {ResApiService} from '../../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { IncomingDocumentComponent } from './incoming-document.component';
+import { SharedService } from '../../../../../shared/shared-service/shared.service';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
 import { element } from 'protractor';
-
+// MatdataTable
+export interface ArrayHistoryObject {
+  pageIndex: Number;
+  data: any[];
+}
 export class TodoItemNode {
   children: TodoItemNode[];
   item: string;
@@ -135,9 +141,13 @@ export class DocumentWaitingComponent implements OnInit {
   overlayRef;
   styleId = 1;
   IsComment;
-  pageIndex = 0;
+ 
   pageLimit:number[] = [5, 10, 20] ;
-
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
+  urlNextPage = ""; indexPage = 0;
+  ArrayHistory: ArrayHistoryObject[] = []
   @HostListener('window:popstate', ['$event']) onPopState(event) {
     console.log('Back button pressed');
   }
@@ -145,7 +155,7 @@ export class DocumentWaitingComponent implements OnInit {
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService, private routes: Router,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private route: ActivatedRoute, private location: PlatformLocation,
+              private route: ActivatedRoute, private location: PlatformLocation,private shareService: SharedService,
               private incoming: IncomingDocumentComponent
               ) {
                 this.location.onPopState(() => {
@@ -173,7 +183,174 @@ export class DocumentWaitingComponent implements OnInit {
     console.log(row);
     this.routes.navigate([row.link]);
   }
+  Search() {
+    this.inDocs$ = [];
+    this.ArrayHistory = [];
+    this.paginator.pageIndex = 0;
 
+    let filterCount='' ;
+    let strFilter1 ='';
+    let strSelect = '';
+    // {-1:Thu hồi, 1:chờ xử lý, 2:Đang xử lý, 3:Đã xử lý, 4:Chờ xin ý kiến, 5:Đã cho ý kiến}
+    //chờ xử lý
+    if (this.styleId === 1) {
+      strSelect = `'and TypeCode ne 'XYK' and StatusID eq '0'`;
+      strFilter1 = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
+     filterCount=`?$filter=UserApprover/Id eq ` + this.currentUserId +`and TypeCode ne 'XYK' and StatusID eq 0`;
+    }
+     //Thu hồi
+     else if(this.styleId === -1) {
+      strSelect = `') and TypeCode ne 'XYK' and StatusID eq '-1'`;
+      strFilter1 = `&$filter=(UserRequest/Id eq '` + this.currentUserId + `' or UserApprover/Id eq '` + this.currentUserId + strSelect;
+      filterCount=`?$filter=(UserRequest/Id eq ` + this.currentUserId + ` or UserApprover/Id eq ` + this.currentUserId +`) and TypeCode ne 'XYK' and StatusID eq -1`;
+    }
+    //Chờ xin ý kiến
+    else if (this.styleId === 4) {
+   strSelect = `' and TypeCode eq 'XYK' and StatusID eq '0'`;
+   strFilter1 = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
+   filterCount=`?$filter=UserApprover/Id eq ` + this.currentUserId +`and TypeCode eq 'XYK' and StatusID eq 0`;
+    }
+    //Đã cho ý kiến
+    else if (this.styleId === 5) {
+     strSelect = `' and TypeCode eq 'XYK' and StatusID eq '1'`;
+     strFilter1 = `&$filter=UserApprover/Id eq '` + this.currentUserId + strSelect;
+     filterCount=`?$filter=UserApprover/Id eq ` + this.currentUserId +`and TypeCode eq 'XYK' and StatusID eq 1`;
+    }
+   
+    this.strFilter =
+    `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover&$top=`
+    + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
+    console.log(' strFilter='+this.strFilter);
+  // this.getData(this.strFilter);
+    this.getLengthData(filterCount);
+  }
+  onPageChange($event) {
+    // console.log("$event");
+    // console.log($event)
+    if ($event.pageSize !== this.pageSize) {
+      this.pageSize = this.paginator.pageSize;
+      this.OpenRotiniPanel();
+      this.Search();
+    }
+    else {
+      if ($event.pageIndex > this.indexPage) {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          if (this.urlNextPage !== undefined) {
+            const url = this.urlNextPage.split("/items")[1];
+            this.getData(url);
+          }
+        }
+      }
+      else {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          this.pageSize = this.paginator.pageSize;
+          this.paginator.pageIndex = 0;
+          this.indexPage = 0;
+          this.Search();
+        }
+      }
+    }
+    this.indexPage = $event.pageIndex;
+ 
+  }
+
+  sortData($event) {
+    // console.log("$event");
+    // console.log($event);
+    this.sortActive = $event.active;
+    this.sortDirection = $event.direction;
+    this.paginator.pageIndex = 0;
+    this.indexPage = 0;
+    this.Search();
+  }
+  getLengthData(filterCount) {
+    const urlFilter = `ListProcessRequestTo/$count` + filterCount;
+    this.shareService.getCountItem(urlFilter).subscribe(
+      items => {
+        // console.log(items);
+        // this.lengthData = Number(items);
+        this.lengthData = items as number;
+        // console.log("this.lengthData: " + this.lengthData);
+       
+      },
+      error => {
+        console.log(error);
+      },
+      () => {
+        this.getData(this.strFilter);
+        console.log("lengthData: " + this.lengthData);
+        // if (!(this.ref as ViewRef).destroyed) {
+        //   this.ref.detectChanges();
+        // }
+      }
+    )
+  }
+  getData(filter) {
+    this.inDocs$ = [];
+    this.shareService.getItemList("ListProcessRequestTo", filter).subscribe(
+      itemValue => {
+        // console.log("itemValue");
+        // console.log(itemValue);
+        let itemList = itemValue["value"] as Array<any>;
+        itemList.forEach(element => {
+          this.inDocs$.push({
+            STT: this.inDocs$.length + 1,
+            ID: element.ID,
+            documentID: element.NoteBookID, 
+            compendium: element.Compendium, 
+            userRequest: (element.IndexStep === 1 && element.TypeCode === "CXL" ) ? 
+                        this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
+            userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
+            userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
+            userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
+            deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+            status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
+            statusID: element.StatusID,
+            source: '',
+            destination: '',
+            taskType: this.docTo.CheckNull(element.TaskTypeName),
+            typeCode: element.TaskTypeCode,
+            content: this.docTo.CheckNull(element.Content),
+            indexStep: element.IndexStep,
+            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            numberTo: element.Title,
+            link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
+            stsClass: '',
+            flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''
+          })
+        })
+        this.urlNextPage = itemValue["odata.nextLink"];
+        this.lengthData
+      },
+      error => {
+        console.log(error);
+        this.CloseRotiniPanel();
+      },
+      () => {
+        this.dataSource = new MatTableDataSource(this.inDocs$);
+        this.ArrayHistory.push({
+          pageIndex: this.paginator.pageIndex,
+          data: this.inDocs$
+        });
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.CloseRotiniPanel();
+        }
+      })
+  }
+  isNotNull(str) {
+    return str !== null && str !== '' && str !== undefined;
+  }
   getAllListRequest() {
     let strSelect = '';
     this.IsComment = true;
@@ -322,7 +499,8 @@ export class DocumentWaitingComponent implements OnInit {
             this.CloseRotiniPanel();
           },
         )
-        this.getAllListRequest();
+      //  this.getAllListRequest();
+      this.Search();
       }
       );
   }

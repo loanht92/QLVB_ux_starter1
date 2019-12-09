@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ViewRef } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import {SelectionModel} from '@angular/cdk/collections';
@@ -13,13 +14,18 @@ import {RotiniPanel} from './document-add.component';
 import {ResApiService} from '../../../services/res-api.service';
 import { Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { SharedService } from '../../../../../shared/shared-service/shared.service';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
   NotificationService
 } from '../../../../../core/core.module';
 import { any } from 'bluebird';
 import { Router } from '@angular/router';
-
+// MatdataTable
+export interface ArrayHistoryObject {
+  pageIndex: Number;
+  data: any[];
+}
 export class ItemRetrieve {
   Department: string;
   UserName: string;
@@ -79,12 +85,16 @@ export class ReportAdvanceComponent implements OnInit {
   statusDoc; compendium; isAttachment = false;
   userApprover = new FormControl();
   filteredOptions: Observable<ApproverObject[]>;
-
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
+  urlNextPage = ""; indexPage = 0;
+  ArrayHistory: ArrayHistoryObject[] = []
   constructor(private fb: FormBuilder, private docTo: IncomingDocService, 
               private services: ResApiService, private ref: ChangeDetectorRef,
               private readonly notificationService: NotificationService,
               public overlay: Overlay, public viewContainerRef: ViewContainerRef,
-              private routes: Router, private location: PlatformLocation,
+              private routes: Router, private location: PlatformLocation,private shareService: SharedService,
               private modalService: BsModalService,
     ) {
       this.location.onPopState(() => {
@@ -197,7 +207,227 @@ export class ReportAdvanceComponent implements OnInit {
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
-  
+  Search() {
+    this.inDocs$ = [];
+    this.ArrayHistory = [];
+    this.paginator.pageIndex = 0;
+    let filterCount='' ;
+    let strFilter1 ='';
+    if(this.bookType == 1){
+      strFilter1 = `&$filter=NumberGo ne null`;
+    } else if(this.bookType == -1){
+      strFilter1 = `&$filter=NumberGo eq null`;
+    } else {
+      strFilter1 = `&$filter=ID ne '0'`;
+    }
+    strFilter1 += ` and ListUserView/Id eq '`+this.currentUserId+`'`;
+
+    if(this.docTo.CheckNull(this.numberTo) !== '') {
+      strFilter1 += ` and NumberTo eq '` + this.docTo.CheckNullSetZero(this.numberTo) + `'`;
+    }
+
+    if(this.docTo.CheckNull(this.numberOfSymbol) !== '') {
+      strFilter1+= ` and substringof('` + this.numberOfSymbol + `',NumberOfSymbol)`;
+    }
+
+    if(this.docTo.CheckNullSetZero(this.docType) > 0) {
+      strFilter1 += ` and DocTypeID eq '` + this.docType +`'`;
+    }
+
+    if(this.docTo.CheckNull(this.promulgatedFrom) !== '') {
+      this.promulgatedFrom = moment(this.promulgatedFrom).hours(0).minutes(0).seconds(0).toDate();
+      strFilter1 += ` and (PromulgatedDate ge '` + this.ISODateStringUTC(this.promulgatedFrom) + `' or PromulgatedDate eq null)`;
+    }
+
+    if(this.docTo.CheckNull(this.promulgatedTo) !== '') {
+      this.promulgatedTo = moment(this.promulgatedTo).hours(23).minutes(59).seconds(59).toDate();
+      strFilter1 += ` and (PromulgatedDate le '` + this.ISODateStringUTC(this.promulgatedTo) + `' or PromulgatedDate eq null)`
+    }
+
+    if(this.docTo.CheckNull(this.dateFrom) !== '') {
+      this.dateFrom = moment(this.dateFrom).hours(0).minutes(0).seconds(0).toDate();
+      strFilter1 += ` and (DateTo ge '` + this.ISODateStringUTC(this.dateFrom) + `' or DateTo eq null)`;
+    }
+
+    if(this.docTo.CheckNull(this.dateTo) !== '') {
+      this.dateTo = moment(this.dateTo).hours(23).minutes(59).seconds(59).toDate();
+      strFilter1 += ` and (DateTo le '` + this.ISODateStringUTC(this.dateTo) + `' or DateTo eq null)`;
+    }
+
+    if(this.docTo.CheckNull(this.singer) !== '') {
+      strFilter1 += ` and substringof('` + this.singer + `',Signer)`;
+    }
+
+    if(this.docTo.CheckNull(this.source) !== '') {
+      strFilter1 += ` and substringof('` + this.source + `',Source)`;
+    }
+
+    if(this.docTo.CheckNull(this.statusDoc) !== '') {
+      if(this.statusDoc === 'All') {          
+      } 
+      else if(this.statusDoc === 'CVS') {
+        strFilter1 += ` and StatusID eq '-1'`;
+      }
+      else if(this.statusDoc === 'BTH') {
+        strFilter1 += ` and StatusID eq '1' and StatusName eq 'Bị thu hồi'`;
+      }
+      else {
+        strFilter1 += ` and StatusID eq '0'`;
+        if(this.ListIdDoc.length > 0) {
+          strFilter1 += ` and (`;
+          this.ListIdDoc.forEach(item => {
+            strFilter1 += ` ID eq '` + item + `' or`
+          })
+          strFilter1 = strFilter1.substr(0, strFilter1.length-3) + `)`;
+        } else if(this.isFrist && this.ListIdDoc.length === 0) {
+          strFilter1 = `&$filter=ID eq '-1'`;
+        }
+      }
+    }
+
+    if(this.docTo.CheckNullSetZero(this.secretLevel) > 0) {
+      strFilter1 += ` and SecretLevelID eq '` + this.secretLevel +`'`;
+    }
+
+    if(this.docTo.CheckNullSetZero(this.urgentLevel) > 0) {
+      strFilter1 += ` and UrgentLevelID eq '` + this.urgentLevel +`'`;
+    }
+
+    if(this.docTo.CheckNull(this.userApprover.value) !== '') {
+      strFilter1 += ` and substringof('` + this.userApprover.value.UserId + `_` + this.userApprover.value.UserName + `',ListUserApprover)`;
+    }
+
+    this.strFilter =
+    `?$select=*,UserOfHandle/Title,UserOfHandle/Id,Author/Id,Author/Title,ListUserView/Id,AttachmentFiles&$expand=UserOfHandle,Author,ListUserView,AttachmentFiles&$top=`
+    + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
+    console.log(' strFilter='+this.strFilter);
+   this.getData(this.strFilter);
+    //this.getLengthData(filterCount);
+  }
+  onPageChange($event) {
+    // console.log("$event");
+    // console.log($event)
+    if ($event.pageSize !== this.pageSize) {
+      this.pageSize = this.paginator.pageSize;
+      this.OpenRotiniPanel();
+      this.Search();
+    }
+    else {
+      if ($event.pageIndex > this.indexPage) {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          if (this.urlNextPage !== undefined) {
+            const url = this.urlNextPage.split("/items")[1];
+            this.getData(url);
+          }
+        }
+      }
+      else {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          this.pageSize = this.paginator.pageSize;
+          this.paginator.pageIndex = 0;
+          this.indexPage = 0;
+          this.Search();
+        }
+      }
+    }
+    this.indexPage = $event.pageIndex;
+ 
+  }
+
+  sortData($event) {
+    // console.log("$event");
+    // console.log($event);
+    this.sortActive = $event.active;
+    this.sortDirection = $event.direction;
+    this.paginator.pageIndex = 0;
+    this.indexPage = 0;
+    this.Search();
+  }
+
+  getData(filter) {
+    this.inDocs$ = [];
+    this.shareService.getItemList("ListDocumentTo", filter).subscribe(
+      itemValue => {
+        // console.log("itemValue");
+        // console.log(itemValue);
+        let itemList = itemValue["value"] as Array<any>;
+        itemList.forEach(element => {
+          this.inDocs$.push({
+            STT: this.inDocs$.length + 1,
+            ID: element.ID,
+            documentID: element.ID,
+            numberTo: this.docTo.formatNumberTo(element.NumberTo),
+            numberSymbol: element.NumberOfSymbol, 
+            userRequest: element.Author.Title,
+            userRequestId: element.Author.Id,
+            userApprover: element.UserOfHandle !== undefined ? element.UserOfHandle.Title : '',
+            userApproverId: element.UserOfHandle !== undefined ? element.UserOfHandle.Id : 0,
+            deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
+            status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
+            compendium: this.docTo.CheckNull(element.Compendium),
+            content: this.docTo.CheckNull(element.Note),
+            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            stsClass: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
+            link: element.StatusID === -1 ? '' : '/Documents/IncomingDoc/docTo-detail/' + element.ID,
+            flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''
+            // flag: element.Flag === 0 ? '' : 'flag',            
+          })
+        })
+        this.urlNextPage = itemValue["odata.nextLink"];
+        this.lengthData
+      },
+      error => {
+        console.log(error);
+        this.CloseRotiniPanel();
+      },
+      () => {
+        //gán lại lengthdata
+        if(this.indexPage > 0){
+          if(this.isNotNull(this.urlNextPage)){
+            this.lengthData += this.inDocs$.length;
+          }
+          else{
+            this.lengthData += this.inDocs$.length -1;
+          }
+        }
+        else{
+          if(this.inDocs$.length < this.pageSize){
+            this.lengthData = this.inDocs$.length;
+          }
+          else{
+            if(this.isNotNull(this.urlNextPage)){
+              this.lengthData = this.inDocs$.length + 1;
+            }
+            else{
+              this.lengthData = this.inDocs$.length;
+            }
+          }
+        }
+
+        this.dataSource = new MatTableDataSource(this.inDocs$);
+        this.ArrayHistory.push({
+          pageIndex: this.paginator.pageIndex,
+          data: this.inDocs$
+        });
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.CloseRotiniPanel();
+        }
+      })
+  }
+  isNotNull(str) {
+    return str !== null && str !== '' && str !== undefined;
+  }
   getAllListRequest() {
     try {
       this.OpenRotiniPanel();
@@ -417,7 +647,8 @@ export class ReportAdvanceComponent implements OnInit {
       },
       () => {
         console.log("Current user email is: \n" + "Current user Id is: " + this.currentUserId + "\n" + "Current user name is: " + this.currentUserName );
-        this.getAllListProcess();
+       // this.getAllListProcess();
+       this.Search();
       }
       );
   }
