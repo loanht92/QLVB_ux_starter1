@@ -521,7 +521,7 @@ let strSelect='';
   getLinkItemByRole(type, id, step) {
     let link = '';
     // Cho xu ly
-    if(this.docTo.CheckNullSetZero(type) === 1) {
+    if(this.docTo.CheckNullSetZero(type) === 2) {
       link = '/Documents/IncomingDoc/docTo-detail/' + id + '/' + step;
     } 
     // Cho xin y kien, da cho y kien

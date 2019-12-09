@@ -486,7 +486,41 @@ export class DocumentDetailComponent implements OnInit {
             }
             if(element.UserApprover.Id === this.currentUserId && element.TypeCode === "CXL" && element.StatusID === 0) {
               retrieveInValid = true;
+              indexValid=element.indexStep;
+              this.IndexStep=element.indexStep;
+              //hiển thị các nút chuyển xl, xử lý, trả lại, hoàn thành
+              if(this.IndexStep >= this.totalStep) {
+                if(this.currentRoleTask === "XLC") {
+                  this.isExecution = false;
+                  this.isFinish = true;
+                } else {
+                  this.isExecution = false;
+                  this.isFinish = false;
+                }       
+              } else if(this.IndexStep > 0){    
+                if(this.currentRoleTask === "XLC") {
+                  this.isExecution = true;
+                  if(this.IsTP || this.IsGD) {
+                    if(this.IsTP) {
+                      this.isAddDocGo = true;
+                    }
+                    this.isFinish = true;
+                  } else if(this.IsNV){
+                    this.isFinish = false;
+                    this.isAddDocGo = true;
+                  }
+                } else if(this.currentRoleTask === "PH") {
+                  this.isExecution = false;
+                  this.isFinish = false;
+                  this.isCombine = true;
+                } else {
+                  this.isExecution = false;
+                  this.isFinish = false;
+                  this.isCombine = false;
+                }
+              }
             }
+            
           } else {
             indexValid = this.IndexStep;
           }
