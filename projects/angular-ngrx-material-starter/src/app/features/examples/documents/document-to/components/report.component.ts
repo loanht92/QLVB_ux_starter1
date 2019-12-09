@@ -33,7 +33,7 @@ export interface ArrayHistoryObject {
 export class ReportComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'DateCreated', 'userRequest', 'deadline','compendium', 'sts']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -52,7 +52,7 @@ export class ReportComponent implements OnInit {
   numberTo; docType;
   ListDocumentID = [];
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
   ArrayHistory: ArrayHistoryObject[] = []
@@ -195,7 +195,7 @@ export class ReportComponent implements OnInit {
             status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
             compendium: this.docTo.CheckNull(element.Compendium),
             note: this.docTo.CheckNull(element.Note),
-            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            DateCreated: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
             link: element.StatusID !== -1 ? '/Documents/IncomingDoc/docTo-detail/' + element.ID : ''
           })

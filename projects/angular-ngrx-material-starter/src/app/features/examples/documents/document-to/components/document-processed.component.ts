@@ -129,7 +129,7 @@ export class DocumentProcessedComponent implements OnInit {
 
   listTitle = "ListProcessRequestTo";
   inDocs$= [];
-  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'deadline','compendium',  'flag']; //'select', 'userApprover'
+  displayedColumns: string[] = ['numberTo', 'DateCreated', 'userRequest', 'deadline','compendium',  'flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -145,7 +145,7 @@ export class DocumentProcessedComponent implements OnInit {
  
   pageLimit:number[] = [5, 10, 20] ;
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
   ArrayHistory: ArrayHistoryObject[] = []
@@ -290,7 +290,7 @@ let strSelect='';
           this.inDocs$.push({
             STT: this.inDocs$.length + 1,
             ID: element.ID,
-            documentID: element.NoteBookID, 
+          //  documentID: element.NoteBookID, 
             compendium: element.Compendium, 
             userRequest: (element.IndexStep === 1 && element.TypeCode === "CXL" ) ? 
                         this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
@@ -298,17 +298,17 @@ let strSelect='';
             userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
             userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
             deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
-            status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
-            statusID: element.StatusID,
+            // status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
+            // statusID: element.StatusID,
             source: '',
             destination: '',
-            taskType: this.docTo.CheckNull(element.TaskTypeName),
-            typeCode: element.TaskTypeCode,
-            content: this.docTo.CheckNull(element.Content),
-            indexStep: element.IndexStep,
-            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
-            numberTo: element.Title,
-            link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
+            // taskType: this.docTo.CheckNull(element.TaskTypeName),
+            // typeCode: element.TaskTypeCode,
+            // content: this.docTo.CheckNull(element.Note),
+            // indexStep: element.IndexStep,
+            DateCreated: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            numberTo: element.NumberTo,
+            link: this.getLinkItemByRole(this.styleId, element.ID, element.IndexStep),
             stsClass: '',
             flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''
           })

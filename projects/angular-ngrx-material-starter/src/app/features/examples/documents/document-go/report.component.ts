@@ -34,7 +34,7 @@ import { SharedService } from '../../../../shared/shared-service/shared.service'
 export class ReportDGComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'created', 'userRequest', 'deadline','dateIssued','compendium', 'sts','flag']; //'select', 'userApprover','content',
+  displayedColumns: string[] = ['numberGo', 'numberSymbol','docType' ,'DateCreated', 'userRequest', 'deadline','dateIssued','compendium', 'sts','flag']; //'select', 'userApprover','content',
   dataSource = new MatTableDataSource<DocumentGoTicket>();
   selection = new SelectionModel<DocumentGoTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -51,7 +51,7 @@ export class ReportDGComponent implements OnInit {
   docType;
   ListDocumentID = [];
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
   ArrayHistory: ArrayHistoryObject[] = []
@@ -210,7 +210,7 @@ export class ReportDGComponent implements OnInit {
             status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
             compendium: this.docTo.checkNull(element.Compendium),
             note: this.docTo.checkNull(element.Note),
-            created: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            DateCreated: this.docTo.checkNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             dateIssued:this.docTo.checkNull(element.DateIssued)==''?'':moment(element.DateIssued).format('DD/MM/YYYY'),
             sts: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
             link: '/Documents/documentgo-detail/' + element.ID,

@@ -127,8 +127,8 @@ export class ChecklistDatabase {
 export class DocumentWaitingComponent implements OnInit {
 
   listTitle = "ListProcessRequestTo";
-  inDocs$: IncomingTicket[]= [];
-  displayedColumns: string[] = ['numberTo', 'created', 'userRequest', 'userApprover', 'deadline','compendium', 'taskType', 'flag']; //'select', 'userApprover'
+  inDocs$= [];
+  displayedColumns: string[] = ['numberTo', 'DateCreated', 'userRequest', 'userApprover', 'deadline','compendium', 'taskType', 'flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -144,10 +144,10 @@ export class DocumentWaitingComponent implements OnInit {
  
   pageLimit:number[] = [5, 10, 20] ;
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
-  ArrayHistory: ArrayHistoryObject[] = []
+  ArrayHistory: ArrayHistoryObject[] = [];
   @HostListener('window:popstate', ['$event']) onPopState(event) {
     console.log('Back button pressed');
   }
@@ -320,7 +320,7 @@ export class DocumentWaitingComponent implements OnInit {
             typeCode: element.TaskTypeCode,
             content: this.docTo.CheckNull(element.Content),
             indexStep: element.IndexStep,
-            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            DateCreated: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             numberTo: element.Title,
             link: this.getLinkItemByRole(this.styleId, element.NoteBookID, element.IndexStep),
             stsClass: '',

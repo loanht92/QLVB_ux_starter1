@@ -100,7 +100,7 @@ export class DocumentGoWaitingComponent implements OnInit {
   nextLink = '';
   previousLink = '';
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
   ArrayHistory: ArrayHistoryObject[] = []

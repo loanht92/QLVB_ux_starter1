@@ -42,7 +42,7 @@ export class ItemRetrieve {
 export class ReportAdvanceComponent implements OnInit {
   listTitle = "ListProcessRequestTo";
   inDocs$ = [];
-  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'created', 'userRequest', 'deadline','compendium', 'sts', 'flag']; //'select', 'userApprover', 'content'
+  displayedColumns: string[] = ['numberTo', 'numberSymbol' ,'DateCreated', 'userRequest', 'deadline','compendium', 'sts', 'flag']; //'select', 'userApprover', 'content'
   dataSource = new MatTableDataSource<IncomingTicket>();
   selection = new SelectionModel<IncomingTicket>(true, []);
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
@@ -86,7 +86,7 @@ export class ReportAdvanceComponent implements OnInit {
   userApprover = new FormControl();
   filteredOptions: Observable<ApproverObject[]>;
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
   ArrayHistory: ArrayHistoryObject[] = []
@@ -374,7 +374,7 @@ export class ReportAdvanceComponent implements OnInit {
             status: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Đang xử lý' : 'Đã xử lý',
             compendium: this.docTo.CheckNull(element.Compendium),
             content: this.docTo.CheckNull(element.Note),
-            created: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
+            DateCreated: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
             stsClass: this.docTo.CheckNullSetZero(element.StatusID) === 0 ? 'Ongoing' : 'Approved',
             link: element.StatusID === -1 ? '' : '/Documents/IncomingDoc/docTo-detail/' + element.ID,
             flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''

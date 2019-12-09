@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ChangeDetectorRef, ViewContainerRef, ViewRef } from '@angular/core';
 import {MatPaginator} from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material';
 import {FormControl, FormBuilder} from '@angular/forms';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
@@ -27,7 +28,11 @@ export class ItemRetrieve {
   TimeRetrieve: string;
   Reason: string;
 }
-
+// MatdataTable
+export interface ArrayHistoryObject {
+  pageIndex: Number;
+  data: any[];
+}
 @Component({
   selector: 'anms-document-retrieve',
   templateUrl: './document-retrieve.component.html',
@@ -37,7 +42,7 @@ export class ItemRetrieve {
 export class DocumentGoRetrieveComponent implements OnInit {
   listTitle = "ListProcessRequestGo";
   inDocs$= [];
-  displayedColumns: string[] = ['numberGo', 'DocTypeName', 'created', 'userRequest', 'userApprover', 'deadline','compendium','flag']; //'select', 'userApprover'
+  displayedColumns: string[] = ['DocumentID', 'DocTypeName', 'DateCreated', 'UserCreateName', 'UserOfHandleName', 'Deadline','Compendium','flag']; //'select', 'userApprover'
   dataSource = new MatTableDataSource<ItemDocumentGo>();
   displayedColumns2: string[] = ['department', 'userName', 'time', 'reason'];
   dataSource2 = new MatTableDataSource<ItemRetrieve>();
@@ -51,12 +56,16 @@ export class DocumentGoRetrieveComponent implements OnInit {
   strFilter = '';
   overlayRef;
   bsModalRef;
-
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
+  pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
+  urlNextPage = ""; indexPage = 0;
+  ArrayHistory: ArrayHistoryObject[] = [];
   constructor(public viewContainerRef: ViewContainerRef,
               public overlay: Overlay,
               private docServices: DocumentGoService,
               private resServices: ResApiService,
-              private shareServices: SharedService,
+              private shareService: SharedService,
               private routes : Router,
               private notificationService: NotificationService,
               private ref: ChangeDetectorRef,
@@ -111,7 +120,161 @@ export class DocumentGoRetrieveComponent implements OnInit {
       this.closeCommentPanel();
     })
   }
-  
+  Search() {
+    this.inDocs$ = [];
+    this.ArrayHistory = [];
+    this.paginator.pageIndex = 0;
+
+    let filterCount='' ;
+    let strFilter1 ='';
+    let strSelect = '';
+    strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
+    strFilter1 = `&$filter=UserApprover/Id eq ` + this.currentUserId + strSelect;
+    filterCount=`?$filter=UserApprover/Id eq ` + this.currentUserId +` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq -1`;
+    this.strFilter =
+    `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover&$top=`
+    + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
+    console.log(' strFilter='+this.strFilter);
+  // this.getData(this.strFilter);
+    this.getLengthData(filterCount);
+  }
+  onPageChange($event) {
+    // console.log("$event");
+    // console.log($event)
+    if ($event.pageSize !== this.pageSize) {
+      this.pageSize = this.paginator.pageSize;
+      this.openCommentPanel();
+      this.Search();
+    }
+    else {
+      if ($event.pageIndex > this.indexPage) {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          if (this.urlNextPage !== undefined) {
+            const url = this.urlNextPage.split("/items")[1];
+            this.getData(url);
+          }
+        }
+      }
+      else {
+        let next = this.ArrayHistory.findIndex(x => x.pageIndex === $event.pageIndex);
+        if (next !== -1) {
+          this.dataSource = new MatTableDataSource(this.ArrayHistory[next].data);
+        }
+        else {
+          this.pageSize = this.paginator.pageSize;
+          this.paginator.pageIndex = 0;
+          this.indexPage = 0;
+          this.Search();
+        }
+      }
+    }
+    this.indexPage = $event.pageIndex;
+ 
+  }
+
+  sortData($event) {
+    // console.log("$event");
+    // console.log($event);
+    this.sortActive = $event.active;
+    this.sortDirection = $event.direction;
+    this.paginator.pageIndex = 0;
+    this.indexPage = 0;
+    this.Search();
+  }
+  getLengthData(filterCount) {
+    const urlFilter = `ListProcessRequestGo/$count` + filterCount;
+    this.shareService.getCountItem(urlFilter).subscribe(
+      items => {
+        // console.log(items);
+        // this.lengthData = Number(items);
+        this.lengthData = items as number;
+        // console.log("this.lengthData: " + this.lengthData);
+       
+      },
+      error => {
+        console.log(error);
+      },
+      () => {
+        this.getData(this.strFilter);
+        console.log("lengthData: " + this.lengthData);
+        // if (!(this.ref as ViewRef).destroyed) {
+        //   this.ref.detectChanges();
+        // }
+      }
+    )
+  }
+  getData(filter) {
+    this.inDocs$ = [];
+    this.shareService.getItemList("ListProcessRequestGo", filter).subscribe(
+      itemValue => {
+        // console.log("itemValue");
+        // console.log(itemValue);
+        let itemList = itemValue["value"] as Array<any>;
+        itemList.forEach(element => {
+          this.inDocs$.push({
+            ID: element.ID,
+            DocumentID: element.DocumentGoID,
+            NumberGo: this.docServices.formatNumberGo(element.NumberGo),
+            DocTypeName: this.docServices.checkNull(element.DocTypeName),
+            NumberSymbol:this.docServices.checkNull(element.Title),
+            Compendium: this.docServices.checkNull(element.Compendium),
+            AuthorId: element.UserRequest == undefined ? '' : element.UserRequest.Id,
+            UserCreateName: element.UserRequest == undefined ? '' : element.UserRequest.Title,
+            DateCreated: this.formatDateTime(element.DateCreated),
+            UserApproverId: element.UserApprover == undefined ? '' : element.UserApprover.Id,
+            UserOfHandleName: element.UserApprover == undefined ? '' : element.UserApprover.Title,
+            UserOfKnowName: element.UserOfKnow == undefined ? '' : element.UserOfKnow.Title,
+            UserOfCombinateName: element.UserOfCombinate == undefined ? '' : element.UserOfCombinate.Title,
+            Deadline: this.formatDateTime(element.Deadline),
+            StatusName: this.docServices.checkNull(element.StatusName),
+            BookTypeName: '',
+            UnitCreateName: '',
+            RecipientsInName: '',
+            RecipientsOutName: '',
+            SecretLevelName: '',
+            UrgentLevelName: '',
+            SecretCode:  this.docServices.checkNull(element.SecretCode),
+            UrgentCode: this.docServices.checkNull(element.UrgentCode),
+            TotalStep:0,
+            MethodSendName: '',
+            SignerName: '',
+            Note:'',
+            NumOfPaper :'',
+            link: '',
+            TypeCode: element.TypeCode,
+            StatusID: element.StatusID,
+            
+            flag:((this.docServices.checkNull(element.UrgentCode)!='' && this.docServices.checkNull(element.UrgentCode)!='BT')|| (this.docServices.checkNull(element.SecretCode)!='' && this.docServices.checkNull(element.SecretCode)!='BT'))?'flag':''
+          })
+        })
+        this.urlNextPage = itemValue["odata.nextLink"];
+        this.lengthData
+      },
+      error => {
+        console.log(error);
+        this.closeCommentPanel();
+      },
+      () => {
+        this.dataSource = new MatTableDataSource(this.inDocs$);
+        this.ArrayHistory.push({
+          pageIndex: this.paginator.pageIndex,
+          data: this.inDocs$
+        });
+        if (!(this.ref as ViewRef).destroyed) {
+          this.ref.detectChanges();
+        }
+        if (this.overlayRef !== undefined) {
+          this.closeCommentPanel();
+        }
+      })
+  }
+  isNotNull(str) {
+    return str !== null && str !== '' && str !== undefined;
+  }
   getAllListRequest() {
     let strSelect = '';
     strSelect = ` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq '-1'`;  
@@ -183,7 +346,7 @@ export class DocumentGoRetrieveComponent implements OnInit {
 
   getCurrentUser(){
     this.openCommentPanel();
-    this.shareServices.getCurrentUser().subscribe(
+    this.shareService.getCurrentUser().subscribe(
       itemValue => {
           this.currentUserId = itemValue["Id"];
           this.currentUserName = itemValue["Title"];
@@ -214,7 +377,8 @@ export class DocumentGoRetrieveComponent implements OnInit {
           },
           () => {
           });
-        this.getAllListRequest();
+      //  this.getAllListRequest();
+      this.Search();
       }
       );
   }
