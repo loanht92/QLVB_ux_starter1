@@ -16,14 +16,8 @@ export class IncomingDocService {
   inDocs$: Observable<IncomingDoc[]>;
 
   private restUrl = environment.proxyUrl;
-  private currentUserAPI = '/_api/web/currentUser';
-  private urlUserInfo =
-    '/_api/SP.UserProfiles.PeopleManager/GetPropertiesFor(accountName=@v)?@v=';
 
   constructor(private http: HttpClient) {
-    if (environment.production) {
-      this.restUrl = window.location.origin + environment.siteDBUrl;
-    }
     if (environment.production) {
       http.options(this.restUrl, {
         headers: {

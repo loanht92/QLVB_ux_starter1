@@ -21,7 +21,7 @@ export const environment = {
     cypress: packageJson.devDependencies['cypress']
   },
   proxyUrl: 'https://tsgvietnam.sharepoint.com/sites/dev/Ha_Document',
-  siteDBUrl: '/sites/dev',
+  siteDBUrl: '/sites/dev/dtdemo1',
   usingMockData: false,
   assetFolder: "../assets"
 };

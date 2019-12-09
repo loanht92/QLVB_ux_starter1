@@ -11,9 +11,6 @@ export class DataListService {
   private restUrl = environment.proxyUrl;
 
   constructor(private http: HttpClient) { 
-    if (environment.production) {
-      this.restUrl = window.location.origin + environment.siteDBUrl;
-    }
     http.options(this.restUrl,
       {
         headers: {
