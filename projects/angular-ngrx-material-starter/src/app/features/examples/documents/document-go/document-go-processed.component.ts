@@ -98,7 +98,7 @@ export class DocumentGoProcessedComponent implements OnInit {
   nextLink = '';
   previousLink = '';
   @ViewChild(MatSort, { static: false }) sort: MatSort;
-  pageSizeOptions = [10, 20, 50, 100]; pageSize = 1; lengthData = 0;
+  pageSizeOptions = [10, 20, 50, 100]; pageSize = 10; lengthData = 0;
   pageIndex = 0; sortActive = "DateCreated"; sortDirection = "desc";
   urlNextPage = ""; indexPage = 0;
   ArrayHistory: ArrayHistoryObject[] = []
@@ -537,16 +537,18 @@ export class DocumentGoProcessedComponent implements OnInit {
 
   getLinkItemByRole(type, id, step) {
     let link = '';
-    // if (this.docServices.CheckNullSetZero(type) === 1) {
-    //   link = '/Documents/documentgo-detail/' + id + '/' + step;
-    // } else if (
+    if ( this.docServices.CheckNullSetZero(type) === 2) {
+      link = '/Documents/documentgo-detail/' + id + '/' + step;
+    } 
+    //else if (
     //   this.docServices.CheckNullSetZero(type) === 4 ||
     //   this.docServices.CheckNullSetZero(type) === 5
     // ) {
     //   link = '/Documents/documentgo-detail/' + id + '/-1';
-    // } else {
+    // }
+     else {
       link = '/Documents/documentgo-detail/' + id;
-   // }
+    }
     return link;
   }
 

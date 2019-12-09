@@ -673,7 +673,7 @@
                     <mat-form-field fxFlex="100">
                         <mat-label>Chọn người xin ý kiến<span class="required-field">*</span></mat-label>
                         <mat-select [(ngModel)]="selectedUserComment">
-                            <mat-option *ngFor="let item of ListUserChoice" value="{{item.Id}}|{{item.Email}}|{{item.DisplayName}}">{{item.DisplayName}}</mat-option>
+                            <mat-option *ngFor="let item of ListAllUserChoice" value="{{item.Id}}|{{item.Email}}|{{item.DisplayName}}">{{item.DisplayName}}</mat-option>
                         </mat-select>
                     </mat-form-field>
                     <mat-form-field fxFlex="100">

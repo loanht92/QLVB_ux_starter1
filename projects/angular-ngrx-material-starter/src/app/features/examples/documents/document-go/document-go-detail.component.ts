@@ -869,9 +869,9 @@ export class DocumentGoDetailComponent implements OnInit {
             this.ListItem
           );
           this.dataSource_Ticket.paginator = this.paginator;
-          if (!(this.ref as ViewRef).destroyed) {
+         // if (!(this.ref as ViewRef).destroyed) {
             this.ref.detectChanges();
-          }
+         // }
           this.ArrayItemId = this.ListItem.filter(
             e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK" && e.statusId !== -1
           );
