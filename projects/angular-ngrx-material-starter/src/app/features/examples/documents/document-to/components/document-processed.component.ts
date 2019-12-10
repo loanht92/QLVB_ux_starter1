@@ -225,7 +225,7 @@ let strSelect='';
     // }
    
     this.strFilter =
-    `?$select=*,Author/Id,Author/Title,ListUserView/Id,UserRequest/Id,UserRequest/Title&$expand=Author,ListUserView,UserRequest&$top=`
+    `?$select=*,Author/Id,Author/Title,ListUserView/Id&$expand=Author,ListUserView&$top=`
     + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
     console.log(' strFilter='+this.strFilter);
    this.getData(this.strFilter);
@@ -290,24 +290,15 @@ let strSelect='';
           this.inDocs$.push({
             STT: this.inDocs$.length + 1,
             ID: element.ID,
-          //  documentID: element.NoteBookID, 
             compendium: element.Compendium, 
-            userRequest: (element.IndexStep === 1 && element.TypeCode === "CXL" ) ? 
-                        this.docTo.CheckNull( element.Source) : element.UserRequest !== undefined ? element.UserRequest.Title : '',
-            userRequestId: element.UserRequest !== undefined ? element.UserRequest.Id : '',
-            userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
-            userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
+            userRequest:  element.Author.Title ,
+            // userApproverId: element.UserApprover !== undefined ? element.UserApprover.Id : '',
+            // userApprover: element.UserApprover !== undefined ? element.UserApprover.Title : '',
             deadline: this.docTo.CheckNull(element.Deadline) === '' ? '' : moment(element.Deadline).format('DD/MM/YYYY'),
-            // status: element.StatusID === 0 ? 'Chờ xử lý' : 'Đang xử lý',
-            // statusID: element.StatusID,
             source: '',
             destination: '',
-            // taskType: this.docTo.CheckNull(element.TaskTypeName),
-            // typeCode: element.TaskTypeCode,
-            // content: this.docTo.CheckNull(element.Note),
-            // indexStep: element.IndexStep,
             DateCreated: this.docTo.CheckNull(element.DateCreated) === '' ? '' : moment(element.DateCreated).format('DD/MM/YYYY'),
-            numberTo: element.NumberTo,
+            numberTo:this.docTo.formatNumberTo(element.NumberTo),
             link: this.getLinkItemByRole(this.styleId, element.ID, element.IndexStep),
             stsClass: '',
             flag: element.SecretCode === "MAT" || element.UrgentCode === "KHAN" ? 'flag' : ''

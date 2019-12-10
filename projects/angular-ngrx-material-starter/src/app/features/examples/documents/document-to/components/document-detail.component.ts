@@ -428,7 +428,7 @@ export class DocumentDetailComponent implements OnInit {
         this.isCheckPermission = false;
       } else {
         this.isCheckPermission = true;
-        if(this.IndexStep > 0) {
+      //  if(this.IndexStep > 0) {
           //let _item = item.indexOf(i => i.IndexStep == this.IndexStep);
           //if(_item >= 0) {
             this.currentRoleTask = item[0].TaskTypeCode;
@@ -438,7 +438,7 @@ export class DocumentDetailComponent implements OnInit {
           // } else {
           //   this.routes.navigate(['Documents/IncomingDoc/docTo-detail/' + this.IncomingDocID]);
           // }
-        }
+       // }
       }
     },
     error => {
@@ -485,11 +485,24 @@ export class DocumentDetailComponent implements OnInit {
               }
             }
             if(element.UserApprover.Id === this.currentUserId && element.TypeCode === "CXL" && element.StatusID === 0) {
-              retrieveInValid = true;
-              indexValid=element.indexStep;
-              this.IndexStep=element.indexStep;
+              retrieveInValid = true;}
+              else {
+                indexValid = this.IndexStep;
+              }
+            if(element.UserApprover.Id === this.currentUserId && (element.TypeCode === "CXL"||element.TypeCode === "TH") && element.StatusID === 0) {
+              indexValid=element.IndexStep;
+             // this.IndexStep=element.IndexStep;
               //hiển thị các nút chuyển xl, xử lý, trả lại, hoàn thành
-              if(this.IndexStep >= this.totalStep) {
+              if(element.IndexStep <= 1 || element.TypeCode === "TL" || element.TypeCode === "TH") {
+                this.isReturn = false;
+              } else {
+                if(this.currentRoleTask === "NĐB") {
+                  this.isReturn = false;
+                } else {
+                  this.isReturn = true;
+                }
+              }
+              if(element.IndexStep >= this.totalStep) {
                 if(this.currentRoleTask === "XLC") {
                   this.isExecution = false;
                   this.isFinish = true;
@@ -497,7 +510,7 @@ export class DocumentDetailComponent implements OnInit {
                   this.isExecution = false;
                   this.isFinish = false;
                 }       
-              } else if(this.IndexStep > 0){    
+              } else if(element.IndexStep > 0){    
                 if(this.currentRoleTask === "XLC") {
                   this.isExecution = true;
                   if(this.IsTP || this.IsGD) {
@@ -520,9 +533,6 @@ export class DocumentDetailComponent implements OnInit {
                 }
               }
             }
-            
-          } else {
-            indexValid = this.IndexStep;
           }
 
           if(element.IsFinished === 1) {
@@ -967,7 +977,7 @@ export class DocumentDetailComponent implements OnInit {
       this.OpenRotiniPanel();
       for(let i = 0; i < length; i++) {
         if(this.ArrayIdRetrieve.findIndex(e => e.Id === this.selection.selected[i].Id) < 0) {
-          this.ArrayIdRetrieve.push({ Id: this.selection.selected[i].Id, Email: this.selection.selected[i].Email, Name: this.selection.selected[i].Name});
+          this.ArrayIdRetrieve.push({ Id: this.selection.selected[i].Id,UserId: this.selection.selected[i].UserId, Email: this.selection.selected[i].Email, Name: this.selection.selected[i].Name});
         }
         if(this.selection.selected[i].TaskTypeCode === "XLC" || this.selection.selected[i].TaskTypeCode === "XYK") {
           this.Retieved = true;
@@ -975,7 +985,7 @@ export class DocumentDetailComponent implements OnInit {
             if((element.stsTypeCode === "XYK" && element.indexStep >= this.currentStep) 
             || (element.stsTypeCode === "CXL" && element.indexStep > this.currentStep) ) {
               if(this.ArrayIdRetrieve.findIndex(e => e.Id === element.ID) < 0) {
-                this.ArrayIdRetrieve.push({ Id: element.ID, Email: element.userApproverEmail, Name: element.userApprover});
+                this.ArrayIdRetrieve.push({ Id: element.ID,UserId:element.userApproverId, Email: element.userApproverEmail, Name: element.userApprover});
               }
             }
           });
@@ -1043,8 +1053,8 @@ export class DocumentDetailComponent implements OnInit {
                     // update user view cho văn bản
              let isRemove=false;
              for(let i=0; i<this.ArrayIdRetrieve.length;i++){
-              if(this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)> -1){
-                let index1=this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)
+              if(this.ListUserView.indexOf( this.ArrayIdRetrieve[i].UserId)> -1){
+                let index1=this.ListUserView.indexOf( this.ArrayIdRetrieve[i].UserId)
                 this.ListUserView.splice(index1,1);
                 isRemove=true;
               }

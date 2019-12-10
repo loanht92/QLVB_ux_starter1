@@ -133,6 +133,7 @@ export class ReportAdvanceComponent implements OnInit {
       item.forEach(element => {
         if(element.StatusID === 0 || element.StatusID === 1) {
           this.CloseRotiniPanel();
+          IsRetrieve = false;
           this.routes.navigate(['/Documents/IncomingDoc/docTo-detail/' + docId]);
         } else if(element.StatusID === -1) {
           IsRetrieve = true;

@@ -823,10 +823,18 @@ export class DocumentGoDetailComponent implements OnInit {
                   indexValid = this.IndexStep;
                 }
               if(element.UserApprover.Id === this.currentUserId &&(element.TypeCode === "CXL" || element.TypeCode === "TH")  && element.StatusID === 0) {
-               
+                indexValid=element.IndexStep;
                // this.IndexStep=element.IndexStep;
               //hiển thị các nút chuyển xl, xử lý, trả lại, hoàn thành
-                indexValid=element.IndexStep;
+              if(element.IndexStep <= 1 || element.TypeCode === "TL" || element.TypeCode === "TH") {
+                this.isReturn = false;
+              } else {
+                if(this.currentRoleTask === "NĐB") {
+                  this.isReturn = false;
+                } else {
+                  this.isReturn = true;
+                }
+              }
                 if (element.IndexStep >= this.totalStep) {
                   if (this.currentRoleTask === 'XLC') {
                     this.isExecution = false;
