@@ -225,7 +225,7 @@ let strSelect='';
     // }
    
     this.strFilter =
-    `?$select=*,Author/Id,Author/Title,ListUserView/Id&$expand=Author,ListUserView&$top=`
+    `?$select=*,Author/Id,Author/Title,ListUserView/Id,UserRequest/Id,UserRequest/Title&$expand=Author,ListUserView,UserRequest&$top=`
     + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
     console.log(' strFilter='+this.strFilter);
    this.getData(this.strFilter);

@@ -124,7 +124,7 @@ export class DocumentRetrieveComponent implements OnInit {
     strFilter1 = `&$filter=UserApprover/Id eq ` + this.currentUserId + strSelect;
     filterCount=`?$filter=UserApprover/Id eq ` + this.currentUserId +` and (TypeCode eq 'CXL' or TypeCode eq 'TL') and StatusID eq -1`;
     this.strFilter =
-    `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title&$expand=Author,UserApprover&$top=`
+    `?$select=*,Author/Id,Author/Title,UserApprover/Id,UserApprover/Title,UserRequest/Id,UserRequest/Title&$expand=Author,UserApprover,UserRequest&$top=`
     + this.pageSize  + strFilter1 +`&$orderby=` + this.sortActive + ` ` + this.sortDirection;
     console.log(' strFilter='+this.strFilter);
   // this.getData(this.strFilter);

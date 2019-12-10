@@ -131,6 +131,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       item.forEach(element => {
         if(element.StatusID === 0 || element.StatusID === 1) {
           this.CloseRotiniPanel();
+          IsRetrieve = false;
           this.routes.navigate(['/Documents/documentgo-detail/' + docId]);
         } else if(element.StatusID === -1) {
           IsRetrieve = true;
@@ -148,6 +149,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       this.CloseRotiniPanel();
     },
     () => {
+      //thu hồi
       if(IsRetrieve === true) {
         this.dataSource2 = new MatTableDataSource<ItemRetrieve>(this.ListItem);
         if (!(this.ref as ViewRef).destroyed) {
@@ -157,6 +159,7 @@ export class ReportAdvanceDGComponent implements OnInit {
         this.bsModalRef = this.modalService.show(modalTemp, {class: 'modal-lg'});
         this.CloseRotiniPanel();
       }
+      else  this.CloseRotiniPanel();
     });     
   }
 

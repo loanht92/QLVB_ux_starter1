@@ -354,15 +354,16 @@ export class DocumentGoDetailComponent implements OnInit {
           this.isCheckPermission = false;
         } else {
           this.isCheckPermission = true;
-          if (this.IndexStep > 0) {
+         // if (this.IndexStep > 0) {
+           if(item.length>0){
             this.currentRoleTask = item[0].TaskTypeCode;
             this.UserRequestId=item[0].UserRequest.Id;
             if (item[0].StatusID === 1) {
               this.routes.navigate([
                 'Documents/documentgo-detail/' + this.ItemId
               ]);
-            }
-          }
+            }}
+         // }
         }
       },
       error => {
@@ -529,7 +530,7 @@ export class DocumentGoDetailComponent implements OnInit {
   }
 
   GetTotalStep() {
-    this.GetHistory();
+  
     // this.resService.getListTotalStep('DG').subscribe(
     //   items => {
     //     let itemList = items['value'] as Array<any>;
@@ -753,6 +754,7 @@ export class DocumentGoDetailComponent implements OnInit {
               this.isCombine = false;
             }
           }
+          this.GetHistory();
           if (
             !this.isCheckPermission &&
             this.itemDoc.AuthorId !== this.currentUserId
@@ -816,9 +818,15 @@ export class DocumentGoDetailComponent implements OnInit {
               }
               if(element.UserApprover.Id === this.currentUserId && element.TypeCode === "CXL" && element.StatusID === 0) {
                 retrieveInValid = true;
-                this.IndexStep=element.indexStep;
+              }
+                else {
+                  indexValid = this.IndexStep;
+                }
+              if(element.UserApprover.Id === this.currentUserId &&(element.TypeCode === "CXL" || element.TypeCode === "TH")  && element.StatusID === 0) {
+               
+               // this.IndexStep=element.IndexStep;
               //hiển thị các nút chuyển xl, xử lý, trả lại, hoàn thành
-                indexValid=element.indexStep;
+                indexValid=element.IndexStep;
                 if (element.IndexStep >= this.totalStep) {
                   if (this.currentRoleTask === 'XLC') {
                     this.isExecution = false;
@@ -848,12 +856,11 @@ export class DocumentGoDetailComponent implements OnInit {
                   }
                 }
               }
-            } else {
-              indexValid = this.IndexStep;
             }
             if (element.IsFinished === 1) {
               this.isRetrieve = false;
             }
+
             this.ListItem.push({
               STT: this.ListItem.length + 1,
               ID: element.ID,
@@ -1006,7 +1013,7 @@ export class DocumentGoDetailComponent implements OnInit {
       this.openCommentPanel();
       for(let i = 0; i < length; i++) {
         if(this.ArrayIdRetrieve.findIndex(e => e.Id === this.selection.selected[i].Id) < 0) {
-          this.ArrayIdRetrieve.push({ Id: this.selection.selected[i].Id, Email: this.selection.selected[i].Email, Name: this.selection.selected[i].Name});
+          this.ArrayIdRetrieve.push({ Id: this.selection.selected[i].Id,UserId: this.selection.selected[i].UserId, Email: this.selection.selected[i].Email, Name: this.selection.selected[i].Name});
         }
         if(this.selection.selected[i].TaskTypeCode === "XLC" || this.selection.selected[i].TaskTypeCode === "XYK") {
           this.Retieved = true;
@@ -1014,7 +1021,7 @@ export class DocumentGoDetailComponent implements OnInit {
             if((element.stsTypeCode === "XYK" && element.indexStep >= this.currentStep) 
             || (element.stsTypeCode === "CXL" && element.indexStep > this.currentStep) ) {
               if(this.ArrayIdRetrieve.findIndex(e => e.Id === element.ID) < 0) {
-                this.ArrayIdRetrieve.push({ Id: element.ID, Email: element.userApproverEmail, Name: element.userApprover});
+                this.ArrayIdRetrieve.push({ Id: element.ID,UserId:element.userApproverId, Email: element.userApproverEmail, Name: element.userApprover});
               }
             }
           });
@@ -1101,8 +1108,8 @@ export class DocumentGoDetailComponent implements OnInit {
                       // update user view cho văn bản
              let isRemove=false;
              for(let i=0; i<this.ArrayIdRetrieve.length;i++){
-              if(this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)> -1){
-                let index1=this.ListUserView.indexOf( this.ArrayIdRetrieve[i].Id)
+              if(this.ListUserView.indexOf( this.ArrayIdRetrieve[i].UserId)> -1){
+                let index1=this.ListUserView.indexOf( this.ArrayIdRetrieve[i].UserId)
                 this.ListUserView.splice(index1,1);
                 isRemove=true;
               }
