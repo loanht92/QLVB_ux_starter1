@@ -484,10 +484,10 @@ export class DocumentDetailComponent implements OnInit {
                 indexValid = element.IndexStep;
               }
             }
-            if(element.UserApprover.Id === this.currentUserId && (element.TypeCode === "CXL"||element.TypeCode === "TH") && element.StatusID === 0) {
+            if(element.UserApprover.Id === this.currentUserId && (element.TypeCode === "CXL") && element.StatusID === 0) {
               retrieveInValid = true;
             }            
-            if(element.UserApprover.Id === this.currentUserId && (element.TypeCode === "CXL"||element.TypeCode === "TH") && element.StatusID === 0) {
+            if(element.UserApprover.Id === this.currentUserId && (element.TypeCode === "CXL"||element.TypeCode === "TH"|| element.TypeCode === "TL") && element.StatusID === 0) {
               indexValid=element.IndexStep;
              // this.IndexStep=element.IndexStep;
               //hiển thị các nút chuyển xl, xử lý, trả lại, hoàn thành

@@ -821,7 +821,7 @@ export class DocumentGoDetailComponent implements OnInit {
               }
               
               
-              if(element.UserApprover.Id === this.currentUserId &&(element.TypeCode === "CXL" || element.TypeCode === "TH")  && element.StatusID === 0) {
+              if(element.UserApprover.Id === this.currentUserId &&(element.TypeCode === "CXL" || element.TypeCode === "TH"|| element.TypeCode === "TL")  && element.StatusID === 0) {
                 indexValid=element.IndexStep;
                // this.IndexStep=element.IndexStep;
               //hiển thị các nút chuyển xl, xử lý, trả lại, hoàn thành
@@ -913,13 +913,7 @@ export class DocumentGoDetailComponent implements OnInit {
               stsTaskCode: element.TaskTypeCode
             });
           });
-          this.dataSource_Ticket = new MatTableDataSource<DocumentGoTicket>(
-            this.ListItem
-          );
-          this.dataSource_Ticket.paginator = this.paginator;
-         // if (!(this.ref as ViewRef).destroyed) {
-            this.ref.detectChanges();
-         // }
+         
           this.ArrayItemId = this.ListItem.filter(
             e => e.indexStep === this.IndexStep && e.stsTypeCode !== "XYK" && e.statusId !== -1
           );
@@ -936,6 +930,14 @@ export class DocumentGoDetailComponent implements OnInit {
           this.closeCommentPanel();
         },
         () => {
+          this.dataSource_Ticket = new MatTableDataSource<DocumentGoTicket>(
+            this.ListItem
+          );
+          if (!(this.ref as ViewRef).destroyed) {
+            this.ref.detectChanges();
+          }
+         this.dataSource_Ticket.paginator = this.paginator;
+          //ds phiếu thu hồi
           this.ArrCurrentRetrieve = [];
           this.ListItem.forEach(element => {
             if(element.indexStep === (this.currentStep + 1) && element.statusId !== -1) {
@@ -955,10 +957,11 @@ export class DocumentGoDetailComponent implements OnInit {
           this.dataSource3 = new MatTableDataSource<UserRetieve>(
             this.ArrCurrentRetrieve
           );
+          // if (!(this.ref as ViewRef).destroyed) {
+          //   this.ref.detectChanges();
+          // }
           this.dataSource3.paginator = this.paginator;
-          if (!(this.ref as ViewRef).destroyed) {
-            this.ref.detectChanges();
-          }
+
           if(this.ArrCurrentRetrieve.length === 0) {
             this.isRetrieve = false;
           }
