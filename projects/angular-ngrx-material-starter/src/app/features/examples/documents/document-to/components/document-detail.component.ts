@@ -332,7 +332,10 @@ export class DocumentDetailComponent implements OnInit {
           });
         }
            //Lấy ds người được xem văn bản
-           this.ListUserView=itemList[0].ListUserViewId;
+           if(itemList[0].ListUserViewId!=null && itemList[0].ListUserViewId!=undefined){
+            this.ListUserView=itemList[0].ListUserViewId;
+           }
+         
         this.UserAppoverName = itemList[0].ListUserApprover;
         if(this.docTo.CheckNull(itemList[0].Deadline) === '' && itemList[0].IsResponse === 1 && this.IndexStep === 2) {
           this.IsDeadline = true;
@@ -618,7 +621,7 @@ export class DocumentDetailComponent implements OnInit {
           }
         });
         this.dataSource3 = new MatTableDataSource<UserRetieve>(this.ArrCurrentRetrieve);     
-        this.dataSource3.paginator = this.paginator;
+      //  this.dataSource3.paginator = this.paginator;
         if (!(this.ref as ViewRef).destroyed) {
           this.ref.detectChanges();  
         }  
@@ -2515,7 +2518,7 @@ export class DocumentDetailComponent implements OnInit {
           if(environment.usingMockData) {
             picture = '../../../../' + this.assetFolder + '/img/default-user-image.png';
           } else {
-            if(element.TaskTypeCode === 'XLC' && element.TypeCode === "CXL") {
+            if(element.TaskTypeCode === 'XLC' &&(element.TypeCode === "CXL" || element.TypeCode === "TL")) {
               picture = this.getUserPicture(
                 element.UserRequest.Name.split('|')[2]
               );

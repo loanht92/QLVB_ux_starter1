@@ -175,7 +175,8 @@ export class DocumentGoDetailComponent implements OnInit {
   idItemProcess;
   ArrayUserPofile: UserProfilePropertiesObject[] = [];
   dataSource_Ticket = new MatTableDataSource<DocumentGoTicket>();
-  @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
+  @ViewChild('paginator',{static:false}) paginator: MatPaginator;
+  @ViewChild('paginator2', { static: false }) paginator_TH: MatPaginator;
   ListDocument: ItemDocumentGo;
   displayedColumns2 = ['person', 'role', 'process', 'combine', 'know'];
   displayedColumns3: string[] = ['stt', 'select', 'department', 'role', 'name', 'type']; // 'userId'
@@ -658,7 +659,9 @@ export class DocumentGoDetailComponent implements OnInit {
             this.getNumberGo();
           }
           //Lấy ds người được xem văn bản
+          if(itemList[0].ListUserViewId!=null && itemList[0].ListUserViewId!=undefined){
          this.ListUserView=itemList[0].ListUserViewId;
+        }
           //lấy tổng số bước của VB
           this.totalStep=itemList[0].TotalStep==null?0:itemList[0].TotalStep;
           this.deadline_VB =
@@ -957,10 +960,10 @@ export class DocumentGoDetailComponent implements OnInit {
           this.dataSource3 = new MatTableDataSource<UserRetieve>(
             this.ArrCurrentRetrieve
           );
-          // if (!(this.ref as ViewRef).destroyed) {
-          //   this.ref.detectChanges();
-          // }
-          this.dataSource3.paginator = this.paginator;
+          if (!(this.ref as ViewRef).destroyed) {
+            this.ref.detectChanges();
+          }
+        //  this.dataSource3.paginator = this.paginator_TH;
 
           if(this.ArrCurrentRetrieve.length === 0) {
             this.isRetrieve = false;
@@ -2852,7 +2855,7 @@ AddListTicketApproval() {
                   this.assetFolder +
                   '/img/default-user-image.png';
               } else {
-                if(element.TaskTypeCode === 'XLC' && element.TypeCode === 'CXL') {
+                if(element.TaskTypeCode === 'XLC' &&( element.TypeCode === 'CXL' || element.TypeCode === 'TL')) {
                   picture = this.getUserPicture(
                     element.UserRequest.Name.split('|')[2]
                   );

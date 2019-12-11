@@ -70,6 +70,14 @@
                     <input matInput placeholder="Nơi nhận" [(ngModel)]="source">
                 </mat-form-field>
             </div>
+            <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
+                <mat-form-field fxFlex="50">
+                    <mat-select placeholder="Người tạo" [(ngModel)]="Author">
+                        <mat-option *ngFor="let item of ListUserApprover" value="{{item.UserId}}">{{item.UserName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+            </div>
             <!-- <div fxLayout="row" fxLayout.xs="column" fxFlexFill fxLayoutGap="10px">
                 <mat-form-field fxFlex="50">
                     <mat-label>Độ khẩn</mat-label>

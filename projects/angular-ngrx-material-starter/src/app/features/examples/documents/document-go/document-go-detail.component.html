@@ -215,7 +215,7 @@
                 </table>
                 <!-- <mat-paginator (page)="onPageChange($event)" [length]="lengthData" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"></mat-paginator> -->
 
-                <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
+                <mat-paginator #paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
             </div>
         </div>
 
@@ -598,6 +598,7 @@
                             <tr mat-header-row *matHeaderRowDef="displayedColumns3; sticky: true"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumns3;"></tr>
                         </table>
+                        <!-- <mat-paginator #paginator2 [pageSize]="5" [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator> -->
                     </div>
                     <div style="margin-top: 60px"></div>
                     <mat-card fxLayout="column">

@@ -63,6 +63,7 @@ export class ReportAdvanceDGComponent implements OnInit {
   ListDocumentID = [];
   ListUserSigner=[];
   Signer='';
+  Author='';
   isFrist = false;
   ListBookType = [
     {id: -1, title: 'Không có sổ'},
@@ -182,14 +183,28 @@ export class ReportAdvanceDGComponent implements OnInit {
     return this.ListUserApprover.filter(item => item.UserName.toLowerCase().includes(filterValue));
   }
 
-   // Load all user approval
-   GetAllUser() {
+    // Load all user approval
+    GetAllUser() {
       this.docTo.getAllUser().subscribe((itemValue: any[]) => {
         let item = itemValue['value'] as Array<any>;
         this.ListUserApprover = [];
+        this.ListUserSigner=[];
         item.forEach(element => {
+          //ds tất cả người dùng
           if(this.ListUserApprover.findIndex(i => i.UserId === element.User.Id) < 0) {
             this.ListUserApprover.push({
+              UserId: element.User.Id,
+              UserName: element.User.Title,
+              UserEmail: element.User.Name.split('|')[2],
+              Role: element.RoleName,
+              Department: element.DepartmentName,
+              RoleCode: element.RoleCode,
+              DepartmentCode: element.DepartmentCode,
+            });
+          }
+          //lấy ds người ký
+          if(this.ListUserSigner.findIndex(i => i.UserId === element.User.Id) < 0) {
+            this.ListUserSigner.push({
               UserId: element.User.Id,
               UserName: element.User.Title,
               UserEmail: element.User.Name.split('|')[2],
@@ -208,6 +223,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       () =>{
       })
   }
+ 
   //danh sách người ký
   getUserSigner() {
     let strFilterUser = `&$filter=RoleCode eq 'GĐ'`;
@@ -503,6 +519,10 @@ export class ReportAdvanceDGComponent implements OnInit {
     if(this.docTo.checkNull(this.Signer) !== '') {
       // this.strFilter += ` and substringof('` + this.singer + `',Signer)`;
       strFilter1 += ` and SignerId eq'` + this.Signer + `'`;
+    }
+    if(this.docTo.checkNull(this.Author) !== '') {
+      // this.strFilter += ` and substringof('` + this.singer + `',Signer)`;
+      strFilter1 += ` and AuthorId eq'` + this.Author + `'`;
     }
 
     if(this.docTo.checkNull(this.source) !== '') {
