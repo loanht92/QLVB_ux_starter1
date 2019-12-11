@@ -208,6 +208,7 @@ export class ReportAdvanceComponent implements OnInit {
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
+
   Search() {
     this.inDocs$ = [];
     this.ArrayHistory = [];
@@ -215,9 +216,9 @@ export class ReportAdvanceComponent implements OnInit {
     let filterCount='' ;
     let strFilter1 ='';
     if(this.bookType == 1){
-      strFilter1 = `&$filter=NumberGo ne null`;
+      strFilter1 = `&$filter=NumberTo ne null`;
     } else if(this.bookType == -1){
-      strFilter1 = `&$filter=NumberGo eq null`;
+      strFilter1 = `&$filter=NumberTo eq null`;
     } else {
       strFilter1 = `&$filter=ID ne '0'`;
     }
@@ -305,6 +306,7 @@ export class ReportAdvanceComponent implements OnInit {
    this.getData(this.strFilter);
     //this.getLengthData(filterCount);
   }
+
   onPageChange($event) {
     // console.log("$event");
     // console.log($event)
@@ -634,6 +636,7 @@ export class ReportAdvanceComponent implements OnInit {
     this.userApprover.setValue('');
     this.compendium = null;
     this.isAttachment = false;
+    this.Search();
   }
 
   getCurrentUser(){

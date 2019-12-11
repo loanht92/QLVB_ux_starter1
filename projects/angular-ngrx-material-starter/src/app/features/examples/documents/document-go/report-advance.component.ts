@@ -433,6 +433,7 @@ export class ReportAdvanceDGComponent implements OnInit {
     this.userApprover.setValue('');
     this.compendium = null;
     this.isAttachment = false;
+    this.Search();
   }
 
   getCurrentUser(){
@@ -452,6 +453,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       }
       );
   }
+
   Search() {
     this.inDocs$ = [];
     this.ArrayHistory = [];
