@@ -819,9 +819,8 @@ export class DocumentGoDetailComponent implements OnInit {
               if(element.UserApprover.Id === this.currentUserId && element.TypeCode === "CXL" && element.StatusID === 0) {
                 retrieveInValid = true;
               }
-                else {
-                  indexValid = this.IndexStep;
-                }
+              
+              
               if(element.UserApprover.Id === this.currentUserId &&(element.TypeCode === "CXL" || element.TypeCode === "TH")  && element.StatusID === 0) {
                 indexValid=element.IndexStep;
                // this.IndexStep=element.IndexStep;
@@ -864,6 +863,9 @@ export class DocumentGoDetailComponent implements OnInit {
                   }
                 }
               }
+            }
+            else {
+              indexValid = this.IndexStep;
             }
             if (element.IsFinished === 1) {
               this.isRetrieve = false;
