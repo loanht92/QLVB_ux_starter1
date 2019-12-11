@@ -111,7 +111,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       );
     this.getDocType();
     this.getListStatus();
-    this. getUserSigner();
+  //  this.getUserSigner();
     this.GetAllUser();
     this.getUrgentLevel();
     this.getSecretLevel();
@@ -203,6 +203,7 @@ export class ReportAdvanceDGComponent implements OnInit {
             });
           }
           //lấy ds người ký
+          if(element.RoleCode=='GĐ'){
           if(this.ListUserSigner.findIndex(i => i.UserId === element.User.Id) < 0) {
             this.ListUserSigner.push({
               UserId: element.User.Id,
@@ -213,7 +214,7 @@ export class ReportAdvanceDGComponent implements OnInit {
               RoleCode: element.RoleCode,
               DepartmentCode: element.DepartmentCode,
             });
-          }
+          }}
         })   
       },
       error => {
@@ -441,7 +442,8 @@ export class ReportAdvanceDGComponent implements OnInit {
     this.promulgatedTo;
     this.dateTo = new Date();
     this.dateFrom = moment().subtract(30,'day').toDate();
-    this.Signer = null;
+    this.Signer = '';
+    this.Author='';
     this.source = null;
     this.urgentLevel = null;
     this.secretLevel = null;
