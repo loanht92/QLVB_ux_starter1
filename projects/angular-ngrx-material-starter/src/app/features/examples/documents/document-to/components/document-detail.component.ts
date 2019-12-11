@@ -484,11 +484,9 @@ export class DocumentDetailComponent implements OnInit {
                 indexValid = element.IndexStep;
               }
             }
-            if(element.UserApprover.Id === this.currentUserId && element.TypeCode === "CXL" && element.StatusID === 0) {
-              retrieveInValid = true;}
-              else {
-                indexValid = this.IndexStep;
-              }
+            if(element.UserApprover.Id === this.currentUserId && (element.TypeCode === "CXL"||element.TypeCode === "TH") && element.StatusID === 0) {
+              retrieveInValid = true;
+            }            
             if(element.UserApprover.Id === this.currentUserId && (element.TypeCode === "CXL"||element.TypeCode === "TH") && element.StatusID === 0) {
               indexValid=element.IndexStep;
              // this.IndexStep=element.IndexStep;
@@ -533,6 +531,8 @@ export class DocumentDetailComponent implements OnInit {
                 }
               }
             }
+          } else {
+            indexValid = this.IndexStep;
           }
 
           if(element.IsFinished === 1) {

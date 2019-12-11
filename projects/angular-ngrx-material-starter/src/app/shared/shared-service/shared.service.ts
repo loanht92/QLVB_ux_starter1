@@ -55,6 +55,9 @@ export class SharedService {
   private urlAPI = `/_api/web/lists/getbytitle('`;
 
   constructor(private http: HttpClient) {
+    if (environment.production) {
+      this.restUrl = window.location.origin + environment.siteDBUrl;
+    }
     this.opInsert = {
       headers: new HttpHeaders({
         'accept': 'application/json;odata=verbose',
@@ -94,9 +97,6 @@ export class SharedService {
 
    
   getCurrentUser() {
-    if (environment.production) {
-      this.restUrl = window.location.origin + environment.siteDBUrl;
-    }
     return this.http.get(`${this.restUrl}/_api/web/currentUser`);
   }
 
@@ -105,17 +105,11 @@ export class SharedService {
   }
 
   getUserInfo(loginName) {
-    if (environment.production) {
-      this.restUrl = window.location.origin + environment.siteDBUrl;
-    }
     // loginName = 'i:0%23.f|membership|tuyen.nguyen@tsg.net.vn';
     return this.http.get(`${this.restUrl}/_api/SP.UserProfiles.PeopleManager/GetPropertiesFor(accountName=@v)?@v=` + `'` + loginName + `'`);
   }
 
   getUserInfoSite(loginName){
-    if (environment.production) {
-      this.restUrl = window.location.origin + environment.siteDBUrl;
-    }
     return this.http.get(`${this.restUrl}/_api/web/siteusers(@v)?@v=` + `'` + loginName + `'`);
   }
 

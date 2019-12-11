@@ -12,11 +12,13 @@ const PEOPLE_PICKER_URL =
 })
 export class ResApiService {
   private restUrl = environment.proxyUrl;
-  private restAPI = 'https://tsgvietnam.sharepoint.com/sites/dev/Ha_Document';
   private currentUserAPI = "/_api/web/currentUser";
   private urlUserInfo = "/_api/SP.UserProfiles.PeopleManager/GetPropertiesFor(accountName=@v)?@v=";
 
   constructor(private http: HttpClient) {
+    if (environment.production) {
+      this.restUrl = window.location.origin + environment.siteDBUrl;
+    }
     if (environment.production) {
       http.options(this.restUrl,
         {
@@ -64,16 +66,9 @@ export class ResApiService {
   }
   
   getCurrentUser(){
-    if (environment.production) {
-      this.restUrl = window.location.origin + environment.siteDBUrl;
-    }
     return this. http.get(`${this.restUrl}${this.currentUserAPI}`);
   }
   getUserInfo(loginName){
-    if (environment.production) {
-      this.restUrl = window.location.origin + environment.siteDBUrl;
-    }
-    // loginName = 'i:0%23.f|membership|tuyen.nguyen@tsg.net.vn';
     return this.http.get(`${this.restUrl}${this.urlUserInfo}` + `'` + loginName + `'`);
   }
   getFieldInList(listName) : Observable<any> {
