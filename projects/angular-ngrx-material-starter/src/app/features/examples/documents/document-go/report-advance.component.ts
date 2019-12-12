@@ -268,7 +268,7 @@ export class ReportAdvanceDGComponent implements OnInit {
       if(this.docTo.checkNull(this.numberOfSymbol) !== '') {
         this.strFilter += ` and substringof('` + this.numberOfSymbol + `',NumberSymbol)`;
       }
-
+     
       if(this.docTo.CheckNullSetZero(this.docType) > 0) {
         this.strFilter += ` and DocTypeID eq '` + this.docType +`'`;
       }
@@ -493,7 +493,10 @@ export class ReportAdvanceDGComponent implements OnInit {
     if(this.docTo.checkNull(this.numberOfSymbol) !== '') {
       strFilter1 += ` and substringof('` + this.numberOfSymbol + `',NumberSymbol)`;
     }
-
+    //Truong này kiểu Note không filter được trên sharepoint
+    // if(this.docTo.checkNull(this.compendium) !== '') {
+    //   strFilter1 += ` and substringof('` + this.compendium + `',Compendium)`;
+    // }
     if(this.docTo.CheckNullSetZero(this.docType) > 0) {
       strFilter1 += ` and DocTypeID eq '` + this.docType +`'`;
     }
